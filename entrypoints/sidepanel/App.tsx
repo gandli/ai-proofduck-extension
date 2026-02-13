@@ -319,7 +319,6 @@ function App() {
     return (
         <div className="sidepanel-container">
             <header>
-                <h1>{t.title}</h1>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                     <div className={`status-badge ${status}`}>
                         {status === 'idle' && t.status_idle}
