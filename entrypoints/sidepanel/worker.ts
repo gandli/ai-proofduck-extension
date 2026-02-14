@@ -1,4 +1,4 @@
-import { MLCEngine, InitProgressReport, ChatCompletionMessageParam } from "@mlc-ai/web-llm";
+import { MLCEngine, InitProgressReport, ChatCompletionMessageParam, prebuiltAppConfig } from "@mlc-ai/web-llm";
 import { getSystemPrompt } from "./worker-utils";
 
 class WebLLMWorker {
@@ -29,6 +29,25 @@ class WebLLMWorker {
             }
 
             console.log(`[Worker] Loading WebLLM model: ${model} on ${engineType}`);
+
+            // Hint engineType via appConfig for WASM
+            // Using 'any' cast for setAppConfig as it might be missing in type definition
+            // but available at runtime or in newer versions
+            const engineInstance = this.engine as any;
+
+            if (typeof engineInstance.setAppConfig === 'function') {
+                if (engineType === 'local-wasm') {
+                    // Merge with prebuiltAppConfig to hint WASM usage
+                    // Assuming 'engineType: wasm' is the correct hint per instructions
+                    const appConfig = { ...prebuiltAppConfig, engineType: 'wasm' };
+                    await engineInstance.setAppConfig(appConfig);
+                } else {
+                    // Reset to default config (prebuiltAppConfig) when not using WASM
+                    // to ensure we don't stick to WASM mode if previously set
+                    await engineInstance.setAppConfig(prebuiltAppConfig);
+                }
+            }
+
             // Note: engineType local-wasm can be hinted via appConfig if needed, 
             // but MLCEngine usually auto-detects. Forcing wasm requires special config.
             await this.engine.reload(model, {
