@@ -104,7 +104,7 @@ h3 {
   font-size: 14px;
   line-height: 1.6;
   min-height: 80px;
-  max-height: 250px;
+  flex: 1;
   overflow-y: auto;
   white-space: pre-wrap;
   word-break: break-word;
@@ -461,10 +461,20 @@ textarea.text-box.editable:focus {
     0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
+.input-area,
+.output-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .input-wrapper {
   position: relative;
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .char-count {
@@ -483,6 +493,8 @@ textarea.text-box.editable:focus {
   position: relative;
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 /* Dark mode */
