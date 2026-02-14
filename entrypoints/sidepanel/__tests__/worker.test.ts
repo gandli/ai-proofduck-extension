@@ -31,6 +31,12 @@ describe('processLocalQueue', () => {
         resetState();
         // Clear mocks
         vi.clearAllMocks();
+
+        let now = 0;
+        vi.spyOn(Date, 'now').mockImplementation(() => {
+            now += 60; // Advance time by 60ms to trigger throttle
+            return now;
+        });
     });
 
     afterEach(() => {
