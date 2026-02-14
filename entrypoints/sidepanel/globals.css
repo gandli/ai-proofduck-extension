@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+    color-scheme: light dark;
+    @apply text-slate-800 bg-white dark:text-slate-200 dark:bg-[#242424];
+  }
+  
+  body {
+    @apply m-0 min-w-full min-h-screen;
+  }
+}
