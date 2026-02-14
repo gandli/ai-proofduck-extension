@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
+import { importFilesToCache } from './file-utils';
 import { translations } from './i18n';
 import {
   SettingsIcon,
@@ -340,28 +341,12 @@ function App() {
     setProgress({ progress: 0, text: t.importing });
 
     try {
-      const cache = await caches.open('webllm/model');
-      const total = files.length;
-      let count = 0;
-
-      const modelId = settings.localModel;
-      const baseUrl = `https://huggingface.co/mlc-ai/${modelId}/resolve/main/`;
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const relativePath = file.webkitRelativePath.split('/').slice(1).join('/');
-        if (!relativePath) continue;
-
-        const url = new URL(relativePath, baseUrl).toString();
-        const response = new Response(file);
-        await cache.put(url, response);
-
-        count++;
+      await importFilesToCache(files, settings.localModel, 'webllm/model', (count, total) => {
         setProgress({
           progress: (count / total) * 100,
           text: `${t.importing} (${count}/${total})`,
         });
-      }
+      });
 
       alert(t.import_success);
       setStatus('idle');
