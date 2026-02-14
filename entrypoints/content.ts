@@ -40,7 +40,7 @@ export default defineContentScript({
         </div>
 
         <div class="footer">
-          <div class="brand">AI proofduck 🐣</div>
+          <div class="brand">AI Proofduck 🐣</div>
           <button class="copy-btn" id="copy-translation-btn">Copy</button>
         </div>
       `;
@@ -219,10 +219,10 @@ export default defineContentScript({
         translationPopup = createTranslationPopup();
       }
 
-      const shadowRoot = translationPopup.shadowRoot!;
-      const contentEl = shadowRoot.getElementById('translation-text')!;
-      const sourceEl = shadowRoot.getElementById('source-display')!;
-      const statusLabel = shadowRoot.getElementById('status-label')!;
+      const shadowRootNode = translationPopup.shadowRoot!;
+      const contentEl = shadowRootNode.getElementById('translation-text')!;
+      const sourceEl = shadowRootNode.getElementById('source-display')!;
+      const statusLabel = shadowRootNode.getElementById('status-label')!;
       
       contentEl.textContent = 'Translating...';
       sourceEl.textContent = text;
@@ -270,7 +270,7 @@ export default defineContentScript({
     const createFloatingIcon = () => {
       const container = document.createElement('div');
       container.id = 'ai-proofduck-icon-container';
-      const shadowRoot = container.attachShadow({ mode: 'open' });
+      const shadowRootNode = container.attachShadow({ mode: 'open' });
 
       const icon = document.createElement('div');
       icon.innerHTML = SVG_STRING;
@@ -299,8 +299,8 @@ export default defineContentScript({
         div { width: 24px; height: 24px; }
       `;
 
-      shadowRoot.appendChild(style);
-      shadowRoot.appendChild(icon);
+      shadowRootNode.appendChild(style);
+      shadowRootNode.appendChild(icon);
 
       container.addEventListener('mouseenter', () => {
         console.log('[AI Proofduck] Hover started.');
@@ -370,7 +370,19 @@ export default defineContentScript({
       }
     };
 
-    document.addEventListener('mouseup', () => {
+    document.addEventListener('mouseup', (e: MouseEvent) => {
+      // Logic to prevent showing icon if selection is inside our UI
+      const target = e.target as HTMLElement;
+      const iconContainer = document.getElementById('ai-proofduck-icon-container');
+      const popupContainer = document.getElementById('ai-proofduck-translation-popup');
+      
+      const isInsideUI = (iconContainer && iconContainer.contains(target)) || 
+                        (popupContainer && popupContainer.contains(target));
+
+      if (isInsideUI) {
+        return; 
+      }
+
       setTimeout(() => {
         const selection = window.getSelection();
         const text = selection?.toString().trim();
@@ -393,8 +405,10 @@ export default defineContentScript({
       const iconContainer = document.getElementById('ai-proofduck-icon-container');
       const popupContainer = document.getElementById('ai-proofduck-translation-popup');
       
-      if (iconContainer && !iconContainer.contains(target) && 
-          popupContainer && !popupContainer.contains(target)) {
+      const isInsideUI = (iconContainer && iconContainer.contains(target)) || 
+                        (popupContainer && popupContainer.contains(target));
+
+      if (!isInsideUI) {
         hideIcon();
         hideTranslation();
         if (hoverTimer) clearTimeout(hoverTimer);
