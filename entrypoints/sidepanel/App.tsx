@@ -446,18 +446,28 @@ function App() {
         return;
       }
 
-      const filesData: { url: string; blob: Blob }[] = [];
-      for (let i = 0; i < filteredKeys.length; i++) {
-        const req = filteredKeys[i];
-        const resp = await cache.match(req);
-        if (resp) {
-          filesData.push({ url: req.url, blob: await resp.blob() });
-        }
+      let processedCount = 0;
+      const updateProgress = () => {
+        processedCount++;
         setProgress({
-          progress: ((i + 1) / filteredKeys.length) * 50,
-          text: `${t.exporting} (${i + 1}/${filteredKeys.length})`,
+          progress: (processedCount / filteredKeys.length) * 50,
+          text: `${t.exporting} (${processedCount}/${filteredKeys.length})`,
         });
-      }
+      };
+
+      const filePromises = filteredKeys.map(async (req) => {
+        const resp = await cache.match(req);
+        let result = null;
+        if (resp) {
+          const blob = await resp.blob();
+          result = { url: req.url, blob };
+        }
+        updateProgress();
+        return result;
+      });
+
+      const results = await Promise.all(filePromises);
+      const filesData = results.filter((f): f is { url: string; blob: Blob } => f !== null);
 
       // Pack into binary format
       // [Magic 4][FileCount 4]
