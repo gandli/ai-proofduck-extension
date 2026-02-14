@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 import { translations } from './i18n';
+import { MLCP_FILE_HEADER } from './constants';
 import {
   SettingsIcon,
   FetchIcon,
@@ -471,7 +472,7 @@ function App() {
       const view = new DataView(buffer);
       const encoder = new TextEncoder();
 
-      view.setUint32(0, 0x4d4c4350); // "MLCP"
+      view.setUint32(0, MLCP_FILE_HEADER); // "MLCP"
       view.setUint32(4, filesData.length);
 
       let offset = 8;
@@ -522,7 +523,7 @@ function App() {
       const view = new DataView(buffer);
       const decoder = new TextDecoder();
 
-      if (view.getUint32(0) !== 0x4d4c4350) {
+      if (view.getUint32(0) !== MLCP_FILE_HEADER) {
         throw new Error('Invalid MLCP file format');
       }
 
