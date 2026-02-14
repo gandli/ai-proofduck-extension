@@ -1,5 +1,5 @@
 import { MLCEngine, InitProgressReport, ChatCompletionMessageParam } from "@mlc-ai/web-llm";
-import { getSystemPrompt } from "./worker-utils";
+import { getSystemPrompt, SSEParser } from "./worker-utils";
 
 class WebLLMWorker {
     static engine: MLCEngine | null = null;
@@ -117,34 +117,20 @@ async function handleGenerateOnline(text: string, mode: string, settings: any) {
 
         const reader = response.body?.getReader();
         const decoder = new TextDecoder();
+        const parser = new SSEParser();
         let fullText = "";
 
         if (reader) {
-            let buffer = "";
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
 
                 const chunk = decoder.decode(value, { stream: true });
-                buffer += chunk;
-                const lines = buffer.split('\n');
-                buffer = lines.pop() || "";
+                const updates = parser.process(chunk);
 
-                for (const line of lines) {
-                    const trimmed = line.trim();
-                    if (!trimmed) continue;
-                    if (trimmed.startsWith('data: ')) {
-                        const dataStr = trimmed.slice(6).trim();
-                        if (dataStr === '[DONE]') continue;
-                        try {
-                            const json = JSON.parse(dataStr);
-                            const content = json.choices[0]?.delta?.content || "";
-                            fullText += content;
-                            self.postMessage({ type: "update", text: fullText, mode: currentMode });
-                        } catch (e) {
-                            buffer = line + '\n' + buffer;
-                        }
-                    }
+                for (const content of updates) {
+                    fullText += content;
+                    self.postMessage({ type: "update", text: fullText, mode: currentMode });
                 }
             }
         }
