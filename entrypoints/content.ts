@@ -8,7 +8,7 @@ export default defineContentScript({
     let translationPopup: HTMLElement | null = null;
     let selectedText = '';
     let lastRect: DOMRect | null = null;
-    let hoverTimer: any = null;
+    let hoverTimer: ReturnType<typeof setTimeout> | null = null;
 
     console.log('[AI Proofduck] Content script initialized.');
     

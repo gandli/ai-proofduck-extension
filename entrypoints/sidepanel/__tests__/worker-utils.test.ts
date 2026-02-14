@@ -10,7 +10,7 @@ describe('getSystemPrompt', () => {
 
     it('should generate correct prompt for summarize mode', () => {
         const prompt = getSystemPrompt('summarize', defaultSettings);
-        expect(prompt).toContain('你是一个摘要提取工具');
+        expect(prompt).toContain('你是一个专业的首席速读官');
         expect(prompt).toContain('直接且仅输出 中文 结果文本');
     });
 
@@ -34,6 +34,6 @@ describe('getSystemPrompt', () => {
 
     it('should fallback to proofread if mode is unknown', () => {
         const prompt = getSystemPrompt('unknown_mode', defaultSettings);
-        expect(prompt).toContain('你是一个文字润色编辑');
+        expect(prompt).toContain('你是一个大厂资深文案编辑');
     });
 });
