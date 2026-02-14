@@ -1,0 +1,78 @@
+---
+import { ViewTransitions } from "astro:transitions";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "AI Proofduck - Smart Writing Assistant · Privacy First",
+  description = "In-browser AI writing assistant with summarize, correct, polish, translate, and expand modes. Fully local inference, privacy protection, ready to use.",
+} = Astro.props;
+
+const pathname = Astro.url.pathname;
+const currentLocale = pathname.includes("/zh") ? "zh" : "en";
+---
+
+<!doctype html>
+<html lang={currentLocale}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <ViewTransitions />
+
+    <!-- Primary Meta Tags -->
+    <title>{title}</title>
+    <meta name="title" content={title} />
+    <meta name="description" content={description} />
+    <meta name="author" content="Gandli" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="icons/icon-48.png" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="128x128"
+      href="icons/icon-128.png"
+    />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Lucide Icons -->
+    <script is:inline src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Global Styles -->
+    <style is:global>
+      @import "../styles/global.css";
+    </style>
+  </head>
+  <body
+    class="bg-bg1 text-t1 font-sans antialiased selection:bg-ac selection:text-white overflow-x-hidden"
+  >
+    <slot />
+    <script>
+      import "../scripts/main.js";
+    </script>
+    <script is:inline>
+      // Initialize Lucide icons
+      const initIcons = () => {
+        if (typeof lucide !== "undefined" && lucide.createIcons) {
+          lucide.createIcons();
+        }
+      };
+
+      document.addEventListener("astro:page-load", initIcons);
+      document.addEventListener("DOMContentLoaded", initIcons);
+    </script>
+  </body>
+</html>

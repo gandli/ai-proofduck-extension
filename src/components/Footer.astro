@@ -1,0 +1,65 @@
+---
+const base = import.meta.env.BASE_URL;
+---
+
+<footer class="mt-10 relative z-10 py-20 px-6 border-t border-bdl bg-white">
+  <div class="max-w-[1200px] mx-auto">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-10">
+      <div class="flex items-center gap-3">
+        <img
+          src={base + "/icons/icon-128.png"}
+          class="w-8 h-8 opacity-90 grayscale hover:grayscale-0 transition-all"
+          alt="Logo"
+        />
+        <span class="text-xl font-black tracking-tighter text-t1"
+          >AI Proofduck</span
+        >
+      </div>
+
+      <div class="flex flex-wrap justify-center gap-8 text-sm font-bold">
+        <a
+          href="#features"
+          class="text-t2 hover:text-ac transition-colors no-underline"
+          data-i18n="nav_features">Features</a
+        >
+        <a
+          href="#engines"
+          class="text-t2 hover:text-ac transition-colors no-underline"
+          data-i18n="nav_engines">Technology</a
+        >
+        <a
+          href="#changelog"
+          class="text-t2 hover:text-ac transition-colors no-underline"
+          data-i18n="nav_changelog">Changelog</a
+        >
+        <a
+          href="#privacy"
+          class="text-t2 hover:text-ac transition-colors no-underline"
+          data-i18n="nav_privacy">Privacy Policy</a
+        >
+      </div>
+
+      <div class="flex items-center gap-6">
+        <a
+          href="https://github.com/gandli/ai-proofduck-extension"
+          target="_blank"
+          class="text-t3 hover:text-t1 transition-colors"
+          aria-label="GitHub"
+        >
+          <i data-lucide="github" class="w-6 h-6"></i>
+        </a>
+      </div>
+    </div>
+
+    <div
+      class="mt-16 pt-8 border-t border-bdl flex flex-col md:flex-row justify-between items-center gap-4 text-[11px] font-black uppercase tracking-widest text-t3"
+    >
+      <p>&copy; 2026 Gandli. All rights reserved.</p>
+      <div class="flex items-center gap-4 opacity-50">
+        <span>Designed for Precision</span>
+        <span class="w-1 h-1 rounded-full bg-t3"></span>
+        <span>Built for Privacy</span>
+      </div>
+    </div>
+  </div>
+</footer>

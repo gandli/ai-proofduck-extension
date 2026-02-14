@@ -1,0 +1,959 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<BaseLayout>
+  <Navbar />
+
+  <div
+    class="relative min-h-screen flex items-center justify-center text-center px-6 pt-[120px] pb-20 overflow-hidden"
+  >
+    <!-- Enhanced Hero Background -->
+    <div class="absolute inset-0 z-0">
+      <div class="absolute inset-0 bg-bg1 opacity-50"></div>
+      <div
+        class="absolute inset-0 animate-hero-pulse"
+        style="background: radial-gradient(circle at 20% 30%, rgba(237, 80, 7, 0.08), transparent 40%), radial-gradient(circle at 80% 70%, rgba(255, 200, 100, 0.05), transparent 40%);"
+      >
+      </div>
+      <!-- Grid Layer -->
+      <div
+        class="absolute inset-0 opacity-[0.15] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]"
+        style="background-image: linear-gradient(rgba(23, 23, 23, 1) 1px, transparent 1px), linear-gradient(90deg, rgba(23, 23, 23, 1) 1px, transparent 1px); background-size: 40px 40px;"
+      >
+      </div>
+    </div>
+
+    <div class="relative z-10 max-w-[800px] animate-fade-up">
+      <div
+        class="inline-flex items-center gap-2.5 bg-white/80 backdrop-blur-md border border-acg px-4 py-1.5 rounded-full text-xs font-bold text-ac mb-10 shadow-sm"
+      >
+        <i data-lucide="brain-circuit" class="w-3.5 h-3.5"></i>
+        <span data-i18n="hero_badge" class="uppercase tracking-widest"
+          >In-browser AI · Local Inference</span
+        >
+      </div>
+      <h1
+        class="text-6xl md:text-8xl font-black tracking-tighter leading-[0.95] mb-6 bg-gradient-to-b from-t1 to-t1/60 bg-clip-text text-transparent"
+        data-i18n="hero_title"
+      >
+        AI Proofduck
+      </h1>
+      <p
+        class="text-lg md:text-xl text-t2 mb-12 max-w-xl mx-auto font-medium leading-relaxed"
+        data-i18n="hero_tagline"
+      >
+        Precision AI writing assistant crafted for privacy and professional
+        excellence.
+      </p>
+      <div class="flex flex-wrap justify-center gap-5">
+        <a
+          href="https://chromewebstore.google.com/detail/gpjneodcglcajciglofbfhafgncgfmcn"
+          class="inline-flex items-center gap-2.5 px-10 py-4 rounded-2xl text-base font-bold text-white bg-ac shadow-floating hover:bg-acd hover:-translate-y-1 transition-all no-underline"
+        >
+          <i data-lucide="chrome" class="w-5 h-5"></i>
+          <span data-i18n="hero_cta">Add to Chrome</span>
+        </a>
+        <a
+          href="https://github.com/gandli/ai-proofduck-extension"
+          target="_blank"
+          class="inline-flex items-center gap-2.5 px-10 py-4 rounded-2xl text-base font-bold text-t1 bg-white border border-bdl hover:border-ac hover:text-ac hover:bg-acg transition-all no-underline shadow-sm"
+        >
+          <i data-lucide="github" class="w-5 h-5"></i>
+          <span>GitHub</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <section id="features" class="relative z-10 py-32 px-6 scroll-mt-20">
+    <div class="max-w-[1200px] mx-auto">
+      <div class="text-center mb-20 animate-fade-up">
+        <h2
+          class="text-4xl md:text-5xl font-black tracking-tight mb-4"
+          data-i18n="feat_h"
+        >
+          Refine Your Voice
+        </h2>
+        <p class="text-t2 text-lg max-w-2xl mx-auto" data-i18n="feat_p">
+          Five intelligent modes engineered to perfect your writing while
+          keeping your data strictly local.
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+        <div
+          class="group bg-white/40 backdrop-blur-sm border border-bdl rounded-[24px] p-8 text-center hover:bg-white hover:border-acg hover:-translate-y-2 hover:shadow-premium transition-all duration-500 animate-fade-up"
+        >
+          <div
+            class="w-14 h-14 rounded-2xl mx-auto mb-6 flex items-center justify-center bg-acg border border-acg group-hover:scale-110 group-hover:bg-ac group-hover:text-white transition-all duration-500"
+          >
+            <i data-lucide="file-text" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-bold mb-3 tracking-tight" data-i18n="f1t">
+            Summarize
+          </h3>
+          <p
+            class="text-[13px] text-t2 leading-relaxed font-medium"
+            data-i18n="f1d"
+          >
+            Extract core intelligence and grasp the main idea instantly.
+          </p>
+        </div>
+        <div
+          class="group bg-white/40 backdrop-blur-sm border border-bdl rounded-[24px] p-8 text-center hover:bg-white hover:border-acg hover:-translate-y-2 hover:shadow-premium transition-all duration-500 animate-fade-up"
+          style="animation-delay: 0.1s;"
+        >
+          <div
+            class="w-14 h-14 rounded-2xl mx-auto mb-6 flex items-center justify-center bg-acg border border-acg group-hover:scale-110 group-hover:bg-ac group-hover:text-white transition-all duration-500"
+          >
+            <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-bold mb-3 tracking-tight" data-i18n="f2t">
+            Proofread
+          </h3>
+          <p
+            class="text-[13px] text-t2 leading-relaxed font-medium"
+            data-i18n="f2d"
+          >
+            Precision syntax, grammar, and punctuation error correction.
+          </p>
+        </div>
+        <div
+          class="group bg-white/40 backdrop-blur-sm border border-bdl rounded-[24px] p-8 text-center hover:bg-white hover:border-acg hover:-translate-y-2 hover:shadow-premium transition-all duration-500 animate-fade-up"
+          style="animation-delay: 0.2s;"
+        >
+          <div
+            class="w-14 h-14 rounded-2xl mx-auto mb-6 flex items-center justify-center bg-acg border border-acg group-hover:scale-110 group-hover:bg-ac group-hover:text-white transition-all duration-500"
+          >
+            <i data-lucide="sparkles" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-bold mb-3 tracking-tight" data-i18n="f3t">
+            Polish
+          </h3>
+          <p
+            class="text-[13px] text-t2 leading-relaxed font-medium"
+            data-i18n="f3d"
+          >
+            Elevate expressions for more professional and fluid writing.
+          </p>
+        </div>
+        <div
+          class="group bg-white/40 backdrop-blur-sm border border-bdl rounded-[24px] p-8 text-center hover:bg-white hover:border-acg hover:-translate-y-2 hover:shadow-premium transition-all duration-500 animate-fade-up"
+          style="animation-delay: 0.3s;"
+        >
+          <div
+            class="w-14 h-14 rounded-2xl mx-auto mb-6 flex items-center justify-center bg-acg border border-acg group-hover:scale-110 group-hover:bg-ac group-hover:text-white transition-all duration-500"
+          >
+            <i data-lucide="languages" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-bold mb-3 tracking-tight" data-i18n="f4t">
+            Translate
+          </h3>
+          <p
+            class="text-[13px] text-t2 leading-relaxed font-medium"
+            data-i18n="f4d"
+          >
+            Context-aware translation across all major global languages.
+          </p>
+        </div>
+        <div
+          class="group bg-white/40 backdrop-blur-sm border border-bdl rounded-[24px] p-8 text-center hover:bg-white hover:border-acg hover:-translate-y-2 hover:shadow-premium transition-all duration-500 animate-fade-up"
+          style="animation-delay: 0.4s;"
+        >
+          <div
+            class="w-14 h-14 rounded-2xl mx-auto mb-6 flex items-center justify-center bg-acg border border-acg group-hover:scale-110 group-hover:bg-ac group-hover:text-white transition-all duration-500"
+          >
+            <i data-lucide="book-open" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-bold mb-3 tracking-tight" data-i18n="f5t">
+            Expand
+          </h3>
+          <p
+            class="text-[13px] text-t2 leading-relaxed font-medium"
+            data-i18n="f5d"
+          >
+            Deepen content with intelligent detail and logical extensions.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="relative z-10 py-32 px-6 bg-bg2/50 backdrop-blur-sm">
+    <div class="max-w-[1200px] mx-auto">
+      <div class="text-center mb-20 animate-fade-up">
+        <h2
+          class="text-4xl md:text-5xl font-black tracking-tight mb-4"
+          data-i18n="how_h"
+        >
+          Effortless Workflow
+        </h2>
+        <p class="text-t2 text-md font-medium" data-i18n="how_p">
+          Seamlessly integrated into your browser with zero configuration.
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+        <div class="text-center relative animate-fade-up">
+          <div
+            class="w-12 h-12 rounded-full bg-t1 text-white flex items-center justify-center text-xl font-bold mx-auto mb-6 shadow-lg rotate-[-5deg]"
+          >
+            1
+          </div>
+          <h3 class="text-xl font-bold mb-3 tracking-tight" data-i18n="s1t">
+            Select Text
+          </h3>
+          <p
+            class="text-t2 text-sm px-4 font-medium leading-relaxed"
+            data-i18n="s1d"
+          >
+            Highlight any text fragment you wish to transform on any webpage.
+          </p>
+          <div
+            class="hidden md:block absolute top-6 -right-6 text-ac/20 w-12 h-px bg-current"
+          >
+          </div>
+        </div>
+        <div
+          class="text-center relative animate-fade-up"
+          style="animation-delay: 0.1s;"
+        >
+          <div
+            class="w-12 h-12 rounded-full bg-t1 text-white flex items-center justify-center text-xl font-bold mx-auto mb-6 shadow-lg"
+          >
+            2
+          </div>
+          <h3 class="text-xl font-bold mb-3 tracking-tight" data-i18n="s2t">
+            Choose Mode
+          </h3>
+          <p
+            class="text-t2 text-sm px-4 font-medium leading-relaxed"
+            data-i18n="s2d"
+          >
+            Access five distinct AI modes via the context menu or keyboard.
+          </p>
+          <div
+            class="hidden md:block absolute top-6 -right-6 text-ac/20 w-12 h-px bg-current"
+          >
+          </div>
+        </div>
+        <div
+          class="text-center relative animate-fade-up"
+          style="animation-delay: 0.2s;"
+        >
+          <div
+            class="w-12 h-12 rounded-full bg-ac text-white flex items-center justify-center text-xl font-bold mx-auto mb-6 shadow-lg rotate-[5deg]"
+          >
+            3
+          </div>
+          <h3 class="text-xl font-bold mb-3 tracking-tight" data-i18n="s3t">
+            Get Results
+          </h3>
+          <p
+            class="text-t2 text-sm px-4 font-medium leading-relaxed"
+            data-i18n="s3d"
+          >
+            The sidepanel opens instantly with your AI-refined content.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="engines" class="relative z-10 py-32 px-6 scroll-mt-20">
+    <div class="max-w-[1200px] mx-auto">
+      <div class="text-center mb-20 animate-fade-up">
+        <h2
+          class="text-4xl md:text-5xl font-black tracking-tight mb-4"
+          data-i18n="eng_h"
+        >
+          Hybrid Intelligence
+        </h2>
+        <p class="text-t2 text-lg font-medium" data-i18n="eng_p">
+          Uncompromised privacy with three high-performance architectures.
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div
+          class="group bg-white border border-bdl rounded-3xl p-10 text-center shadow-sm hover:border-acg hover:-translate-y-2 hover:shadow-premium transition-all duration-500 animate-fade-up"
+        >
+          <div
+            class="w-12 h-12 bg-acg rounded-xl flex items-center justify-center mx-auto mb-6 group-hover:bg-ac group-hover:text-white transition-colors duration-500"
+          >
+            <i data-lucide="zap" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-3 tracking-tight">WebGPU</h3>
+          <p
+            class="text-sm text-t2 mb-6 font-medium leading-relaxed"
+            data-i18n="e1d"
+          >
+            Native hardware acceleration for maximum local speed.
+          </p>
+          <span
+            class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-ok text-[10px] font-bold uppercase tracking-widest"
+          >
+            <i data-lucide="shield-check" class="w-3 h-3"></i>
+            <span data-i18n="e_loc">Fully Local</span>
+          </span>
+        </div>
+        <div
+          class="group bg-white border border-bdl rounded-3xl p-10 text-center shadow-sm hover:border-acg hover:-translate-y-2 hover:shadow-premium transition-all duration-500 animate-fade-up"
+          style="animation-delay: 0.1s;"
+        >
+          <div
+            class="w-12 h-12 bg-acg rounded-xl flex items-center justify-center mx-auto mb-6 group-hover:bg-ac group-hover:text-white transition-colors duration-500"
+          >
+            <i data-lucide="cpu" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-3 tracking-tight">WASM</h3>
+          <p
+            class="text-sm text-t2 mb-6 font-medium leading-relaxed"
+            data-i18n="e2d"
+          >
+            Reliable CPU inference with universal compatibility.
+          </p>
+          <span
+            class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-ok text-[10px] font-bold uppercase tracking-widest"
+          >
+            <i data-lucide="shield-check" class="w-3 h-3"></i>
+            <span data-i18n="e_loc">Fully Local</span>
+          </span>
+        </div>
+        <div
+          class="group bg-white border border-bdl rounded-3xl p-10 text-center shadow-sm hover:border-acg hover:-translate-y-2 hover:shadow-premium transition-all duration-500 animate-fade-up"
+          style="animation-delay: 0.2s;"
+        >
+          <div
+            class="w-12 h-12 bg-acg rounded-xl flex items-center justify-center mx-auto mb-6 group-hover:bg-ac group-hover:text-white transition-colors duration-500"
+          >
+            <i data-lucide="cloud" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-3 tracking-tight">External API</h3>
+          <p
+            class="text-sm text-t2 mb-6 font-medium leading-relaxed"
+            data-i18n="e3d"
+          >
+            Leverage frontier models with secure API integrations.
+          </p>
+          <span
+            class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-500 text-[10px] font-bold uppercase tracking-widest"
+          >
+            <i data-lucide="globe" class="w-3 h-3"></i>
+            <span data-i18n="e_cld">User Controlled</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section
+    id="screenshots"
+    class="relative z-10 py-32 px-6 bg-bg2/50 scroll-mt-20"
+  >
+    <div class="max-w-[1200px] mx-auto">
+      <div class="text-center mb-20 animate-fade-up">
+        <h2
+          class="text-4xl md:text-5xl font-black tracking-tight mb-4"
+          data-i18n="ss_h"
+        >
+          Visual Experience
+        </h2>
+        <p class="text-t2 text-lg font-medium" data-i18n="ss_p">
+          Crafted for focus, designed for perfection.
+        </p>
+      </div>
+      <div
+        class="relative max-w-4xl mx-auto rounded-[32px] overflow-hidden shadow-floating border-8 border-white/50"
+      >
+        <div class="hidden animate-[fade-in_0.5s] relative slide">
+          <img
+            src="images/screenshots/screenshot-en-summarize.png"
+            alt="Summarize feature"
+            class="w-full block"
+          />
+        </div>
+        <div class="hidden animate-[fade-in_0.5s] relative slide">
+          <img
+            src="images/screenshots/screenshot-en-translate.png"
+            alt="Translate feature"
+            class="w-full block"
+          />
+        </div>
+        <div class="hidden animate-[fade-in_0.5s] relative slide">
+          <img
+            src="images/screenshots/screenshot-zh-proofread.png"
+            alt="Proofread feature"
+            class="w-full block"
+          />
+        </div>
+        <div class="hidden animate-[fade-in_0.5s] relative slide">
+          <img
+            src="images/screenshots/screenshot-zh-settings.png"
+            alt="Settings"
+            class="w-full block"
+          />
+        </div>
+        <div class="hidden animate-[fade-in_0.5s] relative slide">
+          <img
+            src="images/screenshots/screenshot-zh-translate.png"
+            alt="Translate feature"
+            class="w-full block"
+          />
+        </div>
+        <a
+          class="absolute top-1/2 -mt-[30px] w-12 h-12 flex items-center justify-center text-white bg-black/20 hover:bg-ac backdrop-blur-md transition-all cursor-pointer select-none z-10 rounded-full left-6"
+          onclick="changeSlide(-1)"
+          ><i data-lucide="chevron-left" class="w-6 h-6"></i></a
+        >
+        <a
+          class="absolute top-1/2 -mt-[30px] w-12 h-12 flex items-center justify-center text-white bg-black/20 hover:bg-ac backdrop-blur-md transition-all cursor-pointer select-none z-10 rounded-full right-6"
+          onclick="changeSlide(1)"
+          ><i data-lucide="chevron-right" class="w-6 h-6"></i></a
+        >
+      </div>
+      <div class="flex justify-center gap-3 mt-10">
+        <span
+          class="dot w-2 h-2 rounded-full bg-t1/10 cursor-pointer transition-all hover:bg-ac active:w-6 active:bg-ac active:rounded-full"
+          onclick="currentSlide(1)"></span>
+        <span
+          class="dot w-2 h-2 rounded-full bg-t1/10 cursor-pointer transition-all hover:bg-ac active:w-6 active:bg-ac active:rounded-full"
+          onclick="currentSlide(2)"></span>
+        <span
+          class="dot w-2 h-2 rounded-full bg-t1/10 cursor-pointer transition-all hover:bg-ac active:w-6 active:bg-ac active:rounded-full"
+          onclick="currentSlide(3)"></span>
+        <span
+          class="dot w-2 h-2 rounded-full bg-t1/10 cursor-pointer transition-all hover:bg-ac active:w-6 active:bg-ac active:rounded-full"
+          onclick="currentSlide(4)"></span>
+        <span
+          class="dot w-2 h-2 rounded-full bg-t1/10 cursor-pointer transition-all hover:bg-ac active:w-6 active:bg-ac active:rounded-full"
+          onclick="currentSlide(5)"></span>
+      </div>
+    </div>
+  </section>
+
+  <section id="changelog" class="relative z-10 py-24 px-6 scroll-mt-20">
+    <div class="max-w-[1100px] mx-auto">
+      <div class="text-center mb-16 animate-fade-up">
+        <h2
+          class="text-4xl font-extrabold tracking-tight mb-3"
+          data-i18n="changelog_h"
+        >
+          Changelog
+        </h2>
+        <p class="text-t2 text-lg" data-i18n="changelog_p">
+          Evolving constantly for a better writing experience
+        </p>
+      </div>
+
+      <div class="max-w-[800px] mx-auto py-5">
+        <div
+          class="bg-bg2 border border-b1 rounded-[20px] p-8 mb-8 shadow-premium animate-fade-up"
+        >
+          <div class="flex items-center gap-3 mb-6 border-b border-b1 pb-4">
+            <span
+              class="bg-ac text-white px-3 py-1 rounded-full font-bold text-[0.9rem]"
+              >v0.1.0</span
+            >
+            <span class="text-t2 text-[0.9rem] font-medium">2026-02-14</span>
+          </div>
+
+          <div class="space-y-6">
+            <div>
+              <h4
+                class="text-base mb-3 pl-3 border-l-4 border-ac font-bold"
+                data-i18n="cl_added"
+              >
+                Added
+              </h4>
+              <ul class="space-y-2.5">
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                  data-i18n="cl_v010_a1"
+                >
+                  <strong>Astro Migration</strong>: Migrated site to Astro
+                  framework with component-based refactoring for better
+                  performance.
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                  data-i18n="cl_v010_a2"
+                >
+                  <strong>Playwright E2E Tests</strong>: Built testing framework
+                  covering core scenarios like language switching.
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                  data-i18n="cl_v010_a3"
+                >
+                  <strong>Interntionalization (I18n)</strong>: Full
+                  English/Chinese support for both landing page and extension.
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                  data-i18n="cl_v010_a4"
+                >
+                  <strong>Settings Persistence</strong>: User preferences are
+                  now automatically saved across sessions.
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                  data-i18n="cl_v010_a5"
+                >
+                  <strong>Word Count</strong>: Editor now supports real-time
+                  word counting.
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                  data-i18n="cl_v010_a6"
+                >
+                  <strong>Clear Button</strong>: Added a shortcut to clear all
+                  input content.
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                  data-i18n="cl_v010_a7"
+                >
+                  <strong>New Landing Page</strong>: Introduced smooth
+                  scrolling, view transitions, and responsive layout.
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                  data-i18n="cl_v010_a8"
+                >
+                  <strong>Privacy Policy</strong>: Independent privacy policy
+                  page, clear and transparent.
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                  data-i18n="cl_v010_a9"
+                >
+                  <strong>Store Assets</strong>: Completed full set of
+                  promotional screenshots for Chrome Web Store.
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4
+                class="text-base mb-3 pl-3 border-l-4 border-amber-500 font-bold"
+                data-i18n="cl_changed"
+              >
+                Changed
+              </h4>
+              <ul class="space-y-2.5">
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                  data-i18n="cl_v010_c1"
+                >
+                  <strong>UI Refactor</strong>: Sidepanel now distinguishes
+                  between "Proofread" and "Rewrite" modes.
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                  data-i18n="cl_v010_c2"
+                >
+                  <strong>State Management</strong>: Optimized settings logic
+                  for faster responsiveness.
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                  data-i18n="cl_v010_c3"
+                >
+                  <strong>Build System</strong>: Configured WXT build flow for
+                  production-grade extension packaging.
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4
+                class="text-base mb-3 pl-3 border-l-4 border-emerald-500 font-bold"
+                data-i18n="cl_fixed"
+              >
+                Fixed
+              </h4>
+              <ul class="space-y-2.5">
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                  data-i18n="cl_v010_f1"
+                >
+                  <strong>Environment Detection</strong>: Fixed initialization
+                  issues during environment check.
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                  data-i18n="cl_v010_f2"
+                >
+                  <strong>Style Optimization</strong>: Fixed layout misalignment
+                  on certain screen sizes.
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                  data-i18n="cl_v010_f3"
+                >
+                  <strong>I18n Fixes</strong>: Fixed language persistence and UI
+                  synchronization across pages.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="text-center mb-16 animate-fade-up">
+    <h2 class="text-4xl font-extrabold tracking-tight mb-3" data-i18n="priv_h">
+      Privacy Policy
+    </h2>
+    <p class="text-t2 mb-6" data-i18n="priv_date">
+      Last Updated: February 2026
+    </p>
+  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-[1200px] mx-auto">
+    <div
+      class="bg-white border border-b1 rounded-3xl p-8 transition-all animate-fade-up"
+    >
+      <div class="flex items-center gap-4 mb-5">
+        <div
+          class="w-12 h-12 flex items-center justify-center text-2xl rounded-xl shrink-0 bg-gradient-to-br from-green-400/15 to-green-400/5 border-2 border-green-400/25"
+        >
+          🛡️
+        </div>
+        <h3 class="text-xl font-bold" data-i18n="pd1h">Data Collection</h3>
+      </div>
+      <p class="text-t2 leading-relaxed mb-3" data-i18n="pd1a">
+        AI Proofduck commitment: <strong
+          >We do not collect, read, or store any of your personal information.</strong
+        >
+      </p>
+      <p class="text-t2 leading-relaxed mb-3" data-i18n="pd1b">
+        Our extension is designed to provide high-quality proofreading and
+        writing assistance while protecting user privacy. All operations are
+        performed locally on your device or via secure user-configured APIs,
+        without sending personal data to our servers.
+      </p>
+      <div class="mt-5 p-3 px-4 bg-bg2 rounded-xl border-l-4 border-ac">
+        <p class="m-0 font-bold text-t1 text-[0.95rem]">
+          ✨ <span data-i18n="pd1c">Your data always belongs to you</span>
+        </p>
+      </div>
+    </div>
+
+    <div
+      class="bg-white border border-b1 rounded-3xl p-8 transition-all animate-fade-up"
+      style="animation-delay: 0.1s;"
+    >
+      <div class="flex items-center gap-4 mb-5">
+        <div
+          class="w-12 h-12 flex items-center justify-center text-2xl rounded-xl shrink-0 bg-gradient-to-br from-yellow-500/15 to-yellow-500/5 border-2 border-yellow-500/25"
+        >
+          🔑
+        </div>
+        <h3 class="text-xl font-bold" data-i18n="pd2h">API & Model Security</h3>
+      </div>
+      <p class="text-t2 leading-relaxed mb-3" data-i18n="pd2a">
+        This extension uses local AI models (WebLLM) or Google Gemini API for
+        intelligent text processing.
+      </p>
+      <ul class="space-y-2.5">
+        <li
+          class="text-t2 text-[0.9rem] flex gap-2 before:content-['→'] before:text-ac before:font-bold"
+          data-i18n="pd2l1"
+        >
+          Your API keys are stored only in your browser's local storage
+        </li>
+        <li
+          class="text-t2 text-[0.9rem] flex gap-2 before:content-['→'] before:text-ac before:font-bold"
+          data-i18n="pd2l2"
+        >
+          API requests are sent directly from your device to Google servers (if
+          using Gemini API)
+        </li>
+        <li
+          class="text-t2 text-[0.9rem] flex gap-2 before:content-['→'] before:text-ac before:font-bold"
+          data-i18n="pd2l3"
+        >
+          We do not collect, transmit, or store your API keys or model
+          configurations
+        </li>
+        <li
+          class="text-t2 text-[0.9rem] flex gap-2 before:content-['→'] before:text-ac before:font-bold"
+          data-i18n="pd2l4"
+        >
+          You can delete or change your API keys and model settings at any time
+        </li>
+      </ul>
+    </div>
+
+    <div
+      class="bg-white border border-b1 rounded-3xl p-8 transition-all animate-fade-up"
+      style="animation-delay: 0.2s;"
+    >
+      <div class="flex items-center gap-4 mb-5">
+        <div
+          class="w-12 h-12 flex items-center justify-center text-2xl rounded-xl shrink-0 bg-gradient-to-br from-red-500/15 to-red-500/5 border-2 border-red-500/25"
+        >
+          🔒
+        </div>
+        <h3 class="text-xl font-bold" data-i18n="pd3h">
+          Information We Never Collect
+        </h3>
+      </div>
+      <p class="text-t2 leading-relaxed mb-3" data-i18n="pd3a">
+        To be clear about our commitment to privacy, here is the information we <strong
+          >never collect</strong
+        >:
+      </p>
+      <ul class="space-y-2.5">
+        <li
+          class="text-t2 text-[0.9rem] flex gap-2 before:content-['→'] before:text-ac before:font-bold"
+          data-i18n="pd3l1"
+        >
+          Your personally identifiable information
+        </li>
+        <li
+          class="text-t2 text-[0.9rem] flex gap-2 before:content-['→'] before:text-ac before:font-bold"
+          data-i18n="pd3l2"
+        >
+          Your browsing history or visited websites
+        </li>
+        <li
+          class="text-t2 text-[0.9rem] flex gap-2 before:content-['→'] before:text-ac before:font-bold"
+          data-i18n="pd3l3"
+        >
+          Text content you proofread or rewrite
+        </li>
+        <li
+          class="text-t2 text-[0.9rem] flex gap-2 before:content-['→'] before:text-ac before:font-bold"
+          data-i18n="pd3l4"
+        >
+          Your IP address or geolocation
+        </li>
+        <li
+          class="text-t2 text-[0.9rem] flex gap-2 before:content-['→'] before:text-ac before:font-bold"
+          data-i18n="pd3l5"
+        >
+          Your API keys or tokens
+        </li>
+        <li
+          class="text-t2 text-[0.9rem] flex gap-2 before:content-['→'] before:text-ac before:font-bold"
+          data-i18n="pd3l6"
+        >
+          Any device or system information except general diagnostics
+        </li>
+      </ul>
+    </div>
+
+    <div
+      class="bg-white border border-b1 rounded-3xl p-8 transition-all animate-fade-up"
+      style="animation-delay: 0.3s;"
+    >
+      <div class="flex items-center gap-4 mb-5">
+        <div
+          class="w-12 h-12 flex items-center justify-center text-2xl rounded-xl shrink-0 bg-gradient-to-br from-purple-500/15 to-purple-500/5 border-2 border-purple-500/25"
+        >
+          🛠️
+        </div>
+        <h3 class="text-xl font-bold" data-i18n="pd4h">Browser Permissions</h3>
+      </div>
+      <p class="text-t2 leading-relaxed mb-3" data-i18n="pd4a">
+        This extension requires the following permissions to function:
+      </p>
+      <ul class="space-y-2.5">
+        <li
+          class="text-t2 text-[0.9rem] flex gap-2 before:content-['→'] before:text-ac before:font-bold"
+          data-i18n="pd4l1"
+        >
+          <strong>storage</strong>: Saves your settings, API keys, and language
+          preferences locally
+        </li>
+        <li
+          class="text-t2 text-[0.9rem] flex gap-2 before:content-['→'] before:text-ac before:font-bold"
+          data-i18n="pd4l2"
+        >
+          <strong>sidePanel</strong>: Displays results in the browser's
+          sidepanel
+        </li>
+        <li
+          class="text-t2 text-[0.9rem] flex gap-2 before:content-['→'] before:text-ac before:font-bold"
+          data-i18n="pd4l3"
+        >
+          <strong>activeTab</strong>: Reads selected text for processing
+        </li>
+        <li
+          class="text-t2 text-[0.9rem] flex gap-2 before:content-['→'] before:text-ac before:font-bold"
+          data-i18n="pd4l4"
+        >
+          <strong>contextMenus</strong>: Adds quick actions to the context menu
+        </li>
+      </ul>
+      <p class="text-t2 text-sm mt-3" data-i18n="pd4b">
+        These permissions are used only for core features and never for data
+        collection or tracking.
+      </p>
+    </div>
+
+    <div
+      class="bg-white border border-b1 rounded-3xl p-8 transition-all animate-fade-up"
+      style="animation-delay: 0.4s;"
+    >
+      <div class="flex items-center gap-4 mb-5">
+        <div
+          class="w-12 h-12 flex items-center justify-center text-2xl rounded-xl shrink-0 bg-gradient-to-br from-orange-500/15 to-orange-500/5 border-2 border-orange-500/25"
+        >
+          ⏳
+        </div>
+        <h3 class="text-xl font-bold" data-i18n="pd5h">
+          Data Retention & Rights
+        </h3>
+      </div>
+      <p class="text-t2 leading-relaxed mb-1 font-bold">Data Retention:</p>
+      <ul class="space-y-1.5 mb-4">
+        <li
+          class="text-t2 text-[0.9rem] flex gap-2 before:content-['→'] before:text-ac before:font-bold"
+          data-i18n="pd5l1"
+        >
+          All data (settings, API keys) is stored only in your browser's local
+          storage
+        </li>
+        <li
+          class="text-t2 text-[0.9rem] flex gap-2 before:content-['→'] before:text-ac before:font-bold"
+          data-i18n="pd5l2"
+        >
+          Processed text content is cleared from memory immediately after
+          processing
+        </li>
+        <li
+          class="text-t2 text-[0.9rem] flex gap-2 before:content-['→'] before:text-ac before:font-bold"
+          data-i18n="pd5l3"
+        >
+          All local data is automatically deleted when the extension is
+          uninstalled
+        </li>
+      </ul>
+      <p class="text-t2 leading-relaxed mb-1 font-bold">Your Rights:</p>
+      <ul class="space-y-1.5">
+        <li
+          class="text-t2 text-[0.9rem] flex gap-2 before:content-['→'] before:text-ac before:font-bold"
+          data-i18n="pd5l4"
+        >
+          View, modify, or delete your configuration in settings at any time
+        </li>
+        <li
+          class="text-t2 text-[0.9rem] flex gap-2 before:content-['→'] before:text-ac before:font-bold"
+          data-i18n="pd5l5"
+        >
+          Switch between inference engines anytime
+        </li>
+        <li
+          class="text-t2 text-[0.9rem] flex gap-2 before:content-['→'] before:text-ac before:font-bold"
+          data-i18n="pd5l6"
+        >
+          Uninstall the extension to completely clear all data
+        </li>
+      </ul>
+    </div>
+
+    <div
+      class="bg-white border border-b1 rounded-3xl p-8 transition-all animate-fade-up"
+      style="animation-delay: 0.4s;"
+    >
+      <div class="flex items-center gap-5 mb-8">
+        <div
+          class="w-14 h-14 flex items-center justify-center rounded-2xl shrink-0 bg-blue-500/5 border border-blue-500/10 text-blue-500"
+        >
+          <i data-lucide="globe" class="w-7 h-7"></i>
+        </div>
+        <h3 class="text-2xl font-black tracking-tight" data-i18n="pd6h">
+          External Entities
+        </h3>
+      </div>
+      <p class="text-t2 leading-relaxed mb-6 font-medium" data-i18n="pd6a">
+        If you opt for Online API mode, text is transmitted to your selected
+        provider.
+      </p>
+      <ul class="space-y-4">
+        <li
+          class="text-t2 text-sm font-semibold flex items-center gap-3 opacity-90"
+        >
+          <i data-lucide="external-link" class="w-4 h-4 text-ac"></i>
+          <a
+            href="https://policies.google.com/privacy"
+            target="_blank"
+            class="text-ac no-underline hover:underline"
+            >Google Gemini Privacy Policy</a
+          >
+        </li>
+        <li
+          class="text-t2 text-xs font-medium opacity-60 italic"
+          data-i18n="pd6l3"
+        >
+          We recommend reviewing third-party policies prior to use.
+        </li>
+      </ul>
+    </div>
+
+    <div
+      class="bg-white border border-bdl rounded-[32px] p-10 transition-all animate-fade-up lg:col-span-2 shadow-sm"
+      style="animation-delay: 0.6s;"
+    >
+      <div class="flex items-center gap-5 mb-8">
+        <div
+          class="w-14 h-14 flex items-center justify-center rounded-2xl shrink-0 bg-black/5 border border-bdl text-t1 font-bold"
+        >
+          <i data-lucide="message-square" class="w-7 h-7"></i>
+        </div>
+        <h3 class="text-2xl font-black tracking-tight" data-i18n="pd7h">
+          Communication
+        </h3>
+      </div>
+      <p class="text-t2 leading-relaxed mb-6 font-medium" data-i18n="pd7a">
+        Security inquiries or suggestions? Submit an issue on our GitHub
+        repository.
+      </p>
+      <div
+        class="flex items-center gap-2 p-3 px-5 bg-black/5 rounded-2xl w-fit"
+      >
+        <i data-lucide="info" class="w-4 h-4 text-t1/40"></i>
+        <p class="text-[11px] font-bold text-t2 uppercase tracking-wide m-0">
+          <span data-i18n="pd7b">Policy Updates:</span> Periodic updates via release
+          notes.
+        </p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<!-- <Footer /> -->
+
+<!-- Gallery Modal -->
+<div
+  id="galleryModal"
+  class="hidden fixed inset-0 z-[9999] pt-[60px] overflow-auto bg-black/95"
+>
+  <span
+    class="fixed top-5 right-10 text-white text-5xl font-bold transition-colors cursor-pointer z-[10000] hover:text-ac"
+    onclick="closeGallery()">&times;</span
+  >
+  <img
+    class="m-auto block max-w-[90%] max-h-[80vh] rounded-lg animate-[zoom_0.3s]"
+    id="galleryImg"
+  />
+  <div
+    class="m-auto block w-4/5 max-w-[700px] text-center text-[#ccc] py-4 text-base"
+    id="galleryCaption"
+  >
+  </div>
+  <a
+    class="absolute top-1/2 -mt-[50px] p-4 text-white font-bold text-3xl bg-ac/30 hover:bg-ac/80 transition-all cursor-pointer select-none rounded-r left-0"
+    onclick="changeImage(-1)">&#10094;</a
+  >
+  <a
+    class="absolute top-1/2 -mt-[50px] p-4 text-white font-bold text-3xl bg-ac/30 hover:bg-ac/80 transition-all cursor-pointer select-none rounded-l right-0"
+    onclick="changeImage(1)">&#10095;</a
+  >
+</div>
+
+<Footer />

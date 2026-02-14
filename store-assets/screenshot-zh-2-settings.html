@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><style>*{margin:0;padding:0;box-sizing:border-box}
+body{width:1280px;height:800px;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f0f0;display:flex;flex-direction:column}
+.chrome{background:#e8e8e8;padding:10px 12px 0;display:flex;flex-direction:column}
+.dots{display:flex;gap:6px;margin-bottom:8px;align-items:center}
+.dot{width:12px;height:12px;border-radius:50%}
+.d-r{background:#ff5f57}.d-y{background:#febc2e}.d-g{background:#28c840}
+.tab-bar{display:flex;gap:2px;padding-left:60px}
+.tab{background:#fff;padding:8px 20px;border-radius:8px 8px 0 0;font-size:12px;color:#333;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tab.active{background:#fff}
+.tab.inactive{background:#ddd;color:#888}
+.addr-bar{background:#fff;border-radius:8px;padding:6px 14px;font-size:12px;color:#666;margin:0 0 0 0}
+.browser-body{flex:1;display:flex;background:#fff;overflow:hidden}
+.webpage{flex:1;overflow:hidden;padding:32px 40px;line-height:1.8;color:#333;font-size:15px}
+.webpage h1{font-size:24px;font-weight:700;margin-bottom:16px;color:#111}
+.webpage p{margin-bottom:14px;color:#444}
+.highlight{background:rgba(255,90,17,.15);border-bottom:2px solid #FF5A11;padding:1px 0}
+.sidepanel{width:360px;background:#fbfbfb;border-left:1px solid #e2e8f0;display:flex;flex-direction:column;font-size:13px}
+.sp-mode{display:flex;background:#FFF5EB;padding:4px;border-radius:8px;gap:4px;margin:12px}
+.sp-btn{flex:1;padding:7px 2px;border:none;background:transparent;border-radius:6px;font-size:11px;font-weight:600;color:#4a5568;text-align:center}
+.sp-btn.active{background:#fff;color:#FF5A11;box-shadow:0 2px 4px rgba(0,0,0,.05)}
+.sp-content{flex:1;padding:0 12px;overflow:hidden}
+.sp-label{font-size:11px;color:#718096;font-weight:600;margin:12px 0 6px}
+.sp-box{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px;font-size:13px;line-height:1.6;color:#4a5568;min-height:60px;white-space:pre-wrap}
+.sp-box.result{border-color:#FF5A11;background:#FFF5EB}
+.sp-footer{padding:12px}
+.sp-action{width:100%;padding:12px;background:#FF5A11;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:13px}
+.sp-settings-btn{padding:0 10px;color:#718096;background:#FFF5EB;border:none;border-radius:8px;display:flex;align-items:center;cursor:pointer;font-size:14px}
+.sp-mode-wrap{display:flex;gap:6px;margin:12px 12px 0}
+
+.settings-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;z-index:10}
+.settings-panel{width:360px;margin-left:auto;background:#fbfbfb;border-radius:20px 20px 0 0;padding:20px 16px;max-height:70%;overflow-y:auto;box-shadow:0 -10px 25px rgba(0,0,0,.1)}
+.s-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.s-header h2{font-size:18px;font-weight:800}
+.s-close{width:28px;height:28px;border-radius:50%;background:#edf2f7;border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#718096}
+.s-group{background:#fff;padding:14px;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:12px}
+.s-group h3{font-size:13px;font-weight:700;color:#2d3748;margin-bottom:10px}
+.s-field{margin-bottom:10px}
+.s-field label{font-size:10px;color:#718096;font-weight:600;text-transform:uppercase;display:block;margin-bottom:4px}
+.s-field select,.s-field input{width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;background:#f8fafc}
+.s-save{width:100%;padding:10px;background:#FF5A11;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:13px;margin-top:4px}
+</style></head><body style="position:relative">
+<div class="chrome">
+    <div class="dots"><div class="dot d-r"></div><div class="dot d-y"></div><div class="dot d-g"></div><span style="margin-left:12px;font-size:12px;color:#666">AI 校对鸭</span></div>
+    <div style="display:flex;gap:2px">
+        <div class="tab active">关于人工智能的思考</div>
+    </div>
+</div>
+<div class="browser-body">
+    <div class="webpage">
+        <h1>关于人工智能的思考与展望</h1>
+        <p>人工智能技术的快速发展正在深刻地改变着我们的生活和工作方式。</p>
+        <p>从自然语言处理到计算机视觉，从自动驾驶到医疗诊断，AI 技术已经渗透到了各个行业和领域。</p>
+    </div>
+    <div class="sidepanel" style="position:relative">
+        <div class="sp-mode-wrap">
+            <div class="sp-mode" style="flex:1">
+                <div class="sp-btn">摘要</div>
+                <div class="sp-btn active">校对</div>
+                <div class="sp-btn">润色</div>
+                <div class="sp-btn">翻译</div>
+                <div class="sp-btn">扩写</div>
+            </div>
+            <div class="sp-settings-btn">⚙</div>
+        </div>
+        <div class="settings-overlay">
+            <div class="settings-panel">
+                <div class="s-header"><h2>设置</h2><div class="s-close">✕</div></div>
+                <div class="s-group">
+                    <h3>核心设置</h3>
+                    <div class="s-field"><label>界面语言</label><select><option selected>中文 (简体)</option><option>English</option></select></div>
+                    <div class="s-field"><label>推理引擎</label><select><option selected>WebGPU 本地推理</option><option>WASM 本地推理</option><option>在线 API</option></select></div>
+                    <div class="s-field"><label>本地模型</label><select><option selected>Qwen2.5 0.5B (~380MB)</option><option>Qwen2.5 1.5B (~1.1GB)</option></select></div>
+                </div>
+                <div class="s-group">
+                    <h3>功能偏好</h3>
+                    <div class="s-field"><label>语气风格</label><select><option selected>专业</option><option>休闲</option><option>学术</option></select></div>
+                    <div class="s-field"><label>详细程度</label><select><option selected>标准</option><option>详细</option><option>创意</option></select></div>
+                </div>
+                <button class="s-save">保存设置</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body></html>

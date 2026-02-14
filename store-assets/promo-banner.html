@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1400px;height:560px;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+background:linear-gradient(135deg,#FF5A11 0%,#E04800 40%,#FF854D 100%);display:flex;color:#fff}
+.left{width:560px;display:flex;align-items:center;justify-content:center;padding:40px}
+.mockup{width:320px;background:#fbfbfb;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden;color:#1a1a1a}
+.mock-header{padding:12px;display:flex;gap:4px}
+.mock-mode{display:flex;background:#FFF5EB;padding:4px;border-radius:8px;gap:4px;margin:0 12px 12px}
+.mock-btn{flex:1;padding:6px 2px;border:none;background:transparent;border-radius:6px;font-size:10px;font-weight:600;color:#4a5568;text-align:center}
+.mock-btn.active{background:#fff;color:#FF5A11;box-shadow:0 2px 4px rgba(0,0,0,.05)}
+.mock-content{padding:0 12px 12px}
+.mock-label{font-size:10px;color:#718096;font-weight:600;margin-bottom:6px}
+.mock-box{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:10px;font-size:11px;line-height:1.5;color:#4a5568;margin-bottom:10px;min-height:50px}
+.mock-box.result{border-color:#FF5A11;background:#FFF5EB}
+.mock-footer{padding:12px}
+.mock-btn-action{width:100%;padding:10px;background:#FF5A11;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:12px}
+.right{flex:1;display:flex;flex-direction:column;justify-content:center;padding:60px 80px}
+.right h1{font-size:64px;font-weight:800;letter-spacing:-2px;margin-bottom:8px;text-shadow:0 2px 12px rgba(0,0,0,.15)}
+.right h2{font-size:22px;font-weight:400;opacity:.9;margin-bottom:36px}
+.feat-list{list-style:none;display:flex;flex-direction:column;gap:14px;margin-bottom:36px}
+.feat-list li{font-size:18px;font-weight:500;display:flex;align-items:center;gap:12px}
+.feat-list li::before{content:'\2713';width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);backdrop-filter:blur(4px);padding:10px 24px;border-radius:30px;font-size:16px;font-weight:600;border:1px solid rgba(255,255,255,.25)}
+/* Decorative circles */
+.deco{position:absolute;border-radius:50%;background:rgba(255,255,255,.05)}
+.d1{width:300px;height:300px;top:-80px;right:-60px}
+.d2{width:200px;height:200px;bottom:-40px;left:400px}
+</style></head><body style="position:relative">
+<div class="deco d1"></div><div class="deco d2"></div>
+<div class="left"><div class="mockup">
+    <div class="mock-header"><div style="width:8px;height:8px;border-radius:50%;background:#ff5f57"></div><div style="width:8px;height:8px;border-radius:50%;background:#febc2e"></div><div style="width:8px;height:8px;border-radius:50%;background:#28c840"></div></div>
+    <div class="mock-mode">
+        <div class="mock-btn">&#25688;&#35201;</div>
+        <div class="mock-btn">&#26657;&#23545;</div>
+        <div class="mock-btn active">&#28070;&#33394;</div>
+        <div class="mock-btn">&#32763;&#35793;</div>
+        <div class="mock-btn">&#25193;&#20889;</div>
+    </div>
+    <div class="mock-content">
+        <div class="mock-label">&#21407;&#25991;</div>
+        <div class="mock-box">&#36825;&#31687;&#25991;&#31456;&#30340;&#20869;&#23481;&#38656;&#35201;&#36827;&#19968;&#27493;&#30340;&#20248;&#21270;&#21644;&#28070;&#33394;&#65292;&#20197;&#25552;&#21319;&#25972;&#20307;&#34920;&#36798;&#25928;&#26524;&#12290;</div>
+        <div class="mock-label">&#28070;&#33394;&#32467;&#26524;</div>
+        <div class="mock-box result">&#26412;&#25991;&#20869;&#23481;&#20855;&#26377;&#36827;&#19968;&#27493;&#20248;&#21270;&#30340;&#31354;&#38388;&#65292;&#36890;&#36807;&#31934;&#24515;&#28070;&#33394;&#21487;&#20197;&#26174;&#33879;&#25552;&#21319;&#25972;&#20307;&#34920;&#36798;&#30340;&#27969;&#30021;&#24230;&#19982;&#19987;&#19994;&#24615;&#12290;</div>
+    </div>
+    <div class="mock-footer"><button class="mock-btn-action">&#25191;&#34892;&#28070;&#33394;</button></div>
+</div></div>
+<div class="right">
+    <h1>AI 校对鸭</h1>
+    <h2>AI proofduck</h2>
+    <ul class="feat-list">
+        <li>&#20116;&#22823;&#26234;&#33021;&#27169;&#24335;&#65306;&#25688;&#35201; / &#26657;&#23545; / &#28070;&#33394; / &#32763;&#35793; / &#25193;&#20889;</li>
+        <li>&#19977;&#22823;&#25512;&#29702;&#24341;&#25806;&#65306;WebGPU / WASM / Online API</li>
+        <li>&#23436;&#20840;&#26412;&#22320;&#36816;&#34892;&#65292;&#38646;&#25968;&#25454;&#25910;&#38598;</li>
+    </ul>
+    <div class="badge">&#128274; &#38544;&#31169;&#20248;&#20808; &middot; &#26412;&#22320;&#25512;&#29702;</div>
+</div>
+</body></html>
