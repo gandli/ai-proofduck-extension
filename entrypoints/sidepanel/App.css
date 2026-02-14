@@ -117,7 +117,17 @@ h3 {
   border-color: rgba(255, 90, 17, 0.3);
   background: #fff5eb;
   animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
 }
+
+.text-box.result:focus {
+  border-color: #ff5a11;
+  /* background: white; */
+  box-shadow:
+    0 0 0 4px rgba(255, 90, 17, 0.08),
+    0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
 
 .placeholder {
   color: #cbd5e0;
@@ -542,6 +552,13 @@ textarea.text-box.editable:focus {
     border-color: rgba(255, 90, 17, 0.5);
     background: rgba(255, 90, 17, 0.08);
   }
+
+  .text-box.result:focus {
+    background: #1a1a2e;
+    border-color: #ff7a3d;
+    box-shadow: 0 0 0 4px rgba(255, 122, 61, 0.12);
+  }
+
 
   .placeholder {
     color: #4a5568;

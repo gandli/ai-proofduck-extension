@@ -304,16 +304,44 @@ export default defineContentScript({
       sourceEl.textContent = text;
       statusLabel.textContent = 'TRANSLATING';
 
-      const offset = 8;
-      let left = rect.left + window.scrollX;
-      let top = rect.bottom + window.scrollY + offset;
-
-      const viewportWidth = window.innerWidth;
+      // Smart Positioning with Collision Detection
       const popupWidth = 300;
-      if (left + popupWidth > viewportWidth - 15) {
-        left = viewportWidth - popupWidth - 15;
+      const popupMaxHeight = 310; // Approx max height with content
+      const offset = 8;
+      const margin = 15;
+      
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const scrollY = window.scrollY;
+      const scrollX = window.scrollX;
+
+      let left = rect.left + scrollX;
+      let top = rect.bottom + scrollY + offset;
+
+      // Vertical Check: Try Below first, then Above if no space
+      const spaceBelow = viewportHeight - (rect.bottom - scrollY);
+      const spaceAbove = rect.top - margin;
+      
+      if (spaceBelow < popupMaxHeight + margin && spaceAbove > spaceBelow) {
+        // Show ABOVE
+        top = rect.top + scrollY - popupMaxHeight - offset;
+        // Adjust if it still goes off top
+        if (top < scrollY + margin) top = scrollY + margin;
+      } else {
+        // Show BELOW (default)
+        // Adjust if it goes off bottom
+        if (top + popupMaxHeight > scrollY + viewportHeight - margin) {
+            // If it really doesn't fit, we could refine this further,
+            // but for now, we just cap it to stay inside viewport bottom.
+            top = scrollY + viewportHeight - popupMaxHeight - margin;
+        }
       }
-      if (left < 15) left = 15;
+
+      // Horizontal Check: Center if possible, or snap to edges
+      if (left + popupWidth > scrollX + viewportWidth - margin) {
+        left = scrollX + viewportWidth - popupWidth - margin;
+      }
+      if (left < scrollX + margin) left = scrollX + margin;
 
       translationPopup.style.left = `${left}px`;
       translationPopup.style.top = `${top}px`;
