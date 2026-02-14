@@ -21,19 +21,24 @@ class WebLLMWorker {
         }
 
         if (this.currentModel !== model || this.currentEngineType !== engineType) {
-            this.currentModel = model;
-            this.currentEngineType = engineType;
-
             if (onProgress) {
                 this.engine.setInitProgressCallback(onProgress);
             }
 
             console.log(`[Worker] Loading WebLLM model: ${model} on ${engineType}`);
-            // Note: engineType local-wasm can be hinted via appConfig if needed, 
-            // but MLCEngine usually auto-detects. Forcing wasm requires special config.
-            await this.engine.reload(model, {
-                context_window_size: 8192,
-            });
+            try {
+                await this.engine.reload(model, {
+                    context_window_size: 8192,
+                });
+                // Update state only after successful reload
+                this.currentModel = model;
+                this.currentEngineType = engineType;
+            } catch (error) {
+                // If reload fails, reset internal state so it retries next time
+                this.currentModel = "";
+                this.currentEngineType = "";
+                throw error;
+            }
         }
 
         return this.engine;

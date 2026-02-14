@@ -76,6 +76,15 @@ function App() {
   }, [settings]);
 
   useEffect(() => {
+    // Sync status to local storage so content script can know proactively
+    browser.storage.local.set({ engineStatus: status });
+    return () => {
+      // Best effort to clear status when sidepanel closes
+      browser.storage.local.set({ engineStatus: 'idle' });
+    };
+  }, [status]);
+
+  useEffect(() => {
     // Initialize Worker
     worker.current = new Worker(new URL('./worker.ts', import.meta.url), {
       type: 'module',
@@ -111,10 +120,25 @@ function App() {
           });
         }
       } else if (type === 'error') {
-        const targetMode = event.data.mode!;
-        console.error(`[App] Error in ${targetMode}:`, error);
-        setError(`${targetMode}: ${error ?? 'Unknown error'}`);
-        setGeneratingModes((prev) => ({ ...prev, [targetMode]: false }));
+        const targetMode = event.data.mode;
+        const errorContent = error ?? 'Unknown error';
+        
+        if (!targetMode) {
+          // This is likely a global/loading error
+          console.error('[App] Global/Load Error:', errorContent);
+          setError(`Load Error: ${errorContent}`);
+          setStatus('error');
+          // Reset all generating states on global error
+          setGeneratingModes({
+            proofread: false,
+            rewrite: false,
+            summarize: false
+          });
+        } else {
+          console.error(`[App] Error in ${targetMode}:`, errorContent);
+          setError(`${targetMode}: ${errorContent}`);
+          setGeneratingModes((prev) => ({ ...prev, [targetMode]: false }));
+        }
       }
     };
 
@@ -203,8 +227,14 @@ function App() {
         const currentSettings = settingsRef.current;
         console.log('[App] Received QUICK_TRANSLATE request.');
 
-        if (!worker.current) {
-          console.warn('[App] Worker not initialized for QUICK_TRANSLATE');
+        if (status === 'loading') {
+          console.warn('[App] Engine is still loading, returning ENGINE_LOADING');
+          sendResponse({ error: 'ENGINE_LOADING' });
+          return;
+        }
+
+        if (!worker.current || status === 'idle' || status === 'error') {
+          console.warn('[App] Worker not initialized or engine not ready for QUICK_TRANSLATE');
           // Check why worker is not initialized
           if (currentSettings.engine === 'online' && !currentSettings.apiKey) {
              sendResponse({ error: 'NO_API_KEY' });

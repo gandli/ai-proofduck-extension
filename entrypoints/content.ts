@@ -142,7 +142,7 @@ export default defineContentScript({
       
       sourceEl.textContent = text;
 
-      const showActionUI = (msg: string, btnText: string, onAction: () => void) => {
+      const showActionUI = (msg: string, btnText: string, onAction: () => void | Promise<void>) => {
         translateSection.classList.add('hidden');
         actionSection.classList.remove('hidden');
         if (copyBtn) (copyBtn as HTMLElement).style.visibility = 'hidden';
@@ -168,10 +168,62 @@ export default defineContentScript({
         actionSection.classList.add('hidden');
         if (copyBtn) (copyBtn as HTMLElement).style.visibility = 'visible';
       };
+
+      const handleError = (errorCode: string) => {
+        statusLabel.textContent = 'ACTION REQUIRED';
+        
+        let errorMsg = 'Unknown error.';
+        let btnLabel = 'Check Settings';
+        let onAction: () => void | Promise<void> = async () => {
+          await browser.storage.local.set({ activeTab: 'settings' });
+          browser.runtime.sendMessage({ type: 'OPEN_SIDE_PANEL' });
+          hideTranslation();
+        };
+
+        if (errorCode === 'NO_API_KEY') {
+          errorMsg = 'API Key is missing. Please configure it in settings.';
+          btnLabel = 'Set API Key';
+        } else if (errorCode === 'NO_MODEL') {
+          errorMsg = 'Local model is not selected. Please choose a model.';
+          btnLabel = 'Select Model';
+        } else if (errorCode === 'ENGINE_NOT_READY' || errorCode === 'UNAVAILABLE') {
+          errorMsg = errorCode === 'UNAVAILABLE' 
+            ? 'Translation unavailable. Ensure sidepanel is active.' 
+            : 'Engine is not ready. Open sidepanel to initialize.';
+          btnLabel = 'Open Sidepanel';
+          onAction = async () => {
+            browser.runtime.sendMessage({ type: 'OPEN_SIDE_PANEL' });
+            hideTranslation();
+          };
+        } else if (errorCode === 'ENGINE_LOADING') {
+          errorMsg = 'Initializing the model may take a few minutes, please do not close the sidebar.';
+          btnLabel = 'View Progress';
+          onAction = async () => {
+            browser.runtime.sendMessage({ type: 'OPEN_SIDE_PANEL' });
+            hideTranslation();
+          };
+        } else if (errorCode === 'TIMEOUT') {
+          errorMsg = 'Translation timed out. Please try again.';
+          btnLabel = 'Retry';
+          onAction = async () => {
+            showTranslation(text, rect);
+          };
+        } else if (errorCode === 'CONNECTION_FAILED') {
+          errorMsg = 'Connection failed. Is the sidepanel open?';
+          btnLabel = 'Try Opening Sidepanel';
+          onAction = async () => {
+            browser.runtime.sendMessage({ type: 'OPEN_SIDE_PANEL' });
+            hideTranslation();
+          };
+        }
+
+        showActionUI(errorMsg, btnLabel, onAction);
+      };
       
-      // Proactive settings check
-      const storage = await browser.storage.local.get('settings');
+      // Proactive check: check both settings and engine status
+      const storage = await browser.storage.local.get(['settings', 'engineStatus']);
       let settings = storage.settings as Settings | undefined;
+      const engineStatus = storage.engineStatus as string | undefined;
       
       // If settings don't exist in storage yet, use defaults similar to App.tsx
       if (!settings) {
@@ -181,28 +233,29 @@ export default defineContentScript({
         };
       }
 
-      let preCheckError = '';
-      let preCheckBtn = 'Configure Settings';
+      // Handle loading status proactively
+      if (engineStatus === 'loading') {
+        handleError('ENGINE_LOADING');
+        updatePopupPosition(rect);
+        translationPopup.style.display = 'block';
+        return;
+      }
 
       if (settings.engine === 'online' && !settings.apiKey) {
         const session = await browser.storage.session.get('apiKey').catch(() => ({ apiKey: undefined }));
         if (!session.apiKey) {
-          preCheckError = 'API key is missing. Please enter your key in settings.';
-          preCheckBtn = 'Set API Key';
+          handleError('NO_API_KEY');
+          updatePopupPosition(rect);
+          translationPopup.style.display = 'block';
+          return;
         }
       } else if ((settings.engine === 'local-gpu' || settings.engine === 'local-wasm') && !settings.localModel) {
-        preCheckError = 'No local model selected. Please choose a model in settings.';
-        preCheckBtn = 'Select Model';
-      }
-
-      if (preCheckError) {
-        statusLabel.textContent = 'ACTION REQUIRED';
-        showActionUI(preCheckError, preCheckBtn, async () => {
-          await browser.storage.local.set({ activeTab: 'settings' });
-          browser.runtime.sendMessage({ type: 'OPEN_SIDE_PANEL' });
-          hideTranslation();
-        });
-        
+        handleError('NO_MODEL');
+        updatePopupPosition(rect);
+        translationPopup.style.display = 'block';
+        return;
+      } else if ((settings.engine === 'local-gpu' || settings.engine === 'local-wasm') && engineStatus !== 'ready') {
+        handleError('ENGINE_NOT_READY');
         updatePopupPosition(rect);
         translationPopup.style.display = 'block';
         return;
@@ -226,45 +279,13 @@ export default defineContentScript({
           contentEl.textContent = response.translatedText;
           statusLabel.textContent = 'COMPLETED';
         } else if (response && response.error) {
-          statusLabel.textContent = 'ACTION REQUIRED';
-          
-          let errorMsg = 'Unknown error.';
-          let btnLabel = 'Check Settings';
-
-          if (response.error === 'NO_API_KEY') {
-            errorMsg = 'API Key is missing. Please configure it in settings.';
-            btnLabel = 'Set API Key';
-          } else if (response.error === 'NO_MODEL') {
-            errorMsg = 'Local model is not selected. Please choose a model.';
-            btnLabel = 'Select Model';
-          } else if (response.error === 'ENGINE_NOT_READY') {
-            errorMsg = 'Engine is not ready. Open sidepanel to initialize.';
-            btnLabel = 'Open Sidepanel';
-          } else if (response.error === 'TIMEOUT') {
-             errorMsg = 'Translation timed out. Please try again.';
-             btnLabel = 'Retry';
-          }
-
-          showActionUI(errorMsg, btnLabel, async () => {
-             await browser.storage.local.set({ activeTab: 'settings' });
-             browser.runtime.sendMessage({ type: 'OPEN_SIDE_PANEL' });
-             hideTranslation();
-          });
-
+          handleError(response.error);
         } else {
-          statusLabel.textContent = 'FAILED';
-          showActionUI('Translation unavailable. Ensure sidepanel is active.', 'Open Sidepanel', () => {
-            browser.runtime.sendMessage({ type: 'OPEN_SIDE_PANEL' });
-            hideTranslation();
-          });
+          handleError('UNAVAILABLE');
         }
       } catch (err) {
         console.error('[AI Proofduck] Translation message error:', err);
-        statusLabel.textContent = 'ERROR';
-        showActionUI('Connection failed. Is the sidepanel open?', 'Try Opening Sidepanel', () => {
-          browser.runtime.sendMessage({ type: 'OPEN_SIDE_PANEL' });
-          hideTranslation();
-        });
+        handleError('CONNECTION_FAILED');
       }
     };
 
