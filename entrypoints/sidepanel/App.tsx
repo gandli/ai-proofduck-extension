@@ -13,6 +13,8 @@ import {
 
 type ModeKey = 'summarize' | 'correct' | 'proofread' | 'translate' | 'expand';
 
+const MODES: ModeKey[] = ['summarize', 'correct', 'proofread', 'translate', 'expand'];
+
 interface Settings {
   engine: string;
   extensionLanguage: string;
@@ -514,36 +516,15 @@ function App() {
         )}
         <div className="mode-container">
           <section className="mode-selector">
-            <button
-              className={`mode-btn ${mode === 'summarize' ? 'active' : ''}`}
-              onClick={() => setMode('summarize')}
-            >
-              {t.mode_summarize}
-            </button>
-            <button
-              className={`mode-btn ${mode === 'correct' ? 'active' : ''}`}
-              onClick={() => setMode('correct')}
-            >
-              {t.mode_correct}
-            </button>
-            <button
-              className={`mode-btn ${mode === 'proofread' ? 'active' : ''}`}
-              onClick={() => setMode('proofread')}
-            >
-              {t.mode_proofread}
-            </button>
-            <button
-              className={`mode-btn ${mode === 'translate' ? 'active' : ''}`}
-              onClick={() => setMode('translate')}
-            >
-              {t.mode_translate}
-            </button>
-            <button
-              className={`mode-btn ${mode === 'expand' ? 'active' : ''}`}
-              onClick={() => setMode('expand')}
-            >
-              {t.mode_expand}
-            </button>
+            {MODES.map((m) => (
+              <button
+                key={m}
+                className={`mode-btn ${mode === m ? 'active' : ''}`}
+                onClick={() => setMode(m)}
+              >
+                {t[`mode_${m}`]}
+              </button>
+            ))}
           </section>
 
           <button
