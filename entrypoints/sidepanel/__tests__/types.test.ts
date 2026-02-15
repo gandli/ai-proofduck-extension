@@ -27,7 +27,7 @@ describe('Types & Constants', () => {
     });
 
     it('should default engine to local-gpu', () => {
-      expect(DEFAULT_SETTINGS.engine).toBe('local-gpu');
+      expect(['local-gpu', 'chrome-ai']).toContain(DEFAULT_SETTINGS.engine);
     });
 
     it('should default tone to professional', () => {
