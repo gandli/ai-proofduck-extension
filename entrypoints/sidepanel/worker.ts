@@ -215,7 +215,7 @@ self.onmessage = async (event: MessageEvent<WorkerInboundMessage>) => {
             } else {
                 self.postMessage({
                     type: "error",
-                    error: `Chrome AI 不支持${msg.mode}模式，且未配置在线API作为后备`,
+                    error: `Chrome AI does not support ${msg.mode} mode and no online API is configured as fallback`,
                     mode: msg.mode,
                     requestId: msg.requestId,
                 });

@@ -5,7 +5,8 @@ import type { Settings } from './sidepanel/types';
 type ContentSettings = Partial<Pick<Settings, 'engine' | 'apiKey' | 'localModel'>>;
 
 export default defineContentScript({
-  matches: ['<all_urls>'],
+  matches: ['http://*/*', 'https://*/*'],
+  // Excludes browser internal pages (chrome://, about:, etc.) by only matching http(s)
   main() {
     let floatingIcon: HTMLElement | null = null;
     let translationPopup: HTMLElement | null = null;

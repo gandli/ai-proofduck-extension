@@ -28,12 +28,12 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
     try {
       const parsed = new URL(url);
       if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-        setUrlError('URL must start with http:// or https://');
+        setUrlError(t.url_must_be_http || 'URL must start with http:// or https://');
       } else {
         setUrlError('');
       }
     } catch {
-      setUrlError('Invalid URL format');
+      setUrlError(t.invalid_url || 'Invalid URL format');
     }
   };
 

@@ -64,6 +64,13 @@ export interface TranslationKeys {
   char_count: string;
   auto_speak_label: string;
   connection_error: string;
+  no_errors_found: string;
+  correction_details: string;
+  proofread_context: string;
+  expand_prompt: string;
+  chrome_ai_unsupported_no_fallback: string;
+  url_must_be_http: string;
+  invalid_url: string;
   [key: string]: string;
 }
 
@@ -133,7 +140,14 @@ export const translations: Record<string, TranslationKeys> = {
         clear_btn: '清除',
         char_count: '字符',
         auto_speak_label: '自动朗读结果',
-        connection_error: '无法获取网页内容。请确保已在当前页面点击或通过右键菜单激活（由于最小权限限制）。'
+        connection_error: '无法获取网页内容。请确保已在当前页面点击或通过右键菜单激活（由于最小权限限制）。',
+        no_errors_found: '✅ 未发现错误，文本无需修正。',
+        correction_details: '📝 修正详情：',
+        proofread_context: '润色这段文本，使其更加流畅专业。目标语言：',
+        expand_prompt: '基于以下文本进行扩写，增加细节和深度，目标语言',
+        chrome_ai_unsupported_no_fallback: 'Chrome AI 不支持该模式，且未配置在线API作为后备',
+        url_must_be_http: 'URL 必须以 http:// 或 https:// 开头',
+        invalid_url: 'URL 格式无效',
     },
     'English': {
         title: 'AI Assistant',
@@ -200,7 +214,14 @@ export const translations: Record<string, TranslationKeys> = {
         clear_btn: 'Clear',
         char_count: 'chars',
         auto_speak_label: 'Auto Speak Results',
-        connection_error: 'Could not fetch page content. Please click on the page or use context menu to activate (due to permission restrictions).'
+        connection_error: 'Could not fetch page content. Please click on the page or use context menu to activate (due to permission restrictions).',
+        no_errors_found: '✅ No errors found, text needs no correction.',
+        correction_details: '📝 Correction details:',
+        proofread_context: 'Polish this text to make it more fluent and professional. Target language: ',
+        expand_prompt: 'Expand the following text with more details and depth, target language ',
+        chrome_ai_unsupported_no_fallback: 'Chrome AI does not support this mode and no online API is configured as fallback',
+        url_must_be_http: 'URL must start with http:// or https://',
+        invalid_url: 'Invalid URL format',
     },
     '日本語': {
         title: 'AIアシスタント',
@@ -267,7 +288,14 @@ export const translations: Record<string, TranslationKeys> = {
         clear_btn: 'クリア',
         char_count: '文字',
         auto_speak_label: '結果を自動的に読み上げる',
-        connection_error: 'ページのコンテンツを取得できませんでした。現在のページをクリックするか、コンテキストメニューから有効化してください。'
+        connection_error: 'ページのコンテンツを取得できませんでした。現在のページをクリックするか、コンテキストメニューから有効化してください。',
+        no_errors_found: '✅ エラーは見つかりませんでした。テキストは修正不要です。',
+        correction_details: '📝 修正詳細：',
+        proofread_context: 'このテキストをより流暢でプロフェッショナルにしてください。対象言語：',
+        expand_prompt: '以下のテキストを詳細と深みを加えて拡張してください。対象言語',
+        chrome_ai_unsupported_no_fallback: 'Chrome AIはこのモードをサポートしておらず、オンラインAPIもフォールバックとして設定されていません',
+        url_must_be_http: 'URLはhttp://またはhttps://で始まる必要があります',
+        invalid_url: 'URL形式が無効です',
     },
     '한국어': {
         title: 'AI 어시스턴트',
@@ -334,7 +362,14 @@ export const translations: Record<string, TranslationKeys> = {
         clear_btn: '지우기',
         char_count: '자',
         auto_speak_label: '결과 자동 읽기',
-        connection_error: '페이지 콘텐츠를 가져올 수 없습니다. 현재 페이지를 클릭하거나 컨텍스트 메뉴를 통해 활성화하세요.'
+        connection_error: '페이지 콘텐츠를 가져올 수 없습니다. 현재 페이지를 클릭하거나 컨텍스트 메뉴를 통해 활성화하세요.',
+        no_errors_found: '✅ 오류가 발견되지 않았습니다. 텍스트 수정이 필요하지 않습니다.',
+        correction_details: '📝 수정 상세:',
+        proofread_context: '이 텍스트를 더 유창하고 전문적으로 다듬어 주세요. 대상 언어: ',
+        expand_prompt: '다음 텍스트를 더 자세하고 깊이 있게 확장해 주세요. 대상 언어 ',
+        chrome_ai_unsupported_no_fallback: 'Chrome AI가 이 모드를 지원하지 않으며 온라인 API가 대체로 구성되지 않았습니다',
+        url_must_be_http: 'URL은 http:// 또는 https://로 시작해야 합니다',
+        invalid_url: 'URL 형식이 잘못되었습니다',
     },
     'Français': {
         title: 'Assistant IA',
@@ -401,7 +436,14 @@ export const translations: Record<string, TranslationKeys> = {
         clear_btn: 'Effacer',
         char_count: 'carac.',
         auto_speak_label: 'Lecture automatique des résultats',
-        connection_error: 'Impossible de récupérer le contenu de la page. Veuillez cliquer sur la page ou utiliser le menu contextuel pour activer.'
+        connection_error: 'Impossible de récupérer le contenu de la page. Veuillez cliquer sur la page ou utiliser le menu contextuel pour activer.',
+        no_errors_found: '✅ Aucune erreur trouvée, le texte n\'a pas besoin de correction.',
+        correction_details: '📝 Détails des corrections :',
+        proofread_context: 'Peaufinez ce texte pour le rendre plus fluide et professionnel. Langue cible : ',
+        expand_prompt: 'Développez le texte suivant avec plus de détails et de profondeur, langue cible ',
+        chrome_ai_unsupported_no_fallback: 'Chrome AI ne prend pas en charge ce mode et aucune API en ligne n\'est configurée en secours',
+        url_must_be_http: 'L\'URL doit commencer par http:// ou https://',
+        invalid_url: 'Format d\'URL invalide',
     },
     'Deutsch': {
         title: 'KI-Assistent',
@@ -468,7 +510,14 @@ export const translations: Record<string, TranslationKeys> = {
         clear_btn: 'Löschen',
         char_count: 'Zeichen',
         auto_speak_label: 'Ergebnisse automatisch vorlesen',
-        connection_error: 'Seiteninhalt konnte nicht abgerufen werden. Bitte klicken Sie auf die Seite oder aktivieren Sie über das Kontextmenü.'
+        connection_error: 'Seiteninhalt konnte nicht abgerufen werden. Bitte klicken Sie auf die Seite oder aktivieren Sie über das Kontextmenü.',
+        no_errors_found: '✅ Keine Fehler gefunden, der Text muss nicht korrigiert werden.',
+        correction_details: '📝 Korrekturdetails:',
+        proofread_context: 'Überarbeiten Sie diesen Text, um ihn flüssiger und professioneller zu gestalten. Zielsprache: ',
+        expand_prompt: 'Erweitern Sie den folgenden Text mit mehr Details und Tiefe, Zielsprache ',
+        chrome_ai_unsupported_no_fallback: 'Chrome AI unterstützt diesen Modus nicht und es ist keine Online-API als Fallback konfiguriert',
+        url_must_be_http: 'URL muss mit http:// oder https:// beginnen',
+        invalid_url: 'Ungültiges URL-Format',
     },
     'Español': {
         title: 'Asistente de IA',
@@ -535,6 +584,13 @@ export const translations: Record<string, TranslationKeys> = {
         clear_btn: 'Limpiar',
         char_count: 'carácteres',
         auto_speak_label: 'Lectura automática de resultados',
-        connection_error: 'No se pudo obtener el contenido de la página. Haga clic en la página o active a través del menú contextual.'
+        connection_error: 'No se pudo obtener el contenido de la página. Haga clic en la página o active a través del menú contextual.',
+        no_errors_found: '✅ No se encontraron errores, el texto no necesita corrección.',
+        correction_details: '📝 Detalles de corrección:',
+        proofread_context: 'Pule este texto para hacerlo más fluido y profesional. Idioma objetivo: ',
+        expand_prompt: 'Expande el siguiente texto con más detalles y profundidad, idioma objetivo ',
+        chrome_ai_unsupported_no_fallback: 'Chrome AI no soporta este modo y no hay API en línea configurada como respaldo',
+        url_must_be_http: 'La URL debe comenzar con http:// o https://',
+        invalid_url: 'Formato de URL no válido',
     }
 };

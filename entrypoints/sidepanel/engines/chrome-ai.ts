@@ -8,6 +8,14 @@
 
 import type { ModeKey, Settings } from '../types';
 
+/** i18n keys used by Chrome AI engine */
+export interface ChromeAITranslations {
+  no_errors_found?: string;
+  correction_details?: string;
+  proofread_context?: string;
+  expand_prompt?: string;
+}
+
 // ---- Availability helpers ----
 
 export type ChromeAICapability = 'available' | 'experimental' | 'unavailable';
@@ -170,14 +178,14 @@ async function processSummarize(text: string, _settings: Settings, callbacks: Ch
 }
 
 /** Process text using Chrome AI Proofreader (correct mode) */
-async function processCorrect(text: string, _settings: Settings, callbacks: ChromeAICallbacks) {
+async function processCorrect(text: string, _settings: Settings, callbacks: ChromeAICallbacks, t?: ChromeAITranslations) {
   const proofreader = await Proofreader.create({
     expectedInputLanguages: ['zh', 'en'],
   });
   try {
     const result = await proofreader.proofread(text);
     if (result.corrections.length === 0) {
-      const noErrorMsg = '✅ 未发现错误，文本无需修正。';
+      const noErrorMsg = t?.no_errors_found ?? '✅ 未发现错误，文本无需修正。';
       callbacks.onUpdate(noErrorMsg);
       callbacks.onComplete(noErrorMsg);
       return;
@@ -192,7 +200,7 @@ async function processCorrect(text: string, _settings: Settings, callbacks: Chro
     }
 
     // Format output with details
-    let output = corrected + '\n\n---\n📝 修正详情：\n';
+    let output = corrected + `\n\n---\n${t?.correction_details ?? '📝 修正详情：'}\n`;
     for (const c of result.corrections) {
       const original = text.slice(c.startIndex, c.endIndex);
       output += `• "${original}" → "${c.suggestion}"`;
@@ -208,7 +216,7 @@ async function processCorrect(text: string, _settings: Settings, callbacks: Chro
 }
 
 /** Process text using Chrome AI Rewriter (proofread/polish mode) */
-async function processProofread(text: string, settings: Settings, callbacks: ChromeAICallbacks) {
+async function processProofread(text: string, settings: Settings, callbacks: ChromeAICallbacks, t?: ChromeAITranslations) {
   const rewriter = await Rewriter.create({
     tone: mapTone(settings.tone),
     format: 'plain-text',
@@ -216,7 +224,7 @@ async function processProofread(text: string, settings: Settings, callbacks: Chr
   });
   try {
     const stream = rewriter.rewriteStreaming(text, {
-      context: `润色这段文本，使其更加流畅专业。目标语言：${settings.extensionLanguage}`,
+      context: `${t?.proofread_context ?? '润色这段文本，使其更加流畅专业。目标语言：'}${settings.extensionLanguage}`,
     });
     await consumeStream(stream, callbacks);
   } finally {
@@ -277,14 +285,14 @@ async function processTranslate(text: string, settings: Settings, callbacks: Chr
 }
 
 /** Process text using Chrome AI Writer (expand mode) */
-async function processExpand(text: string, settings: Settings, callbacks: ChromeAICallbacks) {
+async function processExpand(text: string, settings: Settings, callbacks: ChromeAICallbacks, t?: ChromeAITranslations) {
   const writer = await Writer.create({
     tone: 'neutral',
     format: 'plain-text',
     length: mapDetailToLength(settings.detailLevel),
   });
   try {
-    const prompt = `基于以下文本进行扩写，增加细节和深度，目标语言${settings.extensionLanguage}：\n\n${text}`;
+    const prompt = `${t?.expand_prompt ?? '基于以下文本进行扩写，增加细节和深度，目标语言'}${settings.extensionLanguage}：\n\n${text}`;
     const stream = writer.writeStreaming(prompt);
     await consumeStream(stream, callbacks);
   } finally {
@@ -298,17 +306,18 @@ export async function processWithChromeAI(
   mode: ModeKey,
   settings: Settings,
   callbacks: ChromeAICallbacks,
+  t?: ChromeAITranslations,
 ): Promise<void> {
   switch (mode) {
     case 'summarize':
       return processSummarize(text, settings, callbacks);
     case 'correct':
-      return processCorrect(text, settings, callbacks);
+      return processCorrect(text, settings, callbacks, t);
     case 'proofread':
-      return processProofread(text, settings, callbacks);
+      return processProofread(text, settings, callbacks, t);
     case 'translate':
       return processTranslate(text, settings, callbacks);
     case 'expand':
-      return processExpand(text, settings, callbacks);
+      return processExpand(text, settings, callbacks, t);
   }
 }
