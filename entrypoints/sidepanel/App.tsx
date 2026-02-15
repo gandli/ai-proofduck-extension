@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 import { translations } from './i18n';
+import { importMLCPackage } from './file-utils';
 import {
   SettingsIcon,
   FetchIcon,
@@ -518,34 +519,9 @@ function App() {
     setProgress({ progress: 0, text: t.importing });
 
     try {
-      const buffer = await file.arrayBuffer();
-      const view = new DataView(buffer);
-      const decoder = new TextDecoder();
-
-      if (view.getUint32(0) !== 0x4d4c4350) {
-        throw new Error('Invalid MLCP file format');
-      }
-
-      const fileCount = view.getUint32(4);
-      const cache = await caches.open('webllm/model');
-
-      let offset = 8;
-      for (let i = 0; i < fileCount; i++) {
-        const urlLen = view.getUint32(offset);
-        const url = decoder.decode(new Uint8Array(buffer, offset + 4, urlLen));
-        offset += 4 + urlLen;
-
-        const size = Number(view.getBigUint64(offset));
-        const data = new Uint8Array(buffer, offset + 8, size);
-        offset += 8 + size;
-
-        await cache.put(url, new Response(data));
-
-        setProgress({
-          progress: ((i + 1) / fileCount) * 100,
-          text: `${t.importing} (${i + 1}/${fileCount})`,
-        });
-      }
+      await importMLCPackage(file, t, (progress, text) => {
+        setProgress({ progress, text });
+      });
 
       alert(t.import_success);
       setStatus('idle');
