@@ -85,7 +85,7 @@ export function useWorker(opts: UseWorkerOptions) {
     // Runtime listener for QUICK_TRANSLATE
     const runtimeListener = (
       message: { type: string; text?: string },
-      _sender: unknown,
+      _sender: Browser.runtime.MessageSender,
       sendResponse: (res?: { translatedText?: string; error?: string }) => void,
     ) => {
       if (message.type !== 'QUICK_TRANSLATE') return;
@@ -113,8 +113,11 @@ export function useWorker(opts: UseWorkerOptions) {
       // Use requestId to prevent race conditions
       const requestId = `qt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       pendingQuickTranslateId.current = requestId;
+      let resolved = false;
 
       const timeoutId = setTimeout(() => {
+        if (resolved) return;
+        resolved = true;
         if (pendingQuickTranslateId.current === requestId) {
           pendingQuickTranslateId.current = null;
         }
@@ -125,6 +128,8 @@ export function useWorker(opts: UseWorkerOptions) {
       const handler = (ev: MessageEvent<WorkerOutboundMessage>) => {
         const d = ev.data;
         if ((d.type === 'complete' || d.type === 'error') && d.requestId === requestId) {
+          if (resolved) return;
+          resolved = true;
           clearTimeout(timeoutId);
           if (pendingQuickTranslateId.current === requestId) {
             pendingQuickTranslateId.current = null;

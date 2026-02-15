@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, ModeKey } from '../types';
+import { Settings, ModeKey, MODES, EngineType, ToneType, DetailLevelType } from '../types';
 import { CloseIcon } from './Icons';
 import { ModelImportExport } from './ModelImportExport';
 import { detectChromeAI, type ChromeAIStatus, type ChromeAICapability, MODE_API_MAP } from '../engines/chrome-ai';
@@ -21,9 +21,24 @@ const labelClass = "text-[11px] text-slate-500 font-semibold uppercase dark:text
 
 export function SettingsPanel({ settings, updateSettings, onClose, status, setStatus, setProgress, setError, t }: SettingsPanelProps) {
   const [chromeAIStatus, setChromeAIStatus] = useState<ChromeAIStatus | null>(null);
+  const [urlError, setUrlError] = useState('');
+
+  const validateUrl = (url: string) => {
+    if (!url) { setUrlError(''); return; }
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+        setUrlError('URL must start with http:// or https://');
+      } else {
+        setUrlError('');
+      }
+    } catch {
+      setUrlError('Invalid URL format');
+    }
+  };
 
   useEffect(() => {
-    detectChromeAI().then(setChromeAIStatus).catch(() => {});
+    detectChromeAI().then(setChromeAIStatus).catch((e) => { console.error('Chrome AI detection failed:', e); });
   }, []);
 
   const statusIcon = (cap: ChromeAICapability) => {
@@ -61,7 +76,7 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
           </div>
           <div className="flex flex-col gap-1.5">
             <label className={labelClass}>{t.engine_label}</label>
-            <select className={selectClass} value={settings.engine} onChange={e => updateSettings({ engine: e.target.value })}>
+            <select className={selectClass} value={settings.engine} onChange={e => updateSettings({ engine: e.target.value as EngineType })}>
               <option value="chrome-ai">{t.engine_chrome_ai || 'Chrome Built-in AI (推荐)'}</option>
               <option value="local-gpu">{t.engine_webgpu}</option>
               <option value="local-wasm">{t.engine_wasm}</option>
@@ -71,7 +86,7 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
           {settings.engine === 'chrome-ai' && chromeAIStatus && (
             <div className="flex flex-col gap-1 p-3 bg-slate-50 rounded-lg text-xs dark:bg-brand-dark-bg">
               <span className="font-semibold text-slate-600 dark:text-slate-300 mb-1">{t.chrome_ai_status || 'API 可用状态'}</span>
-              {(['summarize', 'correct', 'proofread', 'translate', 'expand'] as ModeKey[]).map(mode => (
+              {MODES.map(({ key: mode }) => (
                 <div key={mode} className="flex items-center gap-1.5">
                   <span>{statusIcon(chromeAIStatus[mode])}</span>
                   <span className="text-slate-500 dark:text-slate-400">{t[`mode_${mode}`]} — {MODE_API_MAP[mode]}</span>
@@ -119,7 +134,8 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
             <h3 className="m-0 text-sm font-bold text-slate-800 dark:text-slate-200">{t.api_config}</h3>
             <div className="flex flex-col gap-1.5">
               <label className={labelClass}>API Base URL</label>
-              <input className={inputClass} type="text" value={settings.apiBaseUrl} onChange={e => updateSettings({ apiBaseUrl: e.target.value })} />
+              <input className={inputClass} type="text" value={settings.apiBaseUrl} onChange={e => updateSettings({ apiBaseUrl: e.target.value })} onBlur={e => validateUrl(e.target.value)} />
+              {urlError && <span className="text-xs text-red-500">{urlError}</span>}
             </div>
             <div className="flex flex-col gap-1.5">
               <label className={labelClass}>API Key</label>
@@ -137,7 +153,7 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
           <h3 className="m-0 text-sm font-bold text-slate-800 dark:text-slate-200">{t.func_pref}</h3>
           <div className="flex flex-col gap-1.5">
             <label className={labelClass}>{t.tone_label}</label>
-            <select className={selectClass} value={settings.tone} onChange={e => updateSettings({ tone: e.target.value })}>
+            <select className={selectClass} value={settings.tone} onChange={e => updateSettings({ tone: e.target.value as ToneType })}>
               <option value="professional">{t.tone_professional}</option>
               <option value="casual">{t.tone_casual}</option>
               <option value="academic">{t.tone_academic}</option>
@@ -146,7 +162,7 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
           </div>
           <div className="flex flex-col gap-1.5">
             <label className={labelClass}>{t.detail_label}</label>
-            <select className={selectClass} value={settings.detailLevel} onChange={e => updateSettings({ detailLevel: e.target.value })}>
+            <select className={selectClass} value={settings.detailLevel} onChange={e => updateSettings({ detailLevel: e.target.value as DetailLevelType })}>
               <option value="standard">{t.detail_standard}</option>
               <option value="detailed">{t.detail_detailed}</option>
               <option value="creative">{t.detail_creative}</option>

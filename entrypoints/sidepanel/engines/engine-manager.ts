@@ -31,7 +31,7 @@ export async function detectEngines(): Promise<EngineAvailability> {
       const adapter = await (navigator as any).gpu?.requestAdapter();
       webGPU = !!adapter;
     }
-  } catch { /* not available */ }
+  } catch (e) { console.error('WebGPU detection failed:', e); }
 
   // WASM is always available in modern browsers
   const wasm = typeof WebAssembly !== 'undefined';
@@ -49,7 +49,8 @@ export function getRecommendations(
   return modes.map(mode => {
     const chromeAIStatus = availability.chromeAI[mode];
 
-    // If user explicitly chose an engine (not auto), respect it
+    // If user explicitly chose a non-Chrome-AI engine, respect it.
+    // Chrome-AI and auto both go through auto-detection below.
     if (userEngine && userEngine !== 'chrome-ai' && userEngine !== 'auto') {
       return { mode, bestEngine: userEngine as EngineType, chromeAIStatus };
     }

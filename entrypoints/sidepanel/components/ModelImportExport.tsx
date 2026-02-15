@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { Settings } from '../types';
 import { ExportIcon, ImportIcon } from './Icons';
 
@@ -11,6 +12,9 @@ interface ModelImportExportProps {
 }
 
 export function ModelImportExport({ settings, status, setStatus, setProgress, setError, t }: ModelImportExportProps) {
+  const folderInputRef = useRef<HTMLInputElement>(null);
+  const pkgInputRef = useRef<HTMLInputElement>(null);
+
   const handleFileImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -131,11 +135,11 @@ export function ModelImportExport({ settings, status, setStatus, setProgress, se
         <div className="flex flex-col gap-2 relative">
           <button
             className="flex items-center justify-center gap-1.5 py-2 px-3 text-[13px] font-medium text-slate-600 bg-white border border-slate-200 rounded-lg cursor-pointer transition-all w-full hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed dark:bg-brand-dark-bg dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]"
-            onClick={() => document.getElementById('folder-input')?.click()}
+            onClick={() => folderInputRef.current?.click()}
           >
             {t.offline_import_btn}
           </button>
-          <input id="folder-input" type="file" webkitdirectory="true" className="hidden" onChange={handleFileImport} />
+          <input ref={folderInputRef} type="file" webkitdirectory="true" className="hidden" onChange={handleFileImport} />
           <div className="flex gap-2">
             <button
               className="flex items-center justify-center gap-1.5 py-2 px-3 text-[13px] font-medium text-slate-600 bg-white border border-slate-200 rounded-lg cursor-pointer transition-all flex-1 text-xs hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed dark:bg-brand-dark-bg dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]"
@@ -146,12 +150,12 @@ export function ModelImportExport({ settings, status, setStatus, setProgress, se
             </button>
             <button
               className="flex items-center justify-center gap-1.5 py-2 px-3 text-[13px] font-medium text-slate-600 bg-white border border-slate-200 rounded-lg cursor-pointer transition-all flex-1 text-xs hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed dark:bg-brand-dark-bg dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]"
-              onClick={() => document.getElementById('pkg-input')?.click()}
+              onClick={() => pkgInputRef.current?.click()}
               disabled={status === 'loading'}
             >
               <ImportIcon /> {t.import_pkg_btn}
             </button>
-            <input id="pkg-input" type="file" accept=".mlcp" className="hidden" onChange={handleImportPackage} />
+            <input ref={pkgInputRef} type="file" accept=".mlcp" className="hidden" onChange={handleImportPackage} />
           </div>
         </div>
       </div>

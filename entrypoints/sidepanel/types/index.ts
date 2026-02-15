@@ -6,11 +6,15 @@
 export type ModeKey = 'summarize' | 'correct' | 'proofread' | 'translate' | 'expand';
 
 /** Persisted user settings */
+export type EngineType = 'local-gpu' | 'local-wasm' | 'online' | 'chrome-ai';
+export type ToneType = 'professional' | 'casual' | 'academic' | 'concise';
+export type DetailLevelType = 'standard' | 'detailed' | 'creative';
+
 export interface Settings {
-  engine: string;
+  engine: EngineType;
   extensionLanguage: string;
-  tone: string;
-  detailLevel: string;
+  tone: ToneType;
+  detailLevel: DetailLevelType;
   localModel: string;
   apiBaseUrl: string;
   apiKey: string;

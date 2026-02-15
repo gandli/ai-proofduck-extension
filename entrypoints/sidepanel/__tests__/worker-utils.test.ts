@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { getSystemPrompt } from '../worker-utils';
+import type { ToneType, DetailLevelType } from '../types';
 
 describe('getSystemPrompt', () => {
     const defaultSettings = {
         extensionLanguage: '中文',
-        tone: 'professional',
-        detailLevel: 'standard'
+        tone: 'professional' as ToneType,
+        detailLevel: 'standard' as DetailLevelType
     };
 
     it('should generate correct prompt for summarize mode', () => {
@@ -21,13 +22,13 @@ describe('getSystemPrompt', () => {
     });
 
     it('should respect tone', () => {
-        const settings = { ...defaultSettings, tone: 'casual' };
+        const settings = { ...defaultSettings, tone: 'casual' as ToneType };
         const prompt = getSystemPrompt('proofread', settings);
         expect(prompt).toContain('轻松且口语化');
     });
 
     it('should respect detail level', () => {
-        const settings = { ...defaultSettings, detailLevel: 'creative' };
+        const settings = { ...defaultSettings, detailLevel: 'creative' as DetailLevelType };
         const prompt = getSystemPrompt('expand', settings);
         expect(prompt).toContain('充满创意与文学性');
     });

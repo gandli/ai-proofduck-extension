@@ -41,7 +41,7 @@ Chrome Built-in AI > WebGPU/WASM (WebLLM) > Online API
 
 ## Origin Trial 配置
 
-Writer、Rewriter、Proofreader API 目前处于 Origin Trial 阶段，需要在 `wxt.config.ts` 中配置 trial token：
+Writer、Rewriter、Proofreader API 目前处于 Origin Trial 阶段，需要在 `wxt.config.ts` 中配置 trial tokens：
 
 ```ts
 trial_tokens: [

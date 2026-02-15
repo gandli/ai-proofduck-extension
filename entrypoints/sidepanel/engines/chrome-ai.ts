@@ -29,9 +29,6 @@ export const MODE_API_MAP: Record<ModeKey, string> = {
   expand: 'Writer',
 };
 
-// Which APIs are stable vs Origin Trial
-const STABLE_APIS: ModeKey[] = ['summarize', 'translate'];
-const EXPERIMENTAL_APIS: ModeKey[] = ['correct', 'proofread', 'expand'];
 
 async function checkAvailability(mode: ModeKey): Promise<ChromeAICapability> {
   try {
@@ -49,8 +46,7 @@ async function checkAvailability(mode: ModeKey): Promise<ChromeAICapability> {
       case 'proofread':
         if (!('Rewriter' in self)) return 'unavailable';
         return (await Rewriter.availability()) !== 'no'
-          ? (EXPERIMENTAL_APIS.includes(mode) ? 'experimental' : 'available')
-          : 'unavailable';
+          ? 'experimental' : 'unavailable';
 
       case 'translate': {
         if (!('Translator' in self)) return 'unavailable';
@@ -145,8 +141,8 @@ async function consumeStream(
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
-      // Chrome AI streaming returns cumulative text (like Summarizer) or chunks
-      // The API returns the full text so far on each read
+      // Chrome AI streaming APIs (Summarizer, Rewriter, Writer) return the
+      // cumulative text on each read, so we overwrite rather than append.
       result = value;
       callbacks.onUpdate(result);
     }
@@ -235,15 +231,17 @@ async function processTranslate(text: string, settings: Settings, callbacks: Chr
   // Detect source language
   let sourceLang = 'en';
   if ('LanguageDetector' in self) {
+    let detector: Awaited<ReturnType<typeof LanguageDetector.create>> | null = null;
     try {
-      const detector = await LanguageDetector.create();
+      detector = await LanguageDetector.create();
       const results = await detector.detect(text);
       if (results.length > 0 && results[0].confidence > 0.3) {
         sourceLang = results[0].detectedLanguage;
       }
-      detector.destroy();
     } catch {
       // fallback to 'en'
+    } finally {
+      detector?.destroy();
     }
   }
 

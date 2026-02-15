@@ -1,4 +1,73 @@
-export const translations: Record<string, any> = {
+export interface TranslationKeys {
+  title: string;
+  status_idle: string;
+  status_loading: string;
+  status_ready_local: string;
+  status_ready_online: string;
+  status_generating: string;
+  status_error: string;
+  settings: string;
+  mode_summarize: string;
+  mode_correct: string;
+  mode_proofread: string;
+  mode_translate: string;
+  mode_expand: string;
+  original_text: string;
+  placeholder: string;
+  result_summarize: string;
+  result_correct: string;
+  result_proofread: string;
+  result_translate: string;
+  result_expand: string;
+  thinking: string;
+  core_settings: string;
+  engine_label: string;
+  lang_label: string;
+  model_label: string;
+  api_config: string;
+  func_pref: string;
+  tone_label: string;
+  detail_label: string;
+  save_btn: string;
+  wasm_warning: string;
+  loading_tip: string;
+  tone_professional: string;
+  tone_casual: string;
+  tone_academic: string;
+  tone_concise: string;
+  detail_standard: string;
+  detail_detailed: string;
+  detail_creative: string;
+  engine_webgpu: string;
+  engine_wasm: string;
+  engine_chrome_ai: string;
+  chrome_ai_status: string;
+  status_ready_chrome_ai: string;
+  engine_online: string;
+  action_btn_load: string;
+  action_btn_execute: string;
+  action_generating: string;
+  offline_import_title: string;
+  offline_import_btn: string;
+  offline_import_tip: string;
+  importing: string;
+  import_success: string;
+  import_failed: string;
+  export_btn: string;
+  import_pkg_btn: string;
+  exporting: string;
+  export_success: string;
+  export_failed: string;
+  copy_btn: string;
+  copied: string;
+  clear_btn: string;
+  char_count: string;
+  auto_speak_label: string;
+  connection_error: string;
+  [key: string]: string;
+}
+
+export const translations: Record<string, TranslationKeys> = {
     '中文': {
         title: 'AI 助手',
         status_idle: '未就绪',

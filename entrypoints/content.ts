@@ -1,5 +1,8 @@
 import { SVG_STRING } from './assets/floatingIcon';
 import tailwindStyles from './content-styles.css?inline';
+import type { Settings } from './sidepanel/types';
+
+type ContentSettings = Partial<Pick<Settings, 'engine' | 'apiKey' | 'localModel'>>;
 
 export default defineContentScript({
   matches: ['<all_urls>'],
@@ -11,12 +14,6 @@ export default defineContentScript({
     let hoverTimer: ReturnType<typeof setTimeout> | null = null;
 
     console.log('[AI Proofduck] Content script initialized.');
-    
-    interface Settings {
-      engine?: string;
-      apiKey?: string;
-      localModel?: string;
-    }
 
     const createTranslationPopup = () => {
       const container = document.createElement('div');
@@ -222,7 +219,7 @@ export default defineContentScript({
       
       // Proactive check: check both settings and engine status
       const storage = await browser.storage.local.get(['settings', 'engineStatus']);
-      let settings = storage.settings as Settings | undefined;
+      let settings = storage.settings as ContentSettings | undefined;
       const engineStatus = storage.engineStatus as string | undefined;
       
       // If settings don't exist in storage yet, use defaults similar to App.tsx
