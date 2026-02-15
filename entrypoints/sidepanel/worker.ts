@@ -74,11 +74,20 @@ async function processLocalQueue() {
             });
 
             let fullText = "";
+            let lastPostTime = 0;
             for await (const chunk of chunks) {
                 const content = chunk.choices[0]?.delta?.content || "";
                 fullText += content;
-                self.postMessage({ type: "update", text: fullText, mode: currentMode });
+                const now = Date.now();
+                if (now - lastPostTime >= 50) {
+                    self.postMessage({ type: "update", text: fullText, mode: currentMode });
+                    lastPostTime = now;
+                }
             }
+            // Ensure final update is sent if it wasn't the last throttled one (optional if complete handles it, but good for UX)
+            // Actually 'complete' is sent right after, so we might skip a redundant 'update' here if we assume 'complete' updates UI.
+            // But let's keep the pattern.
+
             console.log(`[Worker] Local Gen Complete. Mode: ${currentMode}`);
             self.postMessage({ type: "complete", text: fullText, mode: currentMode });
         } catch (error: any) {
@@ -90,7 +99,7 @@ async function processLocalQueue() {
     isLocalProcessing = false;
 }
 
-async function handleGenerateOnline(text: string, mode: string, settings: any) {
+export async function handleGenerateOnline(text: string, mode: string, settings: any) {
     const currentMode = mode || "proofread";
     try {
         const systemPrompt = getSystemPrompt(currentMode, settings);
@@ -125,6 +134,7 @@ async function handleGenerateOnline(text: string, mode: string, settings: any) {
 
         if (reader) {
             let buffer = "";
+            let lastPostTime = 0;
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
@@ -144,7 +154,12 @@ async function handleGenerateOnline(text: string, mode: string, settings: any) {
                             const json = JSON.parse(dataStr);
                             const content = json.choices[0]?.delta?.content || "";
                             fullText += content;
-                            self.postMessage({ type: "update", text: fullText, mode: currentMode });
+
+                            const now = Date.now();
+                            if (now - lastPostTime >= 50) {
+                                self.postMessage({ type: "update", text: fullText, mode: currentMode });
+                                lastPostTime = now;
+                            }
                         } catch (e) {
                             buffer = line + '\n' + buffer;
                         }
