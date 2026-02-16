@@ -19,7 +19,7 @@ async function setLang(lang) {
     .querySelectorAll(".lang-btn")
     .forEach((btn) => {
       btn.classList.remove("active");
-      if (btn.getAttribute("data-lang") === lang || btn.getAttribute("onclick")?.includes(`'${lang}'`)) {
+      if (btn.getAttribute("data-lang") === lang) {
         btn.classList.add("active");
       }
     });
@@ -222,6 +222,14 @@ window.addEventListener("DOMContentLoaded", () => {
     startSlideTimer();
   }
 
+  // Setup language switchers
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lang = btn.getAttribute('data-lang');
+      if (lang) switchLanguage(lang);
+    });
+  });
+
   // Setup gallery triggers
   const galleryTriggers = document.querySelectorAll(".slide img");
   if (galleryTriggers.length > 0) {
@@ -277,57 +285,58 @@ document.addEventListener('click', (e) => {
 
 function switchLanguage(lang) {
   let hash = window.location.hash;
-  const pathname = window.location.pathname;
-  let newPath = pathname;
+  const currentPath = window.location.pathname;
+  let newPath = currentPath;
 
+  // Simple and robust path handling
   if (lang === 'zh') {
-    // Switch to Chinese
-    if (!pathname.includes('/zh/')) {
-       // Assuming standard Astro format where /zh/ is a sub-route or sibling
-       // If we are at root / or /repo/
-       // We append zh/
-       if (pathname.endsWith('/')) {
-         newPath = pathname + 'zh/';
-       } else {
-         newPath = pathname + '/zh/';
-       }
+    if (!currentPath.includes('/zh/')) {
+      // Handle base path for gh-pages or root
+      const isGH = currentPath.includes('/ai-proofduck-extension');
+      if (isGH) {
+        newPath = currentPath.replace('/ai-proofduck-extension/', '/ai-proofduck-extension/zh/');
+      } else {
+        newPath = '/zh' + currentPath;
+      }
     }
   } else {
-    // Switch to English
-    if (pathname.includes('/zh/')) {
-      newPath = pathname.replace('/zh/', '/');
+    if (currentPath.includes('/zh/')) {
+      newPath = currentPath.replace('/zh/', '/');
     }
   }
 
+  // Final URL construction (avoiding triple slashes)
+  let finalUrl = newPath;
+  if (!finalUrl.endsWith('/') && !finalUrl.includes('.')) {
+    finalUrl += '/';
+  }
+  finalUrl = finalUrl.replace(/\/+/g, '/');
+  if (!finalUrl.startsWith('/')) finalUrl = '/' + finalUrl;
+  
+  // Re-append hash securely
+  if (hash) finalUrl += hash;
+
   // Detect visible section if no hash is present
-  if (!hash) {
+  if (!hash && window.scrollY > 100) {
     const sections = document.querySelectorAll('section[id]');
     let maxVisibility = 0;
     let visibleId = '';
 
-    // If we are near the top, don't set a hash
-    if (window.scrollY > 100) {
-      sections.forEach(section => {
-        const rect = section.getBoundingClientRect();
-        // Calculate visible height of the section
-        const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
-        
-        if (visibleHeight > 0) {
-          if (visibleHeight > maxVisibility) {
-            maxVisibility = visibleHeight;
-            visibleId = section.id;
-          }
-        }
-      });
-      
-      if (visibleId) {
-        hash = `#${visibleId}`;
+    sections.forEach(section => {
+      const rect = section.getBoundingClientRect();
+      const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
+      if (visibleHeight > maxVisibility) {
+        maxVisibility = visibleHeight;
+        visibleId = section.id;
       }
+    });
+    
+    if (visibleId) {
+      finalUrl += `#${visibleId}`;
     }
   }
 
-  // Navigate with hash
-  window.location.href = newPath + (hash || '');
+  window.location.href = finalUrl;
 }
 
 window.switchLanguage = switchLanguage;
