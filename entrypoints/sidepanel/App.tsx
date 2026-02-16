@@ -530,6 +530,9 @@ function App() {
       const cache = await caches.open('webllm/model');
 
       let offset = 8;
+      const tasks: { url: string; data: Uint8Array }[] = [];
+
+      // Phase 1: Parse file structure (Sync)
       for (let i = 0; i < fileCount; i++) {
         const urlLen = view.getUint32(offset);
         const url = decoder.decode(new Uint8Array(buffer, offset + 4, urlLen));
@@ -539,13 +542,23 @@ function App() {
         const data = new Uint8Array(buffer, offset + 8, size);
         offset += 8 + size;
 
-        await cache.put(url, new Response(data));
-
-        setProgress({
-          progress: ((i + 1) / fileCount) * 100,
-          text: `${t.importing} (${i + 1}/${fileCount})`,
-        });
+        tasks.push({ url, data });
       }
+
+      // Phase 2: Parallel Import (Async)
+      // PERFORMANCE: Using Promise.all allows concurrent Cache API writes, significantly speeding up import
+      let completed = 0;
+      await Promise.all(
+        tasks.map(async ({ url, data }) => {
+          // Wrap in Blob to satisfy TypeScript BodyInit requirement
+          await cache.put(url, new Response(new Blob([data as any])));
+          completed++;
+          setProgress({
+            progress: (completed / fileCount) * 100,
+            text: `${t.importing} (${completed}/${fileCount})`,
+          });
+        }),
+      );
 
       alert(t.import_success);
       setStatus('idle');
