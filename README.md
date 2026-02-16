@@ -129,7 +129,6 @@ AI proofduck is an intelligent writing assistant focused on **improving the qual
 - **tts**: Provides text-to-speech for accessibility and multi-modal proofreading.
 - **activeTab**: Adheres to the principle of least privilege, requesting temporary access to the current tab only when the user explicitly triggers the extension.
 - **contextMenus**: Adds a shortcut to the right-click menu, serving as a legitimate user-triggered interaction to grant `activeTab` access.
-- **scripting**: Used to safely read and process the selected text from the current page upon user activation.
 
 ### 3. Remote Code Declaration
 
