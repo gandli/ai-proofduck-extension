@@ -1,0 +1,3 @@
+## 2026-02-16 - Accessibility of Icon-Only Buttons
+**Learning:** Icon-only buttons in the sidepanel often relied on the `title` attribute, which is insufficient for robust accessibility across all screen readers. Several buttons were missing `aria-label` entirely, and some used hardcoded English fallbacks instead of proper translation keys, leading to localization gaps.
+**Action:** Always verify icon-only buttons have `aria-label` attributes sourced from `i18n` keys. When adding new translation keys, ensure they are added to all language blocks in `i18n.ts` to prevent test failures and ensure a consistent user experience across locales.

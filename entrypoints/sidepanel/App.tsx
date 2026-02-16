@@ -614,6 +614,7 @@ function App() {
             onClick={() => {
               setShowSettings(true);
             }}
+            aria-label={t.settings}
           >
             <SettingsIcon />
           </button>
@@ -628,13 +629,15 @@ function App() {
                 className="flex items-center justify-center p-1.5 text-slate-500 transition-all bg-white border border-slate-200 rounded-md cursor-pointer shadow-sm hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange hover:shadow-md hover:-translate-y-px dark:bg-brand-dark-surface dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]"
                 onClick={handleClear}
                 title={t.clear_btn || 'Clear'}
+                aria-label={t.clear_btn}
               >
                 <ClearIcon />
               </button>
               <button
                 className="flex items-center justify-center p-1.5 transition-all border rounded-md cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-px bg-brand-orange-light border-brand-orange/20 text-brand-orange hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange dark:bg-brand-dark-surface dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]"
                 onClick={handleFetchContent}
-                title={t.fetch_page_content || 'Fetch Page Content'}
+                title={t.fetch_page_content}
+                aria-label={t.fetch_page_content}
               >
                 <FetchIcon />
               </button>
@@ -676,6 +679,7 @@ function App() {
                   className="flex items-center justify-center p-1.5 text-slate-500 transition-all bg-white border border-slate-200 rounded-md cursor-pointer shadow-sm hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange hover:shadow-md hover:-translate-y-px dark:bg-brand-dark-surface dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]"
                   onClick={handleCopyResult}
                   title={t.copy_btn || 'Copy'}
+                  aria-label={t.copy_btn}
                 >
                   {copied ? (
                     '✓'
@@ -734,6 +738,7 @@ function App() {
               <button
                 className="flex items-center justify-center w-8 h-8 text-slate-500 border-none rounded-full cursor-pointer bg-slate-100 dark:bg-brand-dark-surface dark:text-slate-400"
                 onClick={() => setShowSettings(false)}
+                aria-label={t.close_btn}
               >
                 <CloseIcon />
               </button>
