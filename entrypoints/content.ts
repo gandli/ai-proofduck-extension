@@ -125,7 +125,7 @@ export default defineContentScript({
       console.log('[AI Proofduck] Showing translation for:', text.substring(0, 20) + '...');
       
       // Update storage so sidepanel stays in sync
-      await browser.storage.local.set({ selectedText: text });
+      await browser.runtime.sendMessage({ type: 'SET_SELECTED_TEXT', text });
 
       if (!translationPopup) {
         translationPopup = createTranslationPopup();
@@ -394,7 +394,7 @@ export default defineContentScript({
       icon.addEventListener('click', async (e: MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        await browser.storage.local.set({ selectedText });
+        await browser.runtime.sendMessage({ type: 'SET_SELECTED_TEXT', text: selectedText });
         browser.runtime.sendMessage({ type: 'OPEN_SIDE_PANEL' });
         hideIcon();
         hideTranslation();

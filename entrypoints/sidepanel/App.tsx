@@ -143,15 +143,17 @@ function App() {
     };
 
     // Initial load of selected text and settings
-    browser.storage.local
-      .get(['selectedText', 'settings', 'activeTab'])
-      .then(async (res: Record<string, unknown>) => {
-        let initialText = (res.selectedText as string) || '';
-        if (res.activeTab === 'settings') {
-          setShowSettings(true);
-          // Clear it so it doesn't persist on next normal open
-          browser.storage.local.remove('activeTab');
-        }
+    Promise.all([
+      browser.storage.local.get(['settings', 'activeTab']),
+      browser.storage.session.get(['selectedText']),
+    ]).then(async ([localRes, sessionRes]) => {
+      const res = { ...localRes, ...sessionRes } as Record<string, unknown>;
+      let initialText = (res.selectedText as string) || '';
+      if (res.activeTab === 'settings') {
+        setShowSettings(true);
+        // Clear it so it doesn't persist on next normal open
+        browser.storage.local.remove('activeTab');
+      }
 
         // If no text selected, try to get page content
         if (!initialText) {
@@ -202,7 +204,7 @@ function App() {
       });
 
     const listener = (changes: Record<string, { newValue?: unknown }>, areaName: string) => {
-      if (areaName === 'local') {
+      if (areaName === 'session') {
         if (changes.selectedText) {
           const newText = (changes.selectedText.newValue as string) || '';
           setSelectedText(newText);
@@ -215,6 +217,8 @@ function App() {
             expand: '',
           });
         }
+      }
+      if (areaName === 'local') {
         if (changes.activeTab && changes.activeTab.newValue === 'settings') {
           setShowSettings(true);
           browser.storage.local.remove('activeTab');
