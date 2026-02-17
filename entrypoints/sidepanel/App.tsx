@@ -394,6 +394,7 @@ function App() {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    console.log('[App] Starting bulk model file import...');
     setStatus('loading');
     setProgress({ progress: 0, text: t.importing });
 
@@ -404,6 +405,8 @@ function App() {
 
       const modelId = settings.localModel;
       const baseUrl = `https://huggingface.co/mlc-ai/${modelId}/resolve/main/`;
+      console.log(`[App] Importing files for model: ${modelId}`);
+      console.log(`[App] Base URL mapping: ${baseUrl}`);
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -412,6 +415,7 @@ function App() {
 
         const url = new URL(relativePath, baseUrl).toString();
         const response = new Response(file);
+        console.log(`[App] Caching: ${relativePath} -> ${url}`);
         await cache.put(url, response);
 
         count++;
@@ -421,16 +425,18 @@ function App() {
         });
       }
 
+      console.log(`[App] Successfully imported ${count} files.`);
       alert(t.import_success);
       setStatus('idle');
     } catch (err: unknown) {
-      console.error('Import failed:', err);
+      console.error('[App] Import failed:', err);
       setError(`${t.import_failed}: ${err instanceof Error ? err.message : String(err)}`);
       setStatus('error');
     }
   };
 
   const handleExportModel = async () => {
+    console.log('[App] Starting model export...');
     setStatus('loading');
     setProgress({ progress: 0, text: t.exporting });
     try {
@@ -438,14 +444,17 @@ function App() {
       const keys = await cache.keys();
       const modelId = settings.localModel;
 
+      console.log(`[App] Searching for cached files for model: ${modelId}`);
       // Filter keys related to current model
       const filteredKeys = keys.filter((req) => req.url.includes(modelId));
       if (filteredKeys.length === 0) {
+        console.warn(`[App] No cached files found for ${modelId}`);
         alert('No cached files found for this model.');
         setStatus('ready');
         return;
       }
 
+      console.log(`[App] Found ${filteredKeys.length} files to export.`);
       const filesData: { url: string; blob: Blob }[] = [];
       for (let i = 0; i < filteredKeys.length; i++) {
         const req = filteredKeys[i];
@@ -460,6 +469,7 @@ function App() {
       }
 
       // Pack into binary format
+      console.log('[App] Packing files into MLCP package...');
       // [Magic 4][FileCount 4]
       // For each: [URL_Len 4][URL][Size 8][Data]
       let totalSize = 8;
@@ -493,6 +503,7 @@ function App() {
         });
       }
 
+      console.log('[App] Packing complete. Triggering download.');
       const finalBlob = new Blob([buffer], { type: 'application/octet-stream' });
       const downloadUrl = URL.createObjectURL(finalBlob);
       const a = document.createElement('a');
@@ -501,10 +512,11 @@ function App() {
       a.click();
       URL.revokeObjectURL(downloadUrl);
 
+      console.log('[App] Export successful.');
       setStatus('ready');
       alert(t.export_success);
     } catch (err: unknown) {
-      console.error('Export failed:', err);
+      console.error('[App] Export failed:', err);
       alert(t.export_failed);
       setStatus('ready');
     }
@@ -514,6 +526,7 @@ function App() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    console.log(`[App] Starting package import for: ${file.name}`);
     setStatus('loading');
     setProgress({ progress: 0, text: t.importing });
 
@@ -523,10 +536,12 @@ function App() {
       const decoder = new TextDecoder();
 
       if (view.getUint32(0) !== 0x4d4c4350) {
+        console.error('[App] Invalid MLCP file format magic:', view.getUint32(0).toString(16));
         throw new Error('Invalid MLCP file format');
       }
 
       const fileCount = view.getUint32(4);
+      console.log(`[App] Package contains ${fileCount} files.`);
       const cache = await caches.open('webllm/model');
 
       let offset = 8;
@@ -539,6 +554,7 @@ function App() {
         const data = new Uint8Array(buffer, offset + 8, size);
         offset += 8 + size;
 
+        console.log(`[App] Restoring into cache: ${url} (${size} bytes)`);
         await cache.put(url, new Response(data));
 
         setProgress({
@@ -547,10 +563,11 @@ function App() {
         });
       }
 
+      console.log('[App] Package import successful.');
       alert(t.import_success);
       setStatus('idle');
     } catch (err: unknown) {
-      console.error('Import failed:', err);
+      console.error('[App] Package import failed:', err);
       alert(`${t.import_failed}: ${err instanceof Error ? err.message : String(err)}`);
       setStatus('error');
     }
@@ -792,16 +809,56 @@ function App() {
                       <option value="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">
                         Qwen2.5 1.5B (~1.1GB)
                       </option>
+                      <option value="Qwen2.5-3B-Instruct-q4f16_1-MLC">
+                        Qwen2.5 3B (~1.9GB)
+                      </option>
+                      <option value="Qwen2.5-7B-Instruct-q4f16_1-MLC">Qwen2.5 7B (~4.8GB)</option>
                       <option value="Qwen2-7B-Instruct-q4f16_1-MLC">Qwen2 7B (~4.8GB)</option>
+                    </optgroup>
+                    <optgroup label="DeepSeek">
+                      <option value="DeepSeek-R1-Distill-Qwen-1.5B-q4f16_1-MLC">
+                        DeepSeek R1 Distill Qwen 1.5B (~1.1GB)
+                      </option>
+                      <option value="DeepSeek-R1-Distill-Qwen-7B-q4f16_1-MLC">
+                        DeepSeek R1 Distill Qwen 7B (~4.8GB)
+                      </option>
+                      <option value="DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC">
+                        DeepSeek R1 Distill Llama 8B (~5.2GB)
+                      </option>
                     </optgroup>
                     <optgroup label="Llama">
                       <option value="Llama-3.2-1B-Instruct-q4f16_1-MLC">
                         Llama 3.2 1B (~780MB)
                       </option>
+                      <option value="Llama-3.1-8B-Instruct-q4f16_1-MLC">
+                        Llama 3.1 8B (~5.2GB)
+                      </option>
                       <option value="Llama-3-8B-Instruct-q4f16_1-MLC">Llama 3 8B (~5.2GB)</option>
                       <option value="Llama-2-7b-chat-hf-q4f16_1-MLC">Llama 2 7B (~4.5GB)</option>
                       <option value="Hermes-2-Pro-Llama-3-8B-q4f16_1-MLC">
                         Hermes-2 Pro Llama 3 8B (~5.2GB)
+                      </option>
+                    </optgroup>
+                    <optgroup label="Gemma">
+                      <option value="gemma-2-2b-it-q4f16_1-MLC">Gemma 2 2B (~1.7GB)</option>
+                      <option value="gemma-2-9b-it-q4f16_1-MLC">Gemma 2 9B (~5.6GB)</option>
+                    </optgroup>
+                    <optgroup label="Phi">
+                      <option value="Phi-3.5-mini-instruct-q4f16_1-MLC">
+                        Phi 3.5 Mini (~2.3GB)
+                      </option>
+                      <option value="Phi-3-mini-4k-instruct-q4f16_1-MLC">
+                        Phi 3 Mini (~2.3GB)
+                      </option>
+                      <option value="Phi-2-q4f16_1-MLC">Phi 2 (~1.6GB)</option>
+                      <option value="Phi-1_5-q4f16_1-MLC">Phi 1.5 (~0.9GB)</option>
+                    </optgroup>
+                    <optgroup label="SmolLM (极致轻量)">
+                      <option value="SmolLM2-1.7B-Instruct-q4f16_1-MLC">
+                        SmolLM2 1.7B (~1.1GB)
+                      </option>
+                      <option value="SmolLM2-360M-Instruct-q4f16_1-MLC">
+                        SmolLM2 360M (~280MB)
                       </option>
                     </optgroup>
                     <optgroup label="Mistral">
@@ -817,16 +874,6 @@ function App() {
                       <option value="OpenHermes-2.5-Mistral-7B-q4f16_1-MLC">
                         OpenHermes 2.5 Mistral 7B (~4.7GB)
                       </option>
-                    </optgroup>
-                    <optgroup label="Phi">
-                      <option value="Phi-3-mini-4k-instruct-q4f16_1-MLC">
-                        Phi 3 Mini (~2.3GB)
-                      </option>
-                      <option value="Phi-2-q4f16_1-MLC">Phi 2 (~1.6GB)</option>
-                      <option value="Phi-1_5-q4f16_1-MLC">Phi 1.5 (~0.9GB)</option>
-                    </optgroup>
-                    <optgroup label="Gemma">
-                      <option value="gemma-2b-it-q4f16_1-MLC">Gemma 2B (~1.7GB)</option>
                     </optgroup>
                   </select>
                 </div>

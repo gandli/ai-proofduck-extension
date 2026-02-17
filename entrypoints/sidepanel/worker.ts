@@ -25,15 +25,24 @@ class WebLLMWorker {
                 this.engine.setInitProgressCallback(onProgress);
             }
 
-            console.log(`[Worker] Loading WebLLM model: ${model} on ${engineType}`);
+            const modelUrl = `https://huggingface.co/mlc-ai/${model}/resolve/main/`;
+            const repoUrl = `https://huggingface.co/mlc-ai/${model}`;
+            console.log(`[Worker] Starting to load/reload WebLLM model:
+              - Name: ${model}
+              - Engine: ${engineType}
+              - Repo URL: ${repoUrl}
+              - Base URL: ${modelUrl}
+              - Context Window: 8192`);
             try {
                 await this.engine.reload(model, {
                     context_window_size: 8192,
                 });
+                console.log(`[Worker] Model ${model} loaded successfully.`);
                 // Update state only after successful reload
                 this.currentModel = model;
                 this.currentEngineType = engineType;
             } catch (error) {
+                console.error(`[Worker] Failed to load model ${model}:`, error);
                 // If reload fails, reset internal state so it retries next time
                 this.currentModel = "";
                 this.currentEngineType = "";
@@ -165,6 +174,17 @@ self.onmessage = async (event: MessageEvent) => {
     if (type === "load") {
         try {
             await WebLLMWorker.getEngine(settings, (progress) => {
+                if (progress.text.includes('Fetching') || progress.text.includes('Loading')) {
+                    let logText = progress.text;
+                    // Attempt to append full URL if it's a "Fetching [file]" status
+                    if (progress.text.startsWith('Fetching ')) {
+                        const fileName = progress.text.replace('Fetching ', '').split(' ')[0];
+                        const model = settings?.localModel || "Qwen2.5-0.5B-Instruct-q4f16_1-MLC";
+                        const fullUrl = `https://huggingface.co/mlc-ai/${model}/resolve/main/${fileName}`;
+                        logText = `Fetching ${fileName} from ${fullUrl}`;
+                    }
+                    console.log(`[Worker] Model Init Progress: ${Math.round(progress.progress * 100)}% - ${logText}`);
+                }
                 self.postMessage({
                     type: "progress",
                     progress: { status: "progress", progress: progress.progress * 100, text: progress.text }
