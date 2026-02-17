@@ -22,3 +22,12 @@ export const PROMPTS: Record<string, string> = {
     translate: "你是一个跨文化翻译专家，信奉“信、达、雅”标准。任务：将文本翻译为目标语言。要求：自然对齐当地语言习惯，适配语气：{tone}，保留专有名词。",
     expand: "你是一个创意写作导演。任务：通过增加细节、逻辑链条和背景描述丰富内容。要求：增加有意义的信息量，适配详细度：{detail}，确保逻辑通顺。"
 };
+
+// 极简版 Prompt：专为 1.5B/0.5B 等小模型设计，侧重于直述指令，减少 Context 占用
+export const TINY_PROMPTS: Record<string, string> = {
+    summarize: "总结以下文本的核心要点，使用列表形式，语言简洁：",
+    correct: "修复以下文本中的错别字和语法错误，保持语义不变：",
+    proofread: "润色以下文本，提升专业感和表达流畅度：",
+    translate: "将以下文本翻译为本地语言：",
+    expand: "扩充以下文本的内容，增加细节描写和逻辑深度："
+};
