@@ -61,7 +61,12 @@ export const translations: Record<string, any> = {
         clear_btn: '清除',
         char_count: '字符',
         auto_speak_label: '自动朗读结果',
-        connection_error: '无法获取网页内容。请确保已在当前页面点击或通过右键菜单激活（由于最小权限限制）。'
+        connection_error: '无法获取网页内容。请确保已在当前页面点击或通过右键菜单激活（由于最小权限限制）。',
+        recommended_label: '推荐',
+        ram_info: '检测到系统内存约为 ',
+        search_placeholder: '搜索模型...',
+        history_label: '最近使用',
+        select_category: '选择分类'
     },
     'English': {
         title: 'AI Assistant',
@@ -125,7 +130,12 @@ export const translations: Record<string, any> = {
         clear_btn: 'Clear',
         char_count: 'chars',
         auto_speak_label: 'Auto Speak Results',
-        connection_error: 'Could not fetch page content. Please click on the page or use context menu to activate (due to permission restrictions).'
+        connection_error: 'Could not fetch page content. Please click on the page or use context menu to activate (due to permission restrictions).',
+        recommended_label: 'Recommended',
+        ram_info: 'System RAM detected: ~',
+        search_placeholder: 'Search models...',
+        history_label: 'Recently Used',
+        select_category: 'Select Category'
     },
     '日本語': {
         title: 'AIアシスタント',

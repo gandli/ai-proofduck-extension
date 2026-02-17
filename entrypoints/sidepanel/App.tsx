@@ -8,7 +8,10 @@ import {
   ExportIcon,
   ImportIcon,
   ClearIcon,
+  SearchIcon,
+  ChevronDownIcon,
 } from './components/Icons';
+import modelConfig from './models.json';
 
 type ModeKey = 'summarize' | 'correct' | 'proofread' | 'translate' | 'expand';
 
@@ -70,6 +73,62 @@ function App() {
   const worker = useRef<Worker | null>(null);
   const settingsRef = useRef(settings);
   const statusRef = useRef(status);
+  const [modelSearch, setModelSearch] = useState('');
+  const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [modelHistory, setModelHistory] = useState<string[]>([]);
+  const modelDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    browser.storage.local.get(['modelHistory']).then((res: { modelHistory?: string[] }) => {
+      if (res.modelHistory) setModelHistory(res.modelHistory);
+    });
+  }, []);
+
+  // Update history when model changes
+  const addToHistory = (modelId: string) => {
+    const newHistory = [modelId, ...modelHistory.filter(id => id !== modelId)].slice(0, 5);
+    setModelHistory(newHistory);
+    browser.storage.local.set({ modelHistory: newHistory });
+  };
+
+  // Outside click listener for model dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modelDropdownRef.current && !modelDropdownRef.current.contains(event.target as Node)) {
+        setIsModelDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [modelHistory]);
+
+  // Filter Categories and Models
+  const categoriesWithModels = modelConfig.categories.map(cat => ({
+    ...cat,
+    filteredModels: cat.models.filter(m => 
+      m.name.toLowerCase().includes(modelSearch.toLowerCase()) ||
+      m.value.toLowerCase().includes(modelSearch.toLowerCase())
+    )
+  })).filter(cat => cat.filteredModels.length > 0);
+
+  const historyModels = modelHistory.map(id => {
+    let found;
+    modelConfig.categories.forEach(c => {
+      const m = c.models.find(mod => mod.value === id);
+      if (m) found = m;
+    });
+    return found;
+  }).filter((m): m is any => !!m);
+
+  const activeCat = selectedCategory || (categoriesWithModels[0]?.label);
+  const currentCategoryObj = categoriesWithModels.find(c => c.label === activeCat) || categoriesWithModels[0];
+
+  useEffect(() => {
+    if (isModelDropdownOpen && !selectedCategory && categoriesWithModels.length > 0) {
+      setSelectedCategory(categoriesWithModels[0].label);
+    }
+  }, [isModelDropdownOpen]);
 
   useEffect(() => {
     settingsRef.current = settings;
@@ -794,88 +853,157 @@ function App() {
               </div>
               {(settings.engine === 'local-gpu' || settings.engine === 'local-wasm') && (
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] text-slate-500 font-semibold uppercase dark:text-slate-400">
+                  <label className="text-[11px] text-slate-500 font-semibold uppercase dark:text-slate-400 flex justify-between">
                     {t.model_label}
+                    <span className="text-brand-orange lowercase">
+                      {t.ram_info}{(navigator as any).deviceMemory || 8}GB
+                    </span>
                   </label>
-                  <select
-                    className="p-2.5 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:border-brand-orange focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-orange/10 dark:bg-brand-dark-bg dark:border-[#4a4a6a] dark:text-slate-200 dark:focus:bg-brand-dark-surface"
-                    value={settings.localModel}
-                    onChange={(e) => updateSettings({ localModel: e.target.value })}
-                  >
-                    <optgroup label="Qwen (通义千问)">
-                      <option value="Qwen2.5-0.5B-Instruct-q4f16_1-MLC">
-                        Qwen2.5 0.5B (~380MB)
-                      </option>
-                      <option value="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">
-                        Qwen2.5 1.5B (~1.1GB)
-                      </option>
-                      <option value="Qwen2.5-3B-Instruct-q4f16_1-MLC">
-                        Qwen2.5 3B (~1.9GB)
-                      </option>
-                      <option value="Qwen2.5-7B-Instruct-q4f16_1-MLC">Qwen2.5 7B (~4.8GB)</option>
-                      <option value="Qwen2-7B-Instruct-q4f16_1-MLC">Qwen2 7B (~4.8GB)</option>
-                    </optgroup>
-                    <optgroup label="DeepSeek">
-                      <option value="DeepSeek-R1-Distill-Qwen-1.5B-q4f16_1-MLC">
-                        DeepSeek R1 Distill Qwen 1.5B (~1.1GB)
-                      </option>
-                      <option value="DeepSeek-R1-Distill-Qwen-7B-q4f16_1-MLC">
-                        DeepSeek R1 Distill Qwen 7B (~4.8GB)
-                      </option>
-                      <option value="DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC">
-                        DeepSeek R1 Distill Llama 8B (~5.2GB)
-                      </option>
-                    </optgroup>
-                    <optgroup label="Llama">
-                      <option value="Llama-3.2-1B-Instruct-q4f16_1-MLC">
-                        Llama 3.2 1B (~780MB)
-                      </option>
-                      <option value="Llama-3.1-8B-Instruct-q4f16_1-MLC">
-                        Llama 3.1 8B (~5.2GB)
-                      </option>
-                      <option value="Llama-3-8B-Instruct-q4f16_1-MLC">Llama 3 8B (~5.2GB)</option>
-                      <option value="Llama-2-7b-chat-hf-q4f16_1-MLC">Llama 2 7B (~4.5GB)</option>
-                      <option value="Hermes-2-Pro-Llama-3-8B-q4f16_1-MLC">
-                        Hermes-2 Pro Llama 3 8B (~5.2GB)
-                      </option>
-                    </optgroup>
-                    <optgroup label="Gemma">
-                      <option value="gemma-2-2b-it-q4f16_1-MLC">Gemma 2 2B (~1.7GB)</option>
-                      <option value="gemma-2-9b-it-q4f16_1-MLC">Gemma 2 9B (~5.6GB)</option>
-                    </optgroup>
-                    <optgroup label="Phi">
-                      <option value="Phi-3.5-mini-instruct-q4f16_1-MLC">
-                        Phi 3.5 Mini (~2.3GB)
-                      </option>
-                      <option value="Phi-3-mini-4k-instruct-q4f16_1-MLC">
-                        Phi 3 Mini (~2.3GB)
-                      </option>
-                      <option value="Phi-2-q4f16_1-MLC">Phi 2 (~1.6GB)</option>
-                      <option value="Phi-1_5-q4f16_1-MLC">Phi 1.5 (~0.9GB)</option>
-                    </optgroup>
-                    <optgroup label="SmolLM (极致轻量)">
-                      <option value="SmolLM2-1.7B-Instruct-q4f16_1-MLC">
-                        SmolLM2 1.7B (~1.1GB)
-                      </option>
-                      <option value="SmolLM2-360M-Instruct-q4f16_1-MLC">
-                        SmolLM2 360M (~280MB)
-                      </option>
-                    </optgroup>
-                    <optgroup label="Mistral">
-                      <option value="Mistral-7B-Instruct-v0.3-q4f16_1-MLC">
-                        Mistral 7B v0.3 (~4.7GB)
-                      </option>
-                      <option value="Hermes-2-Pro-Mistral-7B-q4f16_1-MLC">
-                        Hermes-2 Pro Mistral 7B (~4.7GB)
-                      </option>
-                      <option value="NeuralHermes-2.5-Mistral-7B-q4f16_1-MLC">
-                        NeuralHermes 2.5 Mistral 7B (~4.7GB)
-                      </option>
-                      <option value="OpenHermes-2.5-Mistral-7B-q4f16_1-MLC">
-                        OpenHermes 2.5 Mistral 7B (~4.7GB)
-                      </option>
-                    </optgroup>
-                  </select>
+                  <div className="relative" ref={modelDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
+                      className="w-full flex items-center justify-between p-2.5 border border-slate-200 rounded-lg text-sm bg-slate-50 hover:bg-white hover:border-brand-orange transition-all dark:bg-brand-dark-bg dark:border-[#4a4a6a] dark:text-slate-200 dark:hover:bg-brand-dark-surface"
+                    >
+                      <span className="truncate">
+                        {(() => {
+                          let foundName = settings.localModel;
+                          modelConfig.categories.forEach(c => {
+                            const m = c.models.find(mod => mod.value === settings.localModel);
+                            if (m) foundName = m.name;
+                          });
+                          return foundName;
+                        })()}
+                      </span>
+                      <ChevronDownIcon />
+                    </button>
+
+                    {isModelDropdownOpen && (
+                      <div className="absolute left-0 right-0 mt-2 glass-surface rounded-xl overflow-hidden z-20 animate-slide-in">
+                        {/* Search Header */}
+                        <div className="p-3 border-b border-slate-100 dark:border-white/5 bg-white/80 dark:bg-white/5 backdrop-blur-md">
+                          <div className="relative">
+                            <i className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                              <SearchIcon />
+                            </i>
+                            <input
+                              autoFocus
+                              type="text"
+                              value={modelSearch}
+                              onChange={(e) => setModelSearch(e.target.value)}
+                              placeholder={t.search_placeholder}
+                              className="w-full pl-10 pr-4 py-2 text-sm bg-slate-100/50 border-none rounded-xl focus:ring-0 dark:bg-white/5 dark:text-slate-100 placeholder:text-slate-400"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col h-[480px] overflow-hidden bg-white/50 dark:bg-brand-dark-bg/50 backdrop-blur-xl">
+                          {/* Categories Horizontal Bar */}
+                          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/5 px-2">
+                            {/* Recently Used */}
+                            {historyModels.length > 0 && !modelSearch && (
+                              <button
+                                onClick={() => setSelectedCategory('history')}
+                                className={`flex shrink-0 items-center justify-center p-3 gap-2 text-[11px] font-bold transition-all border-b-2 ${selectedCategory === 'history' ? 'border-brand-orange text-brand-orange bg-white dark:bg-white/10' : 'border-transparent text-slate-400 grayscale hover:grayscale-0'}`}
+                              >
+                                <div className="w-5 h-5 flex items-center justify-center rounded-md bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10">
+                                  <FetchIcon />
+                                </div>
+                                <span>{t.history_label}</span>
+                              </button>
+                            )}
+                            {categoriesWithModels.map((cat) => (
+                              <button
+                                key={cat.label}
+                                onClick={() => setSelectedCategory(cat.label)}
+                                className={`flex shrink-0 items-center justify-center p-3 gap-2 text-[11px] font-extrabold transition-all border-b-2 ${selectedCategory === cat.label || (!selectedCategory && categoriesWithModels[0].label === cat.label) ? 'border-brand-orange text-brand-orange bg-white dark:bg-white/10' : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
+                              >
+                                <div className={`w-5 h-5 flex items-center justify-center rounded-md text-[10px] ${selectedCategory === cat.label ? 'bg-brand-orange/10 text-brand-orange' : 'bg-slate-200/50 dark:bg-white/10 text-slate-400 font-black'}`}>
+                                  {cat.label.charAt(0)}
+                                </div>
+                                <span className="whitespace-nowrap uppercase tracking-tighter">{cat.label}</span>
+                              </button>
+                            ))}
+                          </div>
+ 
+                          {/* Models Grid (Full Width) */}
+                          <div className="flex-1 overflow-y-auto p-3 custom-scrollbar space-y-2.5">
+                            {modelSearch ? (
+                              categoriesWithModels.map(cat => (
+                                <div key={cat.label} className="space-y-1.5 pb-2">
+                                  <div className="px-2 py-1 text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.2em]">{cat.label}</div>
+                                  {cat.filteredModels.map(m => (
+                                    <button
+                                      key={m.value}
+                                      onClick={() => { updateSettings({ localModel: m.value }); addToHistory(m.value); setIsModelDropdownOpen(false); }}
+                                      className={`w-full p-4 rounded-2xl text-left border transition-all relative overflow-hidden group ${settings.localModel === m.value ? 'bg-brand-orange text-white border-brand-orange shadow-lg' : 'bg-white/60 border-slate-100 hover:border-brand-orange/30 dark:bg-white/5 dark:border-white/5 dark:hover:bg-white/10'}`}
+                                    >
+                                      <div className="flex items-center justify-between gap-3">
+                                        <div className="flex-1 min-w-0">
+                                          <div className="text-sm font-black tracking-tight truncate">{m.name}</div>
+                                          <div className={`text-[9px] mt-1 font-mono tracking-tighter truncate ${settings.localModel === m.value ? 'text-white/60' : 'text-slate-400'}`}>{m.value}</div>
+                                        </div>
+                                        {(navigator as any).deviceMemory && m.rawSize > 0 && m.rawSize < ((navigator as any).deviceMemory * 1024 * 1024 * 1024 * 0.4) && (
+                                          <div className={`shrink-0 px-2 py-1 rounded-lg ${settings.localModel === m.value ? 'bg-white/20' : 'bg-brand-orange/10 dark:bg-brand-orange/20'}`}>
+                                            <span className={`text-[8px] font-black uppercase tracking-tight ${settings.localModel === m.value ? 'text-white' : 'text-brand-orange'}`}>
+                                              {t.recommended_label}
+                                            </span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </button>
+                                  ))}
+                                </div>
+                              ))
+                            ) : selectedCategory === 'history' ? (
+                              historyModels.map(m => (
+                                <button
+                                  key={m.value}
+                                  onClick={() => { updateSettings({ localModel: m.value }); addToHistory(m.value); setIsModelDropdownOpen(false); }}
+                                  className={`w-full p-4 rounded-2xl text-left border transition-all relative overflow-hidden ${settings.localModel === m.value ? 'bg-brand-orange text-white border-brand-orange shadow-lg' : 'bg-white/60 border-slate-100 hover:border-brand-orange/30 dark:bg-white/5 dark:border-white/5 dark:hover:bg-white/10'}`}
+                                >
+                                  <div className="flex-1 min-w-0">
+                                    <div className="text-sm font-black tracking-tight truncate">{m.name}</div>
+                                    <div className={`text-[9px] mt-1 font-mono tracking-tighter truncate ${settings.localModel === m.value ? 'text-white/60' : 'text-slate-400'}`}>{m.value}</div>
+                                  </div>
+                                </button>
+                              ))
+                            ) : (
+                              (currentCategoryObj?.filteredModels || []).map(m => {
+                                const isSelected = settings.localModel === m.value;
+                                const ramGB = (navigator as any).deviceMemory || 8;
+                                const isRecommended = m.rawSize > 0 && m.rawSize < ramGB * 1024 * 1024 * 1024 * 0.4;
+                                return (
+                                  <button
+                                    key={m.value}
+                                    onClick={() => { updateSettings({ localModel: m.value }); addToHistory(m.value); setIsModelDropdownOpen(false); }}
+                                    className={`w-full p-4 rounded-2xl text-left border transition-all group relative overflow-hidden ${isSelected ? 'bg-brand-orange text-white border-brand-orange shadow-lg' : 'bg-white/50 border-slate-100 hover:bg-white hover:border-brand-orange/30 dark:bg-[#2c2c3a] dark:border-white/5 dark:hover:bg-[#34344a]'}`}
+                                  >
+                                    {isSelected && (
+                                      <div className="absolute top-0 right-0 p-1 opacity-20">
+                                        <div className="w-12 h-12 rounded-full border-[8px] border-white/30 translate-x-4 -translate-y-4"></div>
+                                      </div>
+                                    )}
+                                    <div className="flex items-center justify-between gap-3">
+                                      <div className="flex-1 min-w-0">
+                                        <div className="text-sm font-black tracking-tight truncate">{m.name}</div>
+                                        <div className={`text-[9px] mt-1 font-mono tracking-tighter truncate ${isSelected ? 'text-white/60' : 'text-slate-400'}`}>{m.value}</div>
+                                      </div>
+                                      {isRecommended && (
+                                        <div className={`shrink-0 flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg ${isSelected ? 'bg-white/10' : 'bg-emerald-500/5 dark:bg-emerald-500/10'}`}>
+                                          <span className={`text-[8px] font-black uppercase tracking-tight ${isSelected ? 'text-white' : 'text-emerald-500'}`}>{t.recommended_label}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </button>
+                                );
+                              })
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
