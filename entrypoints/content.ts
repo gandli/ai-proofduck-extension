@@ -280,6 +280,9 @@ export default defineContentScript({
           statusLabel.textContent = 'COMPLETED';
         } else if (response && response.error) {
           handleError(response.error);
+        } else if (response && response.status === 'translation_started') {
+          // Successfully started, now wait for WORKER_UPDATE broadcasts
+          console.log('[AI Proofduck] Translation intent accepted by background.');
         } else {
           handleError('UNAVAILABLE');
         }
@@ -486,6 +489,22 @@ export default defineContentScript({
         const selection = window.getSelection();
         const text = selection?.toString().trim();
         sendResponse({ content: text || document.body.innerText });
+      } else if (message.type === 'WORKER_UPDATE') {
+        // Handle incoming translation results for the floating popup
+        const { type, text, mode: msgMode } = message.data;
+        if (translationPopup && translationPopup.style.display === 'block' && msgMode === 'translate') {
+          const shadowRootNode = translationPopup.shadowRoot!;
+          const contentEl = shadowRootNode.getElementById('translation-text')!;
+          const statusLabel = shadowRootNode.getElementById('status-label')!;
+          
+          if (type === 'update' || type === 'complete') {
+            contentEl.textContent = text || 'Translating...';
+            if (type === 'complete') statusLabel.textContent = 'COMPLETED';
+          } else if (type === 'error') {
+            statusLabel.textContent = 'ERROR';
+            contentEl.textContent = `Error: ${message.data.error}`;
+          }
+        }
       }
     });
 

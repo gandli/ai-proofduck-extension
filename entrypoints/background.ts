@@ -85,6 +85,30 @@ export default defineBackground(() => {
     } else if (message.type === 'INIT_ENGINE' || message.type === 'GENERATE') {
       handleEngineCommand(message);
       sendResponse({ status: 'forwarded_to_offscreen' });
+    } else if (message.type === 'QUICK_TRANSLATE') {
+      browser.storage.local.get('settings').then(res => {
+        const safeSettings = {
+          engine: 'local-gpu',
+          extensionLanguage: '中文',
+          tone: 'professional',
+          localModel: 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',
+          ...(res.settings || {})
+        };
+        handleEngineCommand({
+          type: 'GENERATE',
+          text: message.text,
+          mode: 'translate',
+          settings: safeSettings
+        });
+      });
+      sendResponse({ status: 'translation_started' });
+    } else if (message.type === 'WORKER_UPDATE') {
+      // Forward worker updates (like translation progress) to the active tab's content script
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]?.id) {
+          chrome.tabs.sendMessage(tabs[0].id, message).catch(() => {});
+        }
+      });
     } else if (message.type === 'RESET_ENGINE') {
       handleEngineCommand(message);
       browser.storage.local.set({ 

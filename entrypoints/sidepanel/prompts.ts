@@ -1,33 +1,32 @@
 export const TONE_MAP: Record<string, string> = {
-    professional: "专业且正式",
-    casual: "轻松且口语化",
-    academic: "学术且严谨",
-    concise: "极其简练"
+    professional: "专业",
+    casual: "轻松",
+    academic: "严谨",
+    concise: "极其简洁"
 };
 
 export const DETAIL_MAP: Record<string, string> = {
-    standard: "标准平衡",
-    detailed: "丰富详尽",
-    creative: "充满创意与文学性"
+    standard: "标准",
+    detailed: "详细",
+    creative: "创意"
 };
 
-export const BASE_CONSTRAINT = "。绝对禁止输出任何引言、解释、前后缀、对照或 Markdown 代码块。禁言废话，禁言元描述。";
-
-export const SUFFIX_CONSTRAINT = "\n\n【注意】：严禁废话，不准解释，只返回处理后的内容。";
+// 全局输出引导
+export const GLOBAL_GUIDE = "请直接输出结果：";
 
 export const PROMPTS: Record<string, string> = {
-    summarize: "你是一个专业的首席速读官。任务：提取文本核心观点与关键事实。要求：采用层级化陈述，过滤背景噪音，保持客观，保留关键数据。",
-    correct: "你是一个极其严谨的资深校对员。任务：修复拼写、语法、标点错误。要求：严禁改变原文风格、语序或词汇选择，保持段落结构原封不动。",
-    proofread: "你是一个大厂资深文案编辑。任务：提升文本流畅度、专业感和吸引力。要求：优化句式用词，适配语气：{tone}，修正逻辑瑕疵。",
-    translate: "你是一个跨文化翻译专家，信奉“信、达、雅”标准。任务：将文本翻译为目标语言。要求：自然对齐当地语言习惯，适配语气：{tone}，保留专有名词。",
-    expand: "你是一个创意写作导演。任务：通过增加细节、逻辑链条和背景描述丰富内容。要求：增加有意义的信息量，适配详细度：{detail}，确保逻辑通顺。"
+    summarize: "请总结以下内容：\n",
+    correct: "请修正以下内容的拼写和语法：\n",
+    proofread: "请以 {tone} 的风格润色以下内容：\n",
+    translate: "请翻译以下内容为 {targetLang}:\n",
+    expand: "请扩写以下内容:\n"
 };
 
-// 极简版 Prompt：专为 1.5B/0.5B 等小模型设计，侧重于直述指令，减少 Context 占用
+// 极简版 Prompt：专为小模型设计，侧重于直述指令，零冗余
 export const TINY_PROMPTS: Record<string, string> = {
-    summarize: "总结以下文本的核心要点，使用列表形式，语言简洁：",
-    correct: "修复以下文本中的错别字和语法错误，保持语义不变：",
-    proofread: "润色以下文本，提升专业感和表达流畅度：",
-    translate: "将以下文本翻译为本地语言：",
-    expand: "扩充以下文本的内容，增加细节描写和逻辑深度："
+    summarize: "总结：\n",
+    correct: "修正：\n",
+    proofread: "润色：\n",
+    translate: "翻译为{targetLang}：\n",
+    expand: "扩充：\n"
 };
