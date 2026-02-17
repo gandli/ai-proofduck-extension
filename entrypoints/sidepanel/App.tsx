@@ -597,30 +597,35 @@ function App() {
             <button
               className={`flex-1 py-2 px-0.5 border-none bg-transparent rounded-md text-[11px] font-semibold text-slate-600 cursor-pointer transition-all hover:bg-brand-orange/10 hover:text-brand-orange dark:text-slate-400 dark:hover:bg-brand-orange/15 dark:hover:text-[#ff7a3d] ${mode === 'summarize' ? 'bg-white text-brand-orange shadow-sm dark:bg-[#2a2a3e] dark:text-[#ff7a3d]' : ''}`}
               onClick={() => setMode('summarize')}
+              aria-pressed={mode === 'summarize'}
             >
               {t.mode_summarize}
             </button>
             <button
               className={`flex-1 py-2 px-0.5 border-none bg-transparent rounded-md text-[11px] font-semibold text-slate-600 cursor-pointer transition-all hover:bg-brand-orange/10 hover:text-brand-orange dark:text-slate-400 dark:hover:bg-brand-orange/15 dark:hover:text-[#ff7a3d] ${mode === 'correct' ? 'bg-white text-brand-orange shadow-sm dark:bg-[#2a2a3e] dark:text-[#ff7a3d]' : ''}`}
               onClick={() => setMode('correct')}
+              aria-pressed={mode === 'correct'}
             >
               {t.mode_correct}
             </button>
             <button
               className={`flex-1 py-2 px-0.5 border-none bg-transparent rounded-md text-[11px] font-semibold text-slate-600 cursor-pointer transition-all hover:bg-brand-orange/10 hover:text-brand-orange dark:text-slate-400 dark:hover:bg-brand-orange/15 dark:hover:text-[#ff7a3d] ${mode === 'proofread' ? 'bg-white text-brand-orange shadow-sm dark:bg-[#2a2a3e] dark:text-[#ff7a3d]' : ''}`}
               onClick={() => setMode('proofread')}
+              aria-pressed={mode === 'proofread'}
             >
               {t.mode_proofread}
             </button>
             <button
               className={`flex-1 py-2 px-0.5 border-none bg-transparent rounded-md text-[11px] font-semibold text-slate-600 cursor-pointer transition-all hover:bg-brand-orange/10 hover:text-brand-orange dark:text-slate-400 dark:hover:bg-brand-orange/15 dark:hover:text-[#ff7a3d] ${mode === 'translate' ? 'bg-white text-brand-orange shadow-sm dark:bg-[#2a2a3e] dark:text-[#ff7a3d]' : ''}`}
               onClick={() => setMode('translate')}
+              aria-pressed={mode === 'translate'}
             >
               {t.mode_translate}
             </button>
             <button
               className={`flex-1 py-2 px-0.5 border-none bg-transparent rounded-md text-[11px] font-semibold text-slate-600 cursor-pointer transition-all hover:bg-brand-orange/10 hover:text-brand-orange dark:text-slate-400 dark:hover:bg-brand-orange/15 dark:hover:text-[#ff7a3d] ${mode === 'expand' ? 'bg-white text-brand-orange shadow-sm dark:bg-[#2a2a3e] dark:text-[#ff7a3d]' : ''}`}
               onClick={() => setMode('expand')}
+              aria-pressed={mode === 'expand'}
             >
               {t.mode_expand}
             </button>
@@ -631,6 +636,7 @@ function App() {
             onClick={() => {
               setShowSettings(true);
             }}
+            aria-label={t.open_settings}
           >
             <SettingsIcon />
           </button>
@@ -645,6 +651,7 @@ function App() {
                 className="flex items-center justify-center p-1.5 text-slate-500 transition-all bg-white border border-slate-200 rounded-md cursor-pointer shadow-sm hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange hover:shadow-md hover:-translate-y-px dark:bg-brand-dark-surface dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]"
                 onClick={handleClear}
                 title={t.clear_btn || 'Clear'}
+                aria-label={t.clear_btn}
               >
                 <ClearIcon />
               </button>
@@ -652,6 +659,7 @@ function App() {
                 className="flex items-center justify-center p-1.5 transition-all border rounded-md cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-px bg-brand-orange-light border-brand-orange/20 text-brand-orange hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange dark:bg-brand-dark-surface dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]"
                 onClick={handleFetchContent}
                 title={t.fetch_page_content || 'Fetch Page Content'}
+                aria-label={t.fetch_page_content}
               >
                 <FetchIcon />
               </button>
@@ -693,6 +701,7 @@ function App() {
                   className="flex items-center justify-center p-1.5 text-slate-500 transition-all bg-white border border-slate-200 rounded-md cursor-pointer shadow-sm hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange hover:shadow-md hover:-translate-y-px dark:bg-brand-dark-surface dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]"
                   onClick={handleCopyResult}
                   title={t.copy_btn || 'Copy'}
+                  aria-label={t.copy_btn}
                 >
                   {copied ? (
                     '✓'
@@ -751,6 +760,7 @@ function App() {
               <button
                 className="flex items-center justify-center w-8 h-8 text-slate-500 border-none rounded-full cursor-pointer bg-slate-100 dark:bg-brand-dark-surface dark:text-slate-400"
                 onClick={() => setShowSettings(false)}
+                aria-label={t.close_settings}
               >
                 <CloseIcon />
               </button>
