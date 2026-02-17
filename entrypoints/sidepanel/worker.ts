@@ -27,7 +27,9 @@ class WebLLMWorker {
         }
 
         // Qwen 系列转换
-        if (baseName.includes("Qwen1.5")) baseName = baseName.replace("Qwen1.5", "Qwen2");
+        if (baseName.includes("Qwen1.5") || baseName.includes("Qwen2.5")) {
+            baseName = baseName.replace(/Qwen1\.5|Qwen2\.5/, "Qwen2");
+        }
         if (baseName.includes("-Chat")) baseName = baseName.replace("-Chat", "-Instruct");
         
         // 提取量化信息 (如 q4f16_1)
