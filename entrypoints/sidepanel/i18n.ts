@@ -31,7 +31,7 @@ export const translations: Record<string, any> = {
         detail_label: '扩写详细度',
         save_btn: '保存并应用设置',
         wasm_warning: 'WASM 模式初次加载或转换较慢，请耐心等待...',
-        loading_tip: '初次加载模型可能需要几分钟，请不要关闭侧边栏',
+        loading_tip: '初次加载模型可能需要几分钟，请耐心等待...',
         tone_professional: '专业且正式',
         tone_casual: '轻松且口语',
         tone_academic: '学术且严谨',
