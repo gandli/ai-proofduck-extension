@@ -70,6 +70,7 @@ function App() {
   const worker = useRef<Worker | null>(null);
   const settingsRef = useRef(settings);
   const statusRef = useRef(status);
+  const saveTimeoutRef = useRef<any>(null);
 
   useEffect(() => {
     settingsRef.current = settings;
@@ -370,16 +371,19 @@ function App() {
     const engineChanged = newSettings.engine && newSettings.engine !== settings.engine;
     const modelChanged = newSettings.localModel && newSettings.localModel !== settings.localModel;
 
-    // Persist settings
-    if (typeof browser !== 'undefined' && browser.storage) {
-      const { apiKey, ...settingsWithoutKey } = updated;
-      await browser.storage.local.set({ settings: { ...settingsWithoutKey, apiKey: '' } });
-      if (apiKey) {
-        await browser.storage.session.set({ apiKey }).catch(() => {
-          browser.storage.local.set({ settings: updated });
-        });
+    // Persist settings (Debounced)
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(async () => {
+      if (typeof browser !== 'undefined' && browser.storage) {
+        const { apiKey, ...settingsWithoutKey } = updated;
+        await browser.storage.local.set({ settings: { ...settingsWithoutKey, apiKey: '' } });
+        if (apiKey) {
+          await browser.storage.session.set({ apiKey }).catch(() => {
+            browser.storage.local.set({ settings: updated });
+          });
+        }
       }
-    }
+    }, 500);
 
     // Handle engine/model side effects
     if (updated.engine === 'online') {
