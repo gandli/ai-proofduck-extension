@@ -264,11 +264,16 @@ function App() {
   };
 
   const handleReset = () => {
-    browser.runtime.sendMessage({ type: 'RESET_ENGINE' }).then(() => {
-      setStatus('idle');
-      setProgress({ progress: 0, text: '' });
-      setError('');
-    });
+    browser.runtime.sendMessage({ type: 'RESET_ENGINE' })
+      .then(() => {
+        setStatus('idle');
+        setProgress({ progress: 0, text: '' });
+        setError('');
+      })
+      .catch((err) => {
+        console.error('[App] Failed to send RESET_ENGINE message:', err);
+        setStatus('idle');
+      });
   };
 
   const handleFetchContent = async () => {

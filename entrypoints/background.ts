@@ -9,44 +9,33 @@ const MODES = [
 export default defineBackground(() => {
   console.log('Background Service Worker initialized.');
 
-  let worker: Worker | null = null;
-  let engineStatus = 'idle';
-
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 
-  // Initialize Worker in background
-  function ensureWorker() {
-    if (worker) return worker;
-    console.log('[Background] Initializing Model Worker...');
-    worker = new Worker(new URL('./sidepanel/worker.ts', import.meta.url), {
-      type: 'module',
+  // Manage Offscreen Document for WebLLM Engine
+  async function setupOffscreenDocument() {
+    // Check if offscreen document already exists
+    const existingContexts = await chrome.runtime.getContexts({
+      contextTypes: [chrome.runtime.ContextType.OFFSCREEN_DOCUMENT]
     });
 
-    worker.onmessage = (event) => {
-      const { type, progress, text, mode, error } = event.data;
-      
-      // Update local status tracker
-      if (type === 'ready') engineStatus = 'ready';
-      if (type === 'error') engineStatus = 'error';
-      if (type === 'progress') engineStatus = 'loading';
+    if (existingContexts.length > 0) {
+      return;
+    }
 
-      // Broadcast to all extension parts (Sidepanel, Tabs)
-      browser.runtime.sendMessage({
-        type: 'WORKER_UPDATE',
-        data: event.data
-      }).catch(() => {
-        // No listeners open, that's fine
-      });
+    console.log('[Background] Creating Offscreen Document...');
+    await chrome.offscreen.createDocument({
+      url: browser.runtime.getURL('offscreen.html'),
+      reasons: [chrome.offscreen.Reason.LOCAL_STORAGE], // Accessing WebGPU/Worker context
+      justification: 'Hosting WebLLM engine for background AI processing'
+    });
+  }
 
-      // Sync specific status to storage for UI recovery
-      if (type === 'ready' || type === 'error' || type === 'progress') {
-        browser.storage.local.set({ 
-          engineStatus,
-          lastProgress: progress
-        });
-      }
-    };
-    return worker;
+  async function handleEngineCommand(message: any) {
+    await setupOffscreenDocument();
+    chrome.runtime.sendMessage({
+      ...message,
+      target: 'offscreen'
+    });
   }
 
   // Create context menu hierarchy on install
@@ -85,38 +74,27 @@ export default defineBackground(() => {
   });
 
   browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    // Avoid feedback loops
+    if (message.target === 'offscreen') return;
+
     if (message.type === 'OPEN_SIDE_PANEL') {
       if (sender.tab?.id && sender.tab?.windowId) {
         chrome.sidePanel.open({ tabId: sender.tab.id, windowId: sender.tab.windowId });
+        sendResponse({ status: 'opened' });
       }
-    } else if (message.type === 'INIT_ENGINE') {
-      const w = ensureWorker();
-      w.postMessage({ type: 'load', settings: message.settings });
-      sendResponse({ status: 'initiated' });
-    } else if (message.type === 'GET_ENGINE_STATUS') {
-      sendResponse({ status: engineStatus });
-    } else if (message.type === 'GENERATE') {
-      const w = ensureWorker();
-      w.postMessage({
-        type: 'generate',
-        text: message.text,
-        mode: message.mode,
-        settings: message.settings
-      });
-      sendResponse({ status: 'sent' });
+    } else if (message.type === 'INIT_ENGINE' || message.type === 'GENERATE') {
+      handleEngineCommand(message);
+      sendResponse({ status: 'forwarded_to_offscreen' });
     } else if (message.type === 'RESET_ENGINE') {
-      if (worker) {
-        console.log('[Background] Terminating Worker and resetting engine...');
-        worker.terminate();
-        worker = null;
-      }
-      engineStatus = 'idle';
+      handleEngineCommand(message);
       browser.storage.local.set({ 
         engineStatus: 'idle',
         lastProgress: null,
         isLocalModelEnabled: false 
+      }).then(() => {
+        sendResponse({ status: 'reset_complete' });
       });
-      sendResponse({ status: 'reset' });
+      return true;
     }
     return true;
   });
