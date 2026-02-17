@@ -95,10 +95,14 @@ class WebLLMWorker {
 
         const isPrebuilt = prebuiltAppConfig.model_list.some((m: any) => m.model_id === model);
         
-        if (!this.engine || (this.currentModel !== model && !isPrebuilt)) {
+        if (!this.engine || this.currentModel !== model) {
             console.log(`[Worker] Initializing/Re-creating MLCEngine for: ${model}`);
             if (this.engine) {
-                await this.engine.unload();
+                try {
+                    await this.engine.unload();
+                } catch (e) {
+                    console.warn("[Worker] Engine unload failed (safe to ignore if first run):", e);
+                }
             }
             this.engine = new MLCEngine({ appConfig });
         }
@@ -162,6 +166,7 @@ async function processLocalQueue() {
             ];
 
             const chunks = await engine.chat.completions.create({
+                model: settings.localModel || "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
                 messages,
                 stream: true,
             });
