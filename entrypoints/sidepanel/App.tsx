@@ -141,79 +141,33 @@ function App() {
   }, [status]);
 
   useEffect(() => {
-    // Initialize Worker
-    worker.current = new Worker(new URL('./worker.ts', import.meta.url), {
-      type: 'module',
-    });
-
-    worker.current.onmessage = (event: MessageEvent<WorkerMessage>) => {
-      const { type, progress, text, error } = event.data;
-      if (type === 'progress' && progress) {
-        setProgress(progress);
-      } else if (type === 'ready') {
-        setStatus('ready');
-        setError('');
-      } else if (type === 'update') {
-        const targetMode = event.data.mode!;
-
-        setModeResults((prev) => ({ ...prev, [targetMode]: text ?? '' }));
-        setGeneratingModes((prev) => ({ ...prev, [targetMode]: true }));
-      } else if (type === 'complete') {
-        const targetMode = event.data.mode!;
-
-        setModeResults((prev) => ({ ...prev, [targetMode]: text ?? '' }));
-        setGeneratingModes((prev) => ({ ...prev, [targetMode]: false }));
-        // Auto-speak result if enabled
-        const currentSettings = settingsRef.current;
-        if (currentSettings.autoSpeak && typeof chrome !== 'undefined' && chrome.tts) {
-          console.log('[App] Auto-speaking result:', text?.substring(0, 50) + '...');
-          chrome.tts.speak(text ?? '', {
-            rate: 1.0,
-            onEvent: (event) => {
-              if (event.type === 'error') {
-                console.error('[App] TTS Error:', event.errorMessage);
-              }
-            },
-          });
-        }
-      } else if (type === 'error') {
-        const targetMode = event.data.mode;
-        const errorContent = error ?? 'Unknown error';
-
-        if (!targetMode) {
-          // This is likely a global/loading error
-          console.error('[App] Global/Load Error:', errorContent);
-          setError(`Load Error: ${errorContent}`);
-          setStatus('error');
-          // Reset all generating states on global error
-          setGeneratingModes({
-            summarize: false,
-            correct: false,
-            proofread: false,
-            translate: false,
-            expand: false,
-          });
-        } else {
-          console.error(`[App] Error in ${targetMode}:`, errorContent);
-          setError(`${targetMode}: ${errorContent}`);
-          setGeneratingModes((prev) => ({ ...prev, [targetMode]: false }));
-        }
-      }
-    };
-
-    // Initial load of selected text and settings
+    // Initial load of selected text, settings, and intent
     browser.storage.local
-      .get(['selectedText', 'settings', 'activeTab'])
-      .then(async (res: Record<string, unknown>) => {
-        let initialText = (res.selectedText as string) || '';
+      .get(['selectedText', 'settings', 'activeTab', 'menuIntentMode', 'autoTriggerAt', 'isLocalModelEnabled', 'engineStatus', 'lastProgress'])
+      .then(async (res: { [key: string]: any }) => {
+        let txt = (res.selectedText as string) || '';
+        
+        // Recover state from background sync in storage
+        if (res.engineStatus) setStatus(res.engineStatus);
+        if (res.lastProgress) setProgress(res.lastProgress);
+
+        // Restore local model enablement status if previously active
+        if (res.isLocalModelEnabled === true && res.engineStatus !== 'ready' && res.engineStatus !== 'loading') {
+          if (settingsRef.current.engine === 'local-gpu' || settingsRef.current.engine === 'local-wasm') {
+            loadModel(); 
+          }
+        }
+
         if (res.activeTab === 'settings') {
           setShowSettings(true);
-          // Clear it so it doesn't persist on next normal open
           browser.storage.local.remove('activeTab');
         }
 
-        // If no text selected, try to get page content
-        if (!initialText) {
+        if (res.menuIntentMode && res.autoTriggerAt) {
+          setMode(res.menuIntentMode as ModeKey);
+        }
+
+        if (!txt) {
           if (typeof browser !== 'undefined' && browser.tabs) {
             try {
               const tabs = await browser.tabs.query({ active: true, currentWindow: true });
@@ -221,139 +175,100 @@ function App() {
                 const response = (await browser.tabs.sendMessage(tabs[0].id, {
                   type: 'GET_PAGE_CONTENT',
                 })) as { content?: string };
-                if (response && response.content) {
-                  initialText = response.content;
-                }
+                if (txt = response?.content || '') setSelectedText(txt);
               }
-            } catch (e) {
-              console.warn('[App] Initial content fetch failed (likely connection issue):', e);
-            }
+            } catch (e) { console.warn('[App] Page content fetch failed:', e); }
           }
+        } else {
+          setSelectedText(txt);
         }
 
-        setSelectedText(initialText);
-
         if (res.settings) {
-          // Migrate targetLanguage to extensionLanguage if exists
           const savedSettings = res.settings as Record<string, unknown>;
-          const initialSettings: Settings = {
-            ...settings,
-            ...(savedSettings as Partial<Settings>),
-          };
-          if (savedSettings.targetLanguage && !savedSettings.extensionLanguage) {
-            initialSettings.extensionLanguage = savedSettings.targetLanguage as string;
-          }
-          // Restore API key from session storage (more secure)
-          try {
-            const sessionData = await browser.storage.session.get(['apiKey']);
-            if (sessionData.apiKey) {
-              initialSettings.apiKey = sessionData.apiKey as string;
-            }
-          } catch {
-            // session storage may not be available in all contexts
-          }
-          setSettings(initialSettings);
-          if (savedSettings.engine === 'online') {
-            // Online engine is ready by default if API key is present
-            if (initialSettings.apiKey) setStatus('ready');
-          }
+          setSettings({ ...settings, ...(savedSettings as Partial<Settings>) });
+          if (savedSettings.engine === 'online' && savedSettings.apiKey) setStatus('ready');
         }
       });
 
     const listener = (changes: Record<string, { newValue?: unknown }>, areaName: string) => {
       if (areaName === 'local') {
         if (changes.selectedText) {
-          const newText = (changes.selectedText.newValue as string) || '';
-          setSelectedText(newText);
-          // Clear all previous results when new text is selected
-          setModeResults({
-            summarize: '',
-            correct: '',
-            proofread: '',
-            translate: '',
-            expand: '',
-          });
+          setSelectedText((changes.selectedText.newValue as string) || '');
+          setModeResults({ summarize: '', correct: '', proofread: '', translate: '', expand: '' });
         }
-        if (changes.activeTab && changes.activeTab.newValue === 'settings') {
-          setShowSettings(true);
-          browser.storage.local.remove('activeTab');
+        if (changes.menuIntentMode && changes.menuIntentMode.newValue) {
+          setMode(changes.menuIntentMode.newValue as ModeKey);
         }
       }
     };
-    const runtimeListener = (message: any, sender: any, sendResponse: (res?: any) => void) => {
-      if (message.type === 'QUICK_TRANSLATE') {
-        const text = message.text;
-        const currentSettings = settingsRef.current;
-        console.log('[App] Received QUICK_TRANSLATE request.');
 
-        const currentStatus = statusRef.current;
-        if (currentStatus === 'loading') {
-          console.warn('[App] Engine is still loading, returning ENGINE_LOADING');
-          sendResponse({ error: 'ENGINE_LOADING' });
-          return;
-        }
-
-        if (!worker.current || currentStatus === 'idle' || currentStatus === 'error') {
-          console.warn(
-            '[App] Worker not initialized or engine not ready for QUICK_TRANSLATE, status:',
-            currentStatus,
-          );
-          // Check why worker is not initialized
-          if (currentSettings.engine === 'online' && !currentSettings.apiKey) {
-            sendResponse({ error: 'NO_API_KEY' });
-          } else if (
-            (currentSettings.engine === 'local-gpu' || currentSettings.engine === 'local-wasm') &&
-            !currentSettings.localModel
-          ) {
-            sendResponse({ error: 'NO_MODEL' });
+    const runtimeListener = (message: any) => {
+      // Listen for updates from the BACKGROUND worker
+      if (message.type === 'WORKER_UPDATE') {
+        const { type, progress, text, mode: resultMode, error: workerError } = message.data;
+        if (type === 'progress' && progress) {
+          setProgress(progress);
+        } else if (type === 'ready') {
+          setStatus('ready');
+          setError('');
+        } else if (type === 'update' || type === 'complete') {
+          const targetMode = resultMode as ModeKey;
+          setModeResults((prev) => ({ ...prev, [targetMode]: text ?? '' }));
+          setGeneratingModes((prev) => ({ ...prev, [targetMode]: type === 'update' }));
+          
+          if (type === 'complete') {
+            // Auto-speak result if enabled
+            if (settingsRef.current.autoSpeak && typeof chrome !== 'undefined' && chrome.tts) {
+              chrome.tts.speak(text ?? '', { rate: 1.0 });
+            }
+          }
+        } else if (type === 'error') {
+          if (!resultMode) {
+            setError(`Load Error: ${workerError}`);
+            setStatus('error');
+            setGeneratingModes({ summarize: false, correct: false, proofread: false, translate: false, expand: false });
           } else {
-            // General not ready
-            sendResponse({ error: 'ENGINE_NOT_READY' });
+            setError(`${resultMode}: ${workerError}`);
+            setGeneratingModes((prev) => ({ ...prev, [resultMode]: false }));
           }
-          return;
         }
-
-        // Timeout for safety
-        const timeoutId = setTimeout(() => {
-          console.warn('[App] QUICK_TRANSLATE timed out.');
-          sendResponse({ error: 'TIMEOUT' });
-          worker.current?.removeEventListener('message', handleTranslateResponse);
-        }, 15000);
-
-        const handleTranslateResponse = (event: MessageEvent<WorkerMessage>) => {
-          const { type, text: resultText, mode: resultMode } = event.data;
-          if ((type === 'complete' || type === 'error') && resultMode === 'translate') {
-            clearTimeout(timeoutId);
-            sendResponse({ translatedText: resultText || 'Translation failed.' });
-            worker.current?.removeEventListener('message', handleTranslateResponse);
-          }
-        };
-
-        worker.current.addEventListener('message', handleTranslateResponse);
-        worker.current.postMessage({
-          type: 'generate',
-          text,
-          mode: 'translate',
-          settings: currentSettings,
-        });
-        return true;
       }
     };
-    browser.runtime.onMessage.addListener(runtimeListener);
 
+    browser.runtime.onMessage.addListener(runtimeListener);
     browser.storage.onChanged.addListener(listener);
 
     return () => {
       browser.runtime.onMessage.removeListener(runtimeListener);
       browser.storage.onChanged.removeListener(listener);
-      worker.current?.terminate();
     };
   }, []);
+
+  // Auto-trigger intent
+  useEffect(() => {
+    if (status === 'ready' && selectedText) {
+      browser.storage.local.get(['menuIntentMode']).then((res: { [key: string]: any }) => {
+        if (res.menuIntentMode) {
+          handleGenerate(res.menuIntentMode as ModeKey);
+          browser.storage.local.remove(['menuIntentMode', 'autoTriggerAt']);
+        }
+      });
+    }
+  }, [status, selectedText]);
 
   const loadModel = () => {
     setStatus('loading');
     setError('');
-    worker.current?.postMessage({ type: 'load', settings });
+    browser.storage.local.set({ isLocalModelEnabled: true });
+    browser.runtime.sendMessage({ type: 'INIT_ENGINE', settings });
+  };
+
+  const handleReset = () => {
+    browser.runtime.sendMessage({ type: 'RESET_ENGINE' }).then(() => {
+      setStatus('idle');
+      setProgress({ progress: 0, text: '' });
+      setError('');
+    });
   };
 
   const handleFetchContent = async () => {
@@ -361,56 +276,40 @@ function App() {
     try {
       const tabs = await browser.tabs.query({ active: true, currentWindow: true });
       if (tabs.length > 0 && tabs[0].id) {
-        const response = (await browser.tabs.sendMessage(tabs[0].id, {
-          type: 'GET_PAGE_CONTENT',
-        })) as { content?: string };
-        if (response && response.content) {
+        const response = (await browser.tabs.sendMessage(tabs[0].id, { type: 'GET_PAGE_CONTENT' })) as { content?: string };
+        if (response?.content) {
           setSelectedText(response.content);
-          // Clear previous results
-          setModeResults({
-            summarize: '',
-            correct: '',
-            proofread: '',
-            translate: '',
-            expand: '',
-          });
+          setModeResults({ summarize: '', correct: '', proofread: '', translate: '', expand: '' });
         }
       }
     } catch (e: any) {
-      console.error('[App] Failed to fetch content:', e);
-      // If it's a connection error, show a more specific hint
-      if (e.message?.includes('Could not establish connection')) {
-        setError(t.connection_error);
-      } else {
-        setError(e.message || t.status_error);
-      }
+      setError(e.message?.includes('connection') ? t.connection_error : t.status_error);
     }
   };
 
   const handleClear = () => {
     setSelectedText('');
-    // Also clear results when manually clearing input
-    setModeResults({
-      summarize: '',
-      correct: '',
-      proofread: '',
-      translate: '',
-      expand: '',
-    });
+    setModeResults({ summarize: '', correct: '', proofread: '', translate: '', expand: '' });
+  };
+
+  const handleGenerate = (targetMode?: ModeKey) => {
+    const activeMode = targetMode || mode;
+    if (activeMode !== mode) setMode(activeMode); // Keep UI in sync with generation mode
+    if (!selectedText || generatingModes[activeMode]) return;
+    setError('');
+    setGeneratingModes((prev) => ({ ...prev, [activeMode]: true }));
+    setModeResults((prev) => ({ ...prev, [activeMode]: '' }));
+
+    if (settings.engine === 'online') {
+      // For online engine, we still use background but it's simpler
+      browser.runtime.sendMessage({ type: 'GENERATE', text: selectedText, mode: activeMode, settings });
+    } else {
+      browser.runtime.sendMessage({ type: 'GENERATE', text: selectedText, mode: activeMode, settings });
+    }
   };
 
   const handleAction = () => {
-    if (!selectedText || generatingModes[mode]) return;
-    setError('');
-    setGeneratingModes((prev) => ({ ...prev, [mode]: true }));
-    // Clear ONLY the current mode's result to show "thinking"
-    setModeResults((prev) => ({ ...prev, [mode]: '' }));
-    worker.current?.postMessage({
-      type: 'generate',
-      text: selectedText,
-      mode,
-      settings,
-    });
+    handleGenerate();
   };
 
   const handleCopyResult = useCallback(() => {
@@ -649,6 +548,12 @@ function App() {
               {progress.text}
             </div>
             <small className="mt-3 text-slate-400">{t.loading_tip}</small>
+            <button
+              onClick={handleReset}
+              className="mt-6 px-4 py-2 border border-slate-200 bg-white text-slate-500 rounded-full text-[12px] cursor-pointer shadow-sm hover:bg-slate-50 hover:text-brand-orange transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400"
+            >
+              暂停并清除 (Cancel & Reset)
+            </button>
           </div>
         )}
         <div className="flex items-stretch gap-1.5 mb-0.5">
@@ -1151,12 +1056,21 @@ function App() {
 
       <footer className="sticky bottom-0 left-0 right-0 p-3 bg-[#fbfbfb] border-t border-slate-100 dark:bg-brand-dark-bg dark:border-slate-800">
         {status === 'loading' ? (
-          <button
-            className="w-full py-2.5 px-4 text-sm font-semibold text-white bg-brand-orange border-none rounded-xl cursor-pointer shadow-md shadow-brand-orange/20 transition-all hover:bg-brand-orange-dark hover:shadow-lg hover:shadow-brand-orange/30 active:scale-[0.98] disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed disabled:shadow-none dark:disabled:bg-slate-700 dark:disabled:text-slate-500"
-            disabled
-          >
-            {progress.text || `${t.status_loading} ${Math.round(progress.progress)}%`}
-          </button>
+          <div className="flex gap-2">
+            <button
+              className="flex-1 py-2.5 px-4 text-sm font-semibold text-white bg-brand-orange border-none rounded-xl cursor-default shadow-md shadow-brand-orange/20 transition-all dark:bg-brand-orange"
+              disabled
+            >
+              {progress.text || `${t.status_loading} ${Math.round(progress.progress)}%`}
+            </button>
+            <button
+              onClick={handleReset}
+              className="p-2.5 text-slate-400 bg-slate-100 border-none rounded-xl cursor-pointer hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-500"
+              title="暂停并清除"
+            >
+              <CloseIcon />
+            </button>
+          </div>
         ) : status === 'error' ? (
           <button
             className="w-full py-2.5 px-4 text-sm font-semibold text-white bg-[#e53e3e] border-none rounded-xl cursor-pointer shadow-md shadow-brand-orange/20 transition-all hover:bg-brand-orange-dark hover:shadow-lg hover:shadow-brand-orange/30 active:scale-[0.98] disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed disabled:shadow-none dark:disabled:bg-slate-700 dark:disabled:text-slate-500"

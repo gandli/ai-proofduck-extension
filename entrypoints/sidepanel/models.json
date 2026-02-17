@@ -114,16 +114,6 @@
       "label": "Qwen (通义千问)",
       "models": [
         {
-          "name": "Qwen1.5 0.5B Chat (~258.3 MB)",
-          "value": "Qwen1.5-0.5B-Chat-q4f32_1-MLC",
-          "rawSize": 270895104
-        },
-        {
-          "name": "Qwen1.5 0.5B Chat (~258.3 MB)",
-          "value": "Qwen1.5-0.5B-Chat-q4f16_1-MLC",
-          "rawSize": 270895104
-        },
-        {
           "name": "Qwen2 0.5B (~265.1 MB)",
           "value": "Qwen2-0.5B-Instruct-q4f16_1-MLC",
           "rawSize": 277996288
@@ -234,11 +224,6 @@
           "rawSize": 868547584
         },
         {
-          "name": "Qwen1.5 0.5B Chat (~885 MB)",
-          "value": "Qwen1.5-0.5B-Chat-q0f16-MLC",
-          "rawSize": 927975424
-        },
-        {
           "name": "Qwen3 1.7B (~934.1 MB)",
           "value": "Qwen3-1.7B-q4f16_1-MLC",
           "rawSize": 979424190
@@ -282,26 +267,6 @@
           "name": "Qwen2.5 Coder 0.5B (~942.3 MB)",
           "value": "Qwen2.5-Coder-0.5B-Instruct-q0f32-MLC",
           "rawSize": 988065536
-        },
-        {
-          "name": "Qwen 1_8B Chat (~985.7 MB)",
-          "value": "Qwen-1_8B-Chat-q4f16_1-MLC",
-          "rawSize": 1033572352
-        },
-        {
-          "name": "Qwen 1_8B Chat (~985.7 MB)",
-          "value": "Qwen-1_8B-Chat-q4f32_1-MLC",
-          "rawSize": 1033572352
-        },
-        {
-          "name": "Qwen1.5 1.8B Chat (~985.7 MB)",
-          "value": "Qwen1.5-1.8B-Chat-q4f32_1-MLC",
-          "rawSize": 1033572352
-        },
-        {
-          "name": "Qwen1.5 1.8B Chat (~985.7 MB)",
-          "value": "Qwen1.5-1.8B-Chat-q4f16_1-MLC",
-          "rawSize": 1033572352
         },
         {
           "name": "Qwen3 0.6B (~1.1 GB)",
@@ -377,11 +342,6 @@
           "name": "Qwen3 1.7B (~3.2 GB)",
           "value": "Qwen3-1.7B-q0f16-MLC",
           "rawSize": 3452572606
-        },
-        {
-          "name": "Qwen1.5 1.8B Chat (~3.4 GB)",
-          "value": "Qwen1.5-1.8B-Chat-q0f16-MLC",
-          "rawSize": 3673657344
         },
         {
           "name": "Qwen2 7B (~4 GB)",
@@ -462,11 +422,6 @@
           "name": "Qwen3 4B (~7.5 GB)",
           "value": "Qwen3-4B-q0f16-MLC",
           "rawSize": 8056358846
-        },
-        {
-          "name": "Qwen1.5 MoE A2.7B Chat (~7.5 GB)",
-          "value": "Qwen1.5-MoE-A2.7B-Chat-q4f16_1-MLC",
-          "rawSize": 8057294848
         },
         {
           "name": "Qwen2.5 14B (~7.7 GB)",
@@ -679,11 +634,6 @@
       "label": "Llama",
       "models": [
         {
-          "name": "Llama 2 70b chat hf (~488 KB)",
-          "value": "Llama-2-70b-chat-hf-q4f16_1-MLC",
-          "rawSize": 499723
-        },
-        {
           "name": "TinyLlama 1.1B Chat v1.0 (~590.7 MB)",
           "value": "TinyLlama-1.1B-Chat-v1.0-q4f32_1-MLC",
           "rawSize": 619409419
@@ -769,11 +719,6 @@
           "rawSize": 2471628800
         },
         {
-          "name": "Llama 2 7b chat hf (~3.5 GB)",
-          "value": "Llama-2-7b-chat-hf-q4f16_1-MLC",
-          "rawSize": 3791241227
-        },
-        {
           "name": "CodeLlama 7b Python hf (~3.5 GB)",
           "value": "CodeLlama-7b-Python-hf-q4f16_1-MLC",
           "rawSize": 3791241227
@@ -802,11 +747,6 @@
           "name": "CodeLlama 7b hf (~3.5 GB)",
           "value": "CodeLlama-7b-Instruct-hf-q4f32_1-MLC",
           "rawSize": 3791315290
-        },
-        {
-          "name": "Llama 2 7b chat hf (~3.9 GB)",
-          "value": "Llama-2-7b-chat-hf-q4f32_1-MLC",
-          "rawSize": 4212908043
         },
         {
           "name": "Llama 3 8B (~4.2 GB)",
@@ -884,11 +824,6 @@
           "rawSize": 6425499648
         },
         {
-          "name": "Llama 2 13b chat hf (~6.8 GB)",
-          "value": "Llama-2-13b-chat-hf-q4f16_1-MLC",
-          "rawSize": 7322519563
-        },
-        {
           "name": "CodeLlama 13b Python hf (~6.8 GB)",
           "value": "CodeLlama-13b-Python-hf-q4f16_1-MLC",
           "rawSize": 7322519563
@@ -927,11 +862,6 @@
           "name": "Llama 3 8B fp8 (~8.5 GB)",
           "value": "Llama-3-8B-Instruct-fp8-MLC",
           "rawSize": 9081201152
-        },
-        {
-          "name": "Llama 2 7b chat hf (~12.6 GB)",
-          "value": "Llama-2-7b-chat-hf-q0f16-MLC",
-          "rawSize": 13477330955
         },
         {
           "name": "Llama 3 8B (~15 GB)",
@@ -1679,16 +1609,6 @@
           "rawSize": 719417344
         },
         {
-          "name": "stablelm 2 zephyr 1_6b (~882.7 MB)",
-          "value": "stablelm-2-zephyr-1_6b-q4f32_1-MLC",
-          "rawSize": 925540352
-        },
-        {
-          "name": "stablelm 2 zephyr 1_6b (~882.7 MB)",
-          "value": "stablelm-2-zephyr-1_6b-q4f16_1-MLC",
-          "rawSize": 925540352
-        },
-        {
           "name": "internlm2_5 1_8b chat (~1014.9 MB)",
           "value": "internlm2_5-1_8b-chat-q4f16_1-MLC",
           "rawSize": 1064246394
@@ -1697,26 +1617,6 @@
           "name": "internlm2_5 1_8b chat (~1014.9 MB)",
           "value": "internlm2_5-1_8b-chat-q4f32_1-MLC",
           "rawSize": 1064246394
-        },
-        {
-          "name": "RedPajama INCITE Chat 3B v1 (~1.5 GB)",
-          "value": "RedPajama-INCITE-Chat-3B-v1-q4f16_1-MLC",
-          "rawSize": 1563781120
-        },
-        {
-          "name": "stablelm zephyr 3b (~1.5 GB)",
-          "value": "stablelm-zephyr-3b-q4f16_1-MLC",
-          "rawSize": 1572915200
-        },
-        {
-          "name": "stablelm zephyr 3b (~1.5 GB)",
-          "value": "stablelm-zephyr-3b-q4f32_1-MLC",
-          "rawSize": 1572915200
-        },
-        {
-          "name": "RedPajama INCITE Chat 3B v1 (~1.6 GB)",
-          "value": "RedPajama-INCITE-Chat-3B-v1-q4f32_1-MLC",
-          "rawSize": 1738526720
         },
         {
           "name": "Ministral 3 3B 2512 BF16 (~1.8 GB)",
@@ -1737,16 +1637,6 @@
           "name": "mlc chat stanford crfm music medium 800k (~1.8 GB)",
           "value": "mlc-chat-stanford-crfm-music-medium-800k-q0f32",
           "rawSize": 1951250432
-        },
-        {
-          "name": "stablelm 2 zephyr 1_6b (~3.1 GB)",
-          "value": "stablelm-2-zephyr-1_6b-q0f16-MLC",
-          "rawSize": 3289030656
-        },
-        {
-          "name": "stablelm 2 zephyr 1_6b (~3.1 GB)",
-          "value": "stablelm-2-zephyr-1_6b-q0f32-MLC",
-          "rawSize": 3289030656
         },
         {
           "name": "internlm2_5 1_8b chat (~3.5 GB)",
@@ -1789,16 +1679,6 @@
           "rawSize": 4354321530
         },
         {
-          "name": "stablelm zephyr 3b (~5.2 GB)",
-          "value": "stablelm-zephyr-3b-q0f16-MLC",
-          "rawSize": 5590886400
-        },
-        {
-          "name": "stablelm zephyr 3b (~5.2 GB)",
-          "value": "stablelm-zephyr-3b-q0f32-MLC",
-          "rawSize": 5590886400
-        },
-        {
           "name": "WizardMath 13B V1.0 (~6.8 GB)",
           "value": "WizardMath-13B-V1.0-q4f16_1-MLC",
           "rawSize": 7322025600
@@ -1817,11 +1697,6 @@
           "name": "internlm2_5 20b chat (~10.4 GB)",
           "value": "internlm2_5-20b-chat-q4f32_1-MLC",
           "rawSize": 11174231162
-        },
-        {
-          "name": "stablelm 2 zephyr 1_6b (~12 GB)",
-          "value": "stablelm-2-zephyr-1_6b-q0f16_1-MLC",
-          "rawSize": 12884901888
         },
         {
           "name": "internlm2_5 7b chat (~14.4 GB)",
