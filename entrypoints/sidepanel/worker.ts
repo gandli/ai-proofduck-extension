@@ -53,7 +53,7 @@ async function processLocalQueue() {
     const { text, mode, settings, requestId } = localRequestQueue.shift()!;
     try {
       const systemPrompt = getSystemPrompt(mode, settings);
-      const userContent = `【待处理文本】：\n${text}`;
+      const userContent = `<TEXT>\n${text}\n</TEXT>`;
       const engine = await WebLLMWorker.getEngine(settings);
       const messages: ChatCompletionMessageParam[] = [
         { role: 'system', content: systemPrompt },
@@ -84,7 +84,7 @@ async function handleGenerateOnline(
 ) {
   try {
     const systemPrompt = getSystemPrompt(mode, settings);
-    const userContent = `【待处理文本】：\n${text}`;
+    const userContent = `<TEXT>\n${text}\n</TEXT>`;
 
     if (!settings.apiKey) throw new Error('请在设置中配置 API Key');
 

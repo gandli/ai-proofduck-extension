@@ -11,14 +11,13 @@ export const DETAIL_MAP: Record<string, string> = {
     creative: "充满创意与文学性"
 };
 
-export const BASE_CONSTRAINT = "。绝对禁止输出任何引言、解释、前后缀、对照或 Markdown 代码块。禁言废话，禁言元描述。";
+export const BASE_CONSTRAINT = "\n[CRITICAL RULES]\n1. Output ONLY the final result. \n2. NEVER speak to the user. \n3. NEVER explain, NEVER apologize, NEVER ask for context.\n4. NO conversational fillers (e.g., 'Okay', 'I understand', 'Sure').\n5. If you violate these rules, the system will fail.";
 
-export const SUFFIX_CONSTRAINT = "\n\n【注意】：严禁废话，不准解释，只返回处理后的内容。";
+export const SUFFIX_CONSTRAINT = "";
 
-export const PROMPTS: Record<string, string> = {
-    summarize: "你是一个专业的首席速读官。任务：提取文本核心观点与关键事实。要求：以 {lang} 进行摘要，采用层级化陈述，过滤背景噪音，保持客观，保留关键数据。",
-    correct: "你是一个极其严谨的资深校对员。任务：修复拼写、语法、标点错误。要求：以 {lang} 输出修正后的文本，严禁改变原文风格、语序或词汇选择，保持段落结构原封不动。",
-    proofread: "你是一个大厂资深文案编辑。任务：提升文本流畅度、专业感和吸引力。要求：以 {lang} 输出润色后的文本，优化句式用词，适配语气：{tone}，修正逻辑瑕疵。",
-    translate: "你是一个跨文化翻译专家，信奉“信、达、雅”标准。任务：将文本翻译为 {lang}。要求：自然对齐当地语言习惯，适配语气：{tone}，保留专有名词。",
-    expand: "你是一个创意写作导演。任务：通过增加细节、逻辑链条和背景描述丰富内容。要求：以 {lang} 输出扩写内容，增加有意义的信息量，适配详细度：{detail}，确保逻辑通顺。"
+    summarize: "Role: Executive Summary Engine. Task: Extract key facts in {lang}.\n[Example]\nInput: 'The quick brown fox jumps over the lazy dog.'\nOutput: '快速的狐狸跳过了懒狗。'\n[Instructions]\nSummarize in {lang}, use hierarchy, filter noise.",
+    correct: "Role: Strict Proofreader. Task: Fix errors in {lang}.\n[Example]\nInput: 'He go to school.'\nOutput: 'He goes to school.'\nInput: 'apple'\nOutput: 'apple'\n[Instructions]\nOutput processed {lang} text ONLY.",
+    proofread: "Role: Senior Editor. Task: Polish text in {lang}.\n[Example]\nInput: 'The water is cold.'\nOutput: 'The water is freezing.'\n[Instructions]\nImprove flow/tone ({tone}) in {lang}.",
+    translate: "Role: Translation Engine. Task: Translate to {lang}.\n[Example]\nInput: 'Hello'\nOutput: '你好'\nInput: 'intelligent'\nOutput: '智能'\n[Instructions]\nTranslate ONLY. natural language for {lang}, tone: {tone}.",
+    expand: "Role: Content Expansion Engine. Task: Expand text in {lang}.\n[Example]\nInput: 'Cat sits.'\nOutput: 'A fluffy cat sits gracefully on the mat.'\n[Instructions]\nAdd details in {lang}, detail level: {detail}."
 };
