@@ -1,39 +1,61 @@
 import { describe, it, expect } from 'vitest';
 import { getSystemPrompt } from '../worker-utils';
+import { TONE_MAP, DETAIL_MAP, PROMPTS, BASE_CONSTRAINT, SUFFIX_CONSTRAINT } from '../prompts';
 
-describe('getSystemPrompt', () => {
-    const defaultSettings = {
-        extensionLanguage: '中文',
-        tone: 'professional',
-        detailLevel: 'standard'
-    };
+const MODES = ['translate', 'summarize', 'expand', 'rewrite', 'proofread'];
+const TONES = Object.keys(TONE_MAP);
+const DETAILS = Object.keys(DETAIL_MAP);
 
-    it('should generate correct prompt for summarize mode', () => {
-        const prompt = getSystemPrompt('summarize', defaultSettings);
-        expect(prompt).toContain('你是一个专业的首席速读官');
-        expect(prompt).toContain('直接且仅输出 中文 结果文本');
+describe('Feature: getSystemPrompt', () => {
+  describe('Scenario: Mode Validation', () => {
+    it('Given all modes When getting prompt Then should generate correct prompt for each', () => {
+      MODES.forEach(mode => {
+        const prompt = getSystemPrompt(mode, 'neutral', 'medium');
+        expect(prompt).toContain(PROMPTS[mode]);
+      });
     });
 
-    it('should respect target language', () => {
-        const settings = { ...defaultSettings, extensionLanguage: 'English' };
-        const prompt = getSystemPrompt('proofread', settings);
-        expect(prompt).toContain('直接且仅输出 English 结果文本');
+    it('Given unknown mode When getting prompt Then should use fallback', () => {
+      const prompt = getSystemPrompt('unknown', 'neutral', 'medium');
+      expect(prompt).toContain('Please process the following text');
+    });
+  });
+
+  describe('Scenario: Tone Replacement', () => {
+    it('Given all tones When getting prompt Then should replace {tone} with correct value', () => {
+      MODES.forEach(mode => {
+        TONES.forEach(tone => {
+          const prompt = getSystemPrompt(mode, tone, 'medium');
+          expect(prompt).toContain(TONE_MAP[tone]);
+        });
+      });
+    });
+  });
+
+  describe('Scenario: Detail Replacement', () => {
+    it('Given all details When getting prompt Then should replace {detail} with correct value', () => {
+      MODES.forEach(mode => {
+        DETAILS.forEach(detail => {
+          const prompt = getSystemPrompt(mode, 'neutral', detail);
+          expect(prompt).toContain(DETAIL_MAP[detail]);
+        });
+      });
+    });
+  });
+
+  describe('Scenario: Constraint Inclusion', () => {
+    it('Given any prompt When getting Then should include BASE_CONSTRAINT', () => {
+      MODES.forEach(mode => {
+        const prompt = getSystemPrompt(mode, 'neutral', 'medium');
+        expect(prompt).toContain(BASE_CONSTRAINT);
+      });
     });
 
-    it('should respect tone', () => {
-        const settings = { ...defaultSettings, tone: 'casual' };
-        const prompt = getSystemPrompt('proofread', settings);
-        expect(prompt).toContain('轻松且口语化');
+    it('Given any prompt When getting Then should include SUFFIX_CONSTRAINT', () => {
+      MODES.forEach(mode => {
+        const prompt = getSystemPrompt(mode, 'neutral', 'medium');
+        expect(prompt).toContain(SUFFIX_CONSTRAINT);
+      });
     });
-
-    it('should respect detail level', () => {
-        const settings = { ...defaultSettings, detailLevel: 'creative' };
-        const prompt = getSystemPrompt('expand', settings);
-        expect(prompt).toContain('充满创意与文学性');
-    });
-
-    it('should fallback to proofread if mode is unknown', () => {
-        const prompt = getSystemPrompt('unknown_mode', defaultSettings);
-        expect(prompt).toContain('你是一个大厂资深文案编辑');
-    });
+  });
 });
