@@ -1,0 +1,99 @@
+{
+  "categories": [
+    {
+      "label": "DeepSeek",
+      "models": [
+        {
+          "name": "DeepSeek R1 Distill Qwen 1.5B (~953.5 MB)",
+          "value": "DeepSeek-R1-Distill-Qwen-1.5B-q4f16_1-MLC",
+          "rawSize": 999820288
+        },
+        {
+          "name": "DeepSeek R1 Distill Qwen 7B (~4 GB)",
+          "value": "DeepSeek-R1-Distill-Qwen-7B-q4f16_1-MLC",
+          "rawSize": 4284263424
+        },
+        {
+          "name": "DeepSeek R1 Distill Llama 8B (~4.2 GB)",
+          "value": "DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC",
+          "rawSize": 4517404672
+        },
+        {
+          "name": "DeepSeek R1 Distill Qwen 14B (~7.7 GB)",
+          "value": "DeepSeek-R1-Distill-Qwen-14B-q4f16_1-MLC",
+          "rawSize": 8309352448
+        }
+      ]
+    },
+    {
+      "label": "Qwen (通义千问)",
+      "models": [
+        {
+          "name": "Qwen2.5 0.5B (~265.1 MB)",
+          "value": "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
+          "rawSize": 277996288
+        },
+        {
+          "name": "Qwen2.5 1.5B (~828.3 MB)",
+          "value": "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
+          "rawSize": 868547584
+        },
+        {
+          "name": "Qwen2.5 3B (~1.6 GB)",
+          "value": "Qwen2.5-3B-Instruct-q4f16_1-MLC",
+          "rawSize": 1736187904
+        },
+        {
+          "name": "Qwen2.5 7B (~4 GB)",
+          "value": "Qwen2.5-7B-Instruct-q4f16_1-MLC",
+          "rawSize": 4284263424
+        },
+        {
+          "name": "Qwen2.5 14B (~7.7 GB)",
+          "value": "Qwen2.5-14B-Instruct-q4f16_1-MLC",
+          "rawSize": 8309352448
+        }
+      ]
+    },
+    {
+      "label": "Llama",
+      "models": [
+        {
+          "name": "Llama 3.2 1B (~663 MB)",
+          "value": "Llama-3.2-1B-Instruct-q4f16_1-MLC",
+          "rawSize": 695242752
+        },
+        {
+          "name": "Llama 3.2 3B (~1.7 GB)",
+          "value": "Llama-3.2-3B-Instruct-q4f16_1-MLC",
+          "rawSize": 1807423488
+        },
+        {
+          "name": "Llama 3 8B (~4.2 GB)",
+          "value": "Llama-3-8B-Instruct-q4f16_1-MLC",
+          "rawSize": 4517404672
+        }
+      ]
+    },
+    {
+      "label": "Gemma",
+      "models": [
+        {
+          "name": "gemma 2 2b it (~1.4 GB)",
+          "value": "gemma-2-2b-it-q4f16_1-MLC",
+          "rawSize": 1492681432
+        }
+      ]
+    },
+    {
+      "label": "Phi",
+      "models": [
+        {
+          "name": "Phi 3.5 mini (~2 GB)",
+          "value": "Phi-3.5-mini-instruct-q4f16_1-MLC",
+          "rawSize": 2150144011
+        }
+      ]
+    }
+  ]
+}
