@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :host {
+    @apply absolute z-[2147483647] font-sans pointer-events-auto cursor-pointer;
+    display: none;
+  }
+  
+  * {
+    @apply box-border;
+  }
+
+  ::-webkit-scrollbar {
+    @apply w-1;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 rounded-sm dark:bg-slate-600;
+  }
+}
