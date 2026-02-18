@@ -1,61 +1,93 @@
 import { describe, it, expect } from 'vitest';
 import { getSystemPrompt } from '../worker-utils';
-import { TONE_MAP, DETAIL_MAP, PROMPTS, BASE_CONSTRAINT, SUFFIX_CONSTRAINT } from '../prompts';
+import { TONE_MAP, DETAIL_MAP, BASE_CONSTRAINT, SUFFIX_CONSTRAINT } from '../prompts';
 
-const MODES = ['translate', 'summarize', 'expand', 'rewrite', 'proofread'];
-const TONES = Object.keys(TONE_MAP);
-const DETAILS = Object.keys(DETAIL_MAP);
+const baseSettings = {
+  extensionLanguage: '中文',
+  tone: 'professional',
+  detailLevel: 'standard',
+};
 
 describe('Feature: getSystemPrompt', () => {
-  describe('Scenario: Mode Validation', () => {
-    it('Given all modes When getting prompt Then should generate correct prompt for each', () => {
-      MODES.forEach(mode => {
-        const prompt = getSystemPrompt(mode, 'neutral', 'medium');
-        expect(prompt).toContain(PROMPTS[mode]);
-      });
-    });
-
-    it('Given unknown mode When getting prompt Then should use fallback', () => {
-      const prompt = getSystemPrompt('unknown', 'neutral', 'medium');
-      expect(prompt).toContain('Please process the following text');
-    });
-  });
-
-  describe('Scenario: Tone Replacement', () => {
-    it('Given all tones When getting prompt Then should replace {tone} with correct value', () => {
-      MODES.forEach(mode => {
-        TONES.forEach(tone => {
-          const prompt = getSystemPrompt(mode, tone, 'medium');
-          expect(prompt).toContain(TONE_MAP[tone]);
-        });
-      });
-    });
-  });
-
-  describe('Scenario: Detail Replacement', () => {
-    it('Given all details When getting prompt Then should replace {detail} with correct value', () => {
-      MODES.forEach(mode => {
-        DETAILS.forEach(detail => {
-          const prompt = getSystemPrompt(mode, 'neutral', detail);
-          expect(prompt).toContain(DETAIL_MAP[detail]);
-        });
-      });
-    });
-  });
-
-  describe('Scenario: Constraint Inclusion', () => {
-    it('Given any prompt When getting Then should include BASE_CONSTRAINT', () => {
-      MODES.forEach(mode => {
-        const prompt = getSystemPrompt(mode, 'neutral', 'medium');
+  describe('Scenario: Mode-specific prompts', () => {
+    it.each(['summarize', 'correct', 'proofread', 'translate', 'expand'] as const)(
+      'Given mode "%s" When generating prompt Then should contain mode-specific content',
+      (mode) => {
+        const prompt = getSystemPrompt(mode, baseSettings);
+        expect(prompt.length).toBeGreaterThan(50);
         expect(prompt).toContain(BASE_CONSTRAINT);
-      });
+        expect(prompt).toContain(SUFFIX_CONSTRAINT);
+        expect(prompt).toContain('中文');
+      },
+    );
+
+    it('Given unknown mode When generating prompt Then should fallback to proofread', () => {
+      const prompt = getSystemPrompt('unknown_mode', baseSettings);
+      expect(prompt).toContain('大厂资深文案编辑');
+    });
+  });
+
+  describe('Scenario: Tone replacement', () => {
+    it.each(Object.entries(TONE_MAP))(
+      'Given tone "%s" When generating proofread prompt Then should contain "%s"',
+      (toneKey, toneValue) => {
+        const prompt = getSystemPrompt('proofread', { ...baseSettings, tone: toneKey });
+        expect(prompt).toContain(toneValue);
+      },
+    );
+
+    it.each(Object.entries(TONE_MAP))(
+      'Given tone "%s" When generating translate prompt Then should contain "%s"',
+      (toneKey, toneValue) => {
+        const prompt = getSystemPrompt('translate', { ...baseSettings, tone: toneKey });
+        expect(prompt).toContain(toneValue);
+      },
+    );
+  });
+
+  describe('Scenario: Detail replacement', () => {
+    it.each(Object.entries(DETAIL_MAP))(
+      'Given detail "%s" When generating expand prompt Then should contain "%s"',
+      (detailKey, detailValue) => {
+        const prompt = getSystemPrompt('expand', { ...baseSettings, detailLevel: detailKey });
+        expect(prompt).toContain(detailValue);
+      },
+    );
+  });
+
+  describe('Scenario: Language targeting', () => {
+    it.each(['English', '日本語', 'Français'])(
+      'Given language "%s" When generating prompt Then should target that language',
+      (lang) => {
+        const prompt = getSystemPrompt('summarize', { ...baseSettings, extensionLanguage: lang });
+        expect(prompt).toContain(lang);
+      },
+    );
+  });
+
+  describe('Scenario: Constraints always present', () => {
+    it('Given any mode When generating Then should always include BASE_CONSTRAINT', () => {
+      for (const mode of ['summarize', 'correct', 'proofread', 'translate', 'expand']) {
+        expect(getSystemPrompt(mode, baseSettings)).toContain(BASE_CONSTRAINT);
+      }
     });
 
-    it('Given any prompt When getting Then should include SUFFIX_CONSTRAINT', () => {
-      MODES.forEach(mode => {
-        const prompt = getSystemPrompt(mode, 'neutral', 'medium');
-        expect(prompt).toContain(SUFFIX_CONSTRAINT);
-      });
+    it('Given any mode When generating Then should always include SUFFIX_CONSTRAINT', () => {
+      for (const mode of ['summarize', 'correct', 'proofread', 'translate', 'expand']) {
+        expect(getSystemPrompt(mode, baseSettings)).toContain(SUFFIX_CONSTRAINT);
+      }
+    });
+  });
+
+  describe('Scenario: Edge cases', () => {
+    it('Given empty settings When generating Then should use defaults', () => {
+      const prompt = getSystemPrompt('summarize', {});
+      expect(prompt).toContain('中文'); // default language
+    });
+
+    it('Given undefined tone When generating Then should fallback to professional', () => {
+      const prompt = getSystemPrompt('proofread', { ...baseSettings, tone: undefined as any });
+      expect(prompt).toContain(TONE_MAP.professional);
     });
   });
 });

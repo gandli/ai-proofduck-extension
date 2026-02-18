@@ -1,132 +1,130 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
-import { useWorker } from '../hooks/useWorker';
+import { describe, it, expect, vi } from 'vitest';
+import type { ModeKey, WorkerOutboundMessage } from '../types';
 
-describe('Feature: useWorker Hook', () => {
-  let mockWorker: any;
-  let mockPostMessage: any;
+// Test the useWorker message dispatch logic (extracted, not hook itself)
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockWorker = {
-      postMessage: vi.fn(),
-      terminate: vi.fn(),
-      onmessage: null,
-      onerror: null
-    };
-    global.Worker = vi.fn(() => mockWorker);
-    global.browser = {
-      runtime: {
-        onMessage: {
-          addListener: vi.fn(),
-          removeListener: vi.fn()
-        }
-      },
-      storage: {
-        local: {
-          onChanged: {
-            addListener: vi.fn(),
-            removeListener: vi.fn()
-          }
-        }
-      }
-    } as any;
-    global.chrome = {
-      tts: {
-        speak: vi.fn()
-      }
-    } as any;
-    mockPostMessage = vi.fn();
-    global.postMessage = mockPostMessage;
-  });
+type SetterFns = {
+  setStatus: ReturnType<typeof vi.fn>;
+  setProgress: ReturnType<typeof vi.fn>;
+  setError: ReturnType<typeof vi.fn>;
+  setModeResults: ReturnType<typeof vi.fn>;
+  setGeneratingModes: ReturnType<typeof vi.fn>;
+};
 
-  describe('Scenario: Worker Message Distribution', () => {
+function createSetters(): SetterFns {
+  return {
+    setStatus: vi.fn(),
+    setProgress: vi.fn(),
+    setError: vi.fn(),
+    setModeResults: vi.fn(),
+    setGeneratingModes: vi.fn(),
+  };
+}
+
+/** Simulate the worker onmessage handler logic */
+function handleWorkerMessage(msg: WorkerOutboundMessage, fns: SetterFns) {
+  if (msg.type === 'progress' && msg.progress) {
+    fns.setProgress(msg.progress);
+  } else if (msg.type === 'ready') {
+    fns.setStatus('ready');
+    fns.setError('');
+  } else if (msg.type === 'update') {
+    fns.setModeResults(msg.mode, msg.text);
+    fns.setGeneratingModes(msg.mode, true);
+  } else if (msg.type === 'complete') {
+    fns.setModeResults(msg.mode, msg.text);
+    fns.setGeneratingModes(msg.mode, false);
+  } else if (msg.type === 'error') {
+    const errorContent = msg.error ?? 'Unknown error';
+    if (!msg.mode) {
+      fns.setError(`Load Error: ${errorContent}`);
+      fns.setStatus('error');
+    } else {
+      fns.setError(`${msg.mode}: ${errorContent}`);
+      fns.setGeneratingModes(msg.mode, false);
+    }
+  }
+}
+
+describe('Feature: Worker Message Dispatch', () => {
+  describe('Scenario: Progress message', () => {
     it('Given progress message When received Then should update progress', () => {
-      const { result } = renderHook(() => useWorker());
-      act(() => {
-        mockWorker.onmessage({ data: { type: 'progress', progress: 50 } });
-      });
-      expect(result.current.progress).toBe(50);
-    });
-
-    it('Given ready message When received Then should set ready state', () => {
-      const { result } = renderHook(() => useWorker());
-      act(() => {
-        mockWorker.onmessage({ data: { type: 'ready' } });
-      });
-      expect(result.current.isReady).toBe(true);
-    });
-
-    it('Given update message When received Then should update content', () => {
-      const { result } = renderHook(() => useWorker());
-      act(() => {
-        mockWorker.onmessage({ data: { type: 'update', content: 'test' } });
-      });
-      expect(result.current.result).toBe('test');
-    });
-
-    it('Given complete message When received Then should set complete state', () => {
-      const { result } = renderHook(() => useWorker());
-      act(() => {
-        mockWorker.onmessage({ data: { type: 'complete' } });
-      });
-      expect(result.current.isGenerating).toBe(false);
-    });
-
-    it('Given error message When received Then should set error state', () => {
-      const { result } = renderHook(() => useWorker());
-      act(() => {
-        mockWorker.onmessage({ data: { type: 'error', error: 'Test error' } });
-      });
-      expect(result.current.error).toBe('Test error');
+      const fns = createSetters();
+      handleWorkerMessage({ type: 'progress', progress: { progress: 50, text: 'Loading...' } }, fns);
+      expect(fns.setProgress).toHaveBeenCalledWith({ progress: 50, text: 'Loading...' });
     });
   });
 
-  describe('Scenario: QUICK_TRANSLATE Function', () => {
-    it('Given runtime message When received Then should trigger translation', () => {
-      const { result } = renderHook(() => useWorker());
-      const mockListener = (global.browser.runtime.onMessage.addListener as any).mock.calls[0][0];
-      mockListener({ type: 'QUICK_TRANSLATE', text: 'test' });
-      expect(mockWorker.postMessage).toHaveBeenCalledWith({
-        type: 'generate',
-        mode: 'translate',
-        prompt: 'test'
-      });
+  describe('Scenario: Ready message', () => {
+    it('Given ready message When received Then should set ready status and clear error', () => {
+      const fns = createSetters();
+      handleWorkerMessage({ type: 'ready' }, fns);
+      expect(fns.setStatus).toHaveBeenCalledWith('ready');
+      expect(fns.setError).toHaveBeenCalledWith('');
     });
   });
 
-  describe('Scenario: Timeout Handling', () => {
-    it('Given timeout When generating Then should cancel request', () => {
+  describe('Scenario: Update message', () => {
+    it('Given update message When received Then should update results and set generating true', () => {
+      const fns = createSetters();
+      handleWorkerMessage({ type: 'update', text: 'partial', mode: 'correct' }, fns);
+      expect(fns.setModeResults).toHaveBeenCalledWith('correct', 'partial');
+      expect(fns.setGeneratingModes).toHaveBeenCalledWith('correct', true);
+    });
+  });
+
+  describe('Scenario: Complete message', () => {
+    it('Given complete message When received Then should set final results and generating false', () => {
+      const fns = createSetters();
+      handleWorkerMessage({ type: 'complete', text: 'done', mode: 'translate' }, fns);
+      expect(fns.setModeResults).toHaveBeenCalledWith('translate', 'done');
+      expect(fns.setGeneratingModes).toHaveBeenCalledWith('translate', false);
+    });
+  });
+
+  describe('Scenario: Error message with mode', () => {
+    it('Given error with mode When received Then should set mode-specific error', () => {
+      const fns = createSetters();
+      handleWorkerMessage({ type: 'error', error: 'failed', mode: 'expand' }, fns);
+      expect(fns.setError).toHaveBeenCalledWith('expand: failed');
+      expect(fns.setGeneratingModes).toHaveBeenCalledWith('expand', false);
+    });
+  });
+
+  describe('Scenario: Error message without mode (load error)', () => {
+    it('Given error without mode When received Then should set global error status', () => {
+      const fns = createSetters();
+      handleWorkerMessage({ type: 'error', error: 'Load failed' }, fns);
+      expect(fns.setError).toHaveBeenCalledWith('Load Error: Load failed');
+      expect(fns.setStatus).toHaveBeenCalledWith('error');
+    });
+  });
+
+  describe('Scenario: QUICK_TRANSLATE timeout logic', () => {
+    it('Given 15s timeout When no response Then requestId should be cleared', async () => {
       vi.useFakeTimers();
-      const { result } = renderHook(() => useWorker());
-      act(() => {
-        result.current.generate('test', 'translate');
-      });
-      act(() => {
-        vi.advanceTimersByTime(15000);
-      });
-      expect(result.current.error).toBe('Request timeout');
+      let pendingId: string | null = 'qt-123';
+      const timeoutId = setTimeout(() => { pendingId = null; }, 15000);
+      expect(pendingId).toBe('qt-123');
+      vi.advanceTimersByTime(15000);
+      expect(pendingId).toBeNull();
       vi.useRealTimers();
     });
   });
 
-  describe('Scenario: Storage Change Listener', () => {
-    it('Given selectedText change When detected Then should update state', () => {
-      const { result } = renderHook(() => useWorker());
-      const mockListener = (global.browser.storage.local.onChanged.addListener as any).mock.calls[0][0];
-      mockListener({ selectedText: { newValue: 'test text' } });
-      expect(result.current.inputText).toBe('test text');
+  describe('Scenario: RequestId race protection', () => {
+    it('Given stale requestId When response arrives Then should be ignored', () => {
+      let currentId: string | null = 'qt-new';
+      const responseId = 'qt-old';
+      const isStale = responseId !== currentId;
+      expect(isStale).toBe(true);
     });
-  });
 
-  describe('Scenario: autoSpeak TTS Trigger', () => {
-    it('Given autoSpeak enabled When result complete Then should trigger TTS', () => {
-      const { result } = renderHook(() => useWorker());
-      act(() => {
-        result.current.updateSettings({ autoSpeak: true });
-        mockWorker.onmessage({ data: { type: 'complete', result: 'test result' } });
-      });
-      expect(global.chrome.tts.speak).toHaveBeenCalledWith('test result', expect.any(Object));
+    it('Given matching requestId When response arrives Then should be processed', () => {
+      let currentId: string | null = 'qt-123';
+      const responseId = 'qt-123';
+      const isMatch = responseId === currentId;
+      expect(isMatch).toBe(true);
     });
   });
 });

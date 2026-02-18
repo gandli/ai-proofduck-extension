@@ -1,100 +1,59 @@
 import { describe, it, expect } from 'vitest';
-import { i18n } from '../i18n';
+import { translations } from '../i18n';
 
-const LANGUAGES = ['en', 'zh-CN', 'zh-TW', 'ja', 'ko', 'es', 'fr'];
-const REQUIRED_KEYS = [
-  'app_title',
-  'mode_translate',
-  'mode_summarize',
-  'mode_expand',
-  'mode_rewrite',
-  'mode_proofread',
-  'result_translate',
-  'result_summarize',
-  'result_expand',
-  'result_rewrite',
-  'result_proofread',
-  'engine_online',
-  'engine_local_gpu',
-  'engine_local_wasm',
-  'engine_chrome_ai',
-  'tone_neutral',
-  'tone_formal',
-  'tone_casual',
-  'tone_friendly',
-  'detail_concise',
-  'detail_medium',
-  'detail_detailed',
-  'button_execute',
-  'button_clear',
-  'button_copy',
-  'button_settings',
-  'placeholder_input',
-  'error_no_api_key',
-  'error_engine_not_ready',
-  'error_network',
-  'error_unknown',
-  'settings_title',
-  'settings_engine',
-  'settings_api_key',
-  'settings_language',
-  'settings_tone',
-  'settings_detail',
-  'settings_auto_speak',
-  'settings_local_model',
-  'wasm_warning',
-  'character_count'
-];
+const EXPECTED_LANGUAGES = ['中文', 'English', '日本語', '한국어', 'Français', 'Deutsch', 'Español'];
 
 describe('Feature: Internationalization', () => {
   describe('Scenario: Language Existence', () => {
-    it('Given i18n When checking Then should have 7 languages', () => {
-      expect(Object.keys(i18n)).toHaveLength(7);
+    it('Given translations When checking Then should have 7 languages', () => {
+      expect(Object.keys(translations)).toHaveLength(7);
     });
 
-    it('Given each language When checking Then should exist', () => {
-      LANGUAGES.forEach(lang => {
-        expect(i18n).toHaveProperty(lang);
-      });
+    it.each(EXPECTED_LANGUAGES)('Given language "%s" When checking Then should exist', (lang) => {
+      expect(translations).toHaveProperty(lang);
     });
   });
 
   describe('Scenario: Key Completeness', () => {
-    it('Given each language When checking keys Then should have all required keys', () => {
-      LANGUAGES.forEach(lang => {
-        REQUIRED_KEYS.forEach(key => {
-          expect(i18n[lang]).toHaveProperty(key);
-        });
-      });
+    const referenceKeys = Object.keys(translations['中文']).sort();
+
+    it.each(EXPECTED_LANGUAGES)('Given language "%s" When checking keys Then should have all keys from 中文', (lang) => {
+      const langKeys = Object.keys(translations[lang]).sort();
+      expect(langKeys).toEqual(referenceKeys);
     });
 
     it('Given engine_chrome_ai When checking Then should exist in all languages', () => {
-      LANGUAGES.forEach(lang => {
-        expect(i18n[lang]).toHaveProperty('engine_chrome_ai');
-      });
+      for (const lang of EXPECTED_LANGUAGES) {
+        expect(translations[lang]).toHaveProperty('engine_chrome_ai');
+        expect(translations[lang].engine_chrome_ai.length).toBeGreaterThan(0);
+      }
+    });
+
+    it('Given status_ready_chrome_ai When checking Then should exist in all languages', () => {
+      for (const lang of EXPECTED_LANGUAGES) {
+        expect(translations[lang]).toHaveProperty('status_ready_chrome_ai');
+      }
     });
   });
 
   describe('Scenario: Key Consistency', () => {
-    it('Given all languages When comparing Then should have same key sets', () => {
-      const keySets = LANGUAGES.map(lang => new Set(Object.keys(i18n[lang])));
-      const firstSet = keySets[0];
-      keySets.forEach(set => {
-        expect(set.size).toBe(firstSet.size);
-        set.forEach(key => {
-          expect(firstSet.has(key)).toBe(true);
-        });
-      });
+    it('Given all languages When comparing Then should have identical key sets', () => {
+      const refKeys = new Set(Object.keys(translations['中文']));
+      for (const lang of EXPECTED_LANGUAGES) {
+        const langKeys = new Set(Object.keys(translations[lang]));
+        const missing = [...refKeys].filter(k => !langKeys.has(k));
+        const extra = [...langKeys].filter(k => !refKeys.has(k));
+        expect(missing, `${lang} missing keys`).toEqual([]);
+        expect(extra, `${lang} extra keys`).toEqual([]);
+      }
     });
   });
 
   describe('Scenario: Non-empty Values', () => {
-    it('Given all translations When checking Then should not have empty strings', () => {
-      LANGUAGES.forEach(lang => {
-        Object.values(i18n[lang]).forEach(value => {
-          expect(value).not.toBe('');
-        });
-      });
+    it.each(EXPECTED_LANGUAGES)('Given language "%s" When checking values Then should not have empty strings', (lang) => {
+      for (const [key, val] of Object.entries(translations[lang])) {
+        expect(val, `${lang}.${key} is empty`).not.toBe('');
+      }
     });
   });
 });

@@ -1,76 +1,74 @@
 import { describe, it, expect } from 'vitest';
-import { ModeKey, Settings, DEFAULT_SETTINGS, emptyModeResults, emptyGeneratingModes, MODES } from '../types';
+import { DEFAULT_SETTINGS, emptyModeResults, emptyGeneratingModes, MODES } from '../types';
+import type { ModeKey } from '../types';
 
 describe('Feature: Types and Constants', () => {
-  describe('Scenario: ModeKey Validation', () => {
-    it('Given ModeKey When checking values Then should have 5 modes', () => {
-      expect(Object.values(ModeKey)).toHaveLength(5);
-    });
-  });
-
-  describe('Scenario: Settings Validation', () => {
-    it('Given Settings When checking structure Then should have all required fields', () => {
-      const settings: Settings = {
-        engine: 'online',
-        apiKey: 'test-key',
-        language: 'en',
-        tone: 'neutral',
-        detail: 'medium',
-        autoSpeak: false,
-        localModel: 'default'
-      };
-      expect(settings).toHaveProperty('engine');
-      expect(settings).toHaveProperty('apiKey');
-      expect(settings).toHaveProperty('language');
-      expect(settings).toHaveProperty('tone');
-      expect(settings).toHaveProperty('detail');
-      expect(settings).toHaveProperty('autoSpeak');
-      expect(settings).toHaveProperty('localModel');
-    });
-  });
-
-  describe('Scenario: DEFAULT_SETTINGS Validation', () => {
-    it('Given DEFAULT_SETTINGS When checking Then should match expected structure', () => {
-      expect(DEFAULT_SETTINGS).toEqual({
-        engine: 'online',
-        apiKey: '',
-        language: 'en',
-        tone: 'neutral',
-        detail: 'medium',
-        autoSpeak: false,
-        localModel: 'default'
-      });
-    });
-  });
-
-  describe('Scenario: emptyModeResults Validation', () => {
-    it('Given emptyModeResults When called Then should return array of 5 empty strings', () => {
-      const results = emptyModeResults();
-      expect(results).toHaveLength(5);
-      results.forEach(result => {
-        expect(result).toBe('');
-      });
-    });
-  });
-
-  describe('Scenario: emptyGeneratingModes Validation', () => {
-    it('Given emptyGeneratingModes When called Then should return array of 5 false values', () => {
-      const generatingModes = emptyGeneratingModes();
-      expect(generatingModes).toHaveLength(5);
-      generatingModes.forEach(mode => {
-        expect(mode).toBe(false);
-      });
-    });
-  });
-
-  describe('Scenario: MODES Validation', () => {
-    it('Given MODES When checking Then should have 5 items with required properties', () => {
+  describe('Scenario: ModeKey values via MODES array', () => {
+    it('Given MODES When checking Then should have 5 modes', () => {
       expect(MODES).toHaveLength(5);
-      MODES.forEach(mode => {
-        expect(mode).toHaveProperty('key');
-        expect(mode).toHaveProperty('labelKey');
-        expect(mode).toHaveProperty('resultLabelKey');
-      });
+    });
+
+    it('Given MODES When extracting keys Then should match expected mode keys', () => {
+      const keys = MODES.map(m => m.key);
+      expect(keys).toEqual(['summarize', 'correct', 'proofread', 'translate', 'expand']);
+    });
+
+    it('Given each MODE When checking Then should have key, labelKey, resultLabelKey', () => {
+      for (const m of MODES) {
+        expect(m).toHaveProperty('key');
+        expect(m).toHaveProperty('labelKey');
+        expect(m).toHaveProperty('resultLabelKey');
+        expect(m.labelKey).toContain('mode_');
+        expect(m.resultLabelKey).toContain('result_');
+      }
+    });
+  });
+
+  describe('Scenario: DEFAULT_SETTINGS', () => {
+    it('Given DEFAULT_SETTINGS When checking Then should have all required fields', () => {
+      expect(DEFAULT_SETTINGS.engine).toBe('local-gpu');
+      expect(DEFAULT_SETTINGS.extensionLanguage).toBe('中文');
+      expect(DEFAULT_SETTINGS.tone).toBe('professional');
+      expect(DEFAULT_SETTINGS.detailLevel).toBe('standard');
+      expect(DEFAULT_SETTINGS.localModel).toBe('Qwen2.5-0.5B-Instruct-q4f16_1-MLC');
+      expect(DEFAULT_SETTINGS.apiBaseUrl).toBe('https://api.openai.com/v1');
+      expect(DEFAULT_SETTINGS.apiKey).toBe('');
+      expect(DEFAULT_SETTINGS.apiModel).toBe('gpt-3.5-turbo');
+      expect(DEFAULT_SETTINGS.autoSpeak).toBe(false);
+    });
+  });
+
+  describe('Scenario: emptyModeResults', () => {
+    it('Given emptyModeResults When called Then should return record with 5 empty strings', () => {
+      const results = emptyModeResults();
+      expect(Object.keys(results)).toHaveLength(5);
+      for (const v of Object.values(results)) {
+        expect(v).toBe('');
+      }
+    });
+
+    it('Given emptyModeResults When called twice Then should return independent objects', () => {
+      const a = emptyModeResults();
+      const b = emptyModeResults();
+      a.summarize = 'test';
+      expect(b.summarize).toBe('');
+    });
+  });
+
+  describe('Scenario: emptyGeneratingModes', () => {
+    it('Given emptyGeneratingModes When called Then should return record with 5 false values', () => {
+      const modes = emptyGeneratingModes();
+      expect(Object.keys(modes)).toHaveLength(5);
+      for (const v of Object.values(modes)) {
+        expect(v).toBe(false);
+      }
+    });
+
+    it('Given emptyGeneratingModes When called twice Then should return independent objects', () => {
+      const a = emptyGeneratingModes();
+      const b = emptyGeneratingModes();
+      a.summarize = true;
+      expect(b.summarize).toBe(false);
     });
   });
 });
