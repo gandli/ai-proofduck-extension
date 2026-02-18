@@ -96,12 +96,29 @@ async function simulateGenerate(
     const session = await modelApi.create({ systemPrompt: 'test' });
     const stream = await session.promptStreaming(text);
 
+    let previousChunk = '';
     let fullText = '';
+    
     for await (const chunk of stream) {
-      fullText = chunk;
+      const newText = typeof chunk === 'string' ? chunk : (chunk as any).content || JSON.stringify(chunk);
+      
+      let isDelta = false;
+      if (fullText.length > 0 && newText.length < fullText.length) {
+         isDelta = true;
+      } else {
+         isDelta = !newText.startsWith(previousChunk);
+      }
+
+      if (isDelta) {
+        fullText += newText;
+      } else {
+        fullText = newText;
+      }
+      
+      previousChunk = newText;
       postMessage({ type: 'update', text: fullText, mode, requestId });
     }
-
+    
     session.destroy();
     postMessage({ type: 'complete', text: fullText, mode, requestId });
   } catch (error: unknown) {
@@ -198,8 +215,9 @@ describe('Feature: Chrome Built-in AI Engine', () => {
 
   describe('Scenario: Streaming text generation via Chrome AI', () => {
 
-    it('Given Chrome AI is ready, When generating with "correct" mode, Then it should stream updates and complete', async () => {
+    it('Given Chrome AI is ready and streams accumulated text, When generating, Then it should handle it correctly', async () => {
       const postMessage = createMockPostMessage();
+      // Simulating accumulated chunks
       const chunks = ['校对', '校对结果', '校对结果：已修正'];
       async function* mockStream() {
         for (const c of chunks) yield c;
@@ -216,20 +234,47 @@ describe('Feature: Chrome Built-in AI Engine', () => {
 
       await simulateGenerate('测试文本', 'correct', chromeAiSettings, mockAi, postMessage, 'req-1');
 
-      // Should have 3 update messages (one per chunk)
       const updates = postMessage.mock.calls.filter((c: any) => c[0].type === 'update');
+      // The worker should identify this as Accumulated and replace fullText
       expect(updates).toHaveLength(3);
-      expect(updates[0][0].text).toBe('校对');
-      expect(updates[1][0].text).toBe('校对结果');
       expect(updates[2][0].text).toBe('校对结果：已修正');
-
-      // Should complete with final text
+      
       expect(postMessage).toHaveBeenCalledWith({
         type: 'complete', text: '校对结果：已修正', mode: 'correct', requestId: 'req-1',
       });
-
-      // Session should be destroyed
       expect(mockSession.destroy).toHaveBeenCalled();
+    });
+
+    it('Given Chrome AI is ready and streams DELTA text, When generating, Then it should assemble it correctly', async () => {
+      const postMessage = createMockPostMessage();
+      // Simulating delta chunks (standard LLM stream style)
+      // "He" does NOT start with "H" (previous empty), so first is accum? No wait.
+      // 1. "H" (starts with ""? yes, so accum? Wait logic: if new.startsWith(prev) && prev != '')
+      // 1. "H". prev="" -> logic: startsWith "" is true. prev!='' is false. ELSE -> fullText += "H". prev="H"
+      // 2. "e". prev="H". "e".startsWith("H") -> false. ELSE -> fullText += "e" -> "He". prev="e"
+      // 3. "l". prev="e". "l".startsWith("e") -> false. ELSE -> fullText += "l" -> "Hel". prev="l"
+      const chunks = ['H', 'e', 'l', 'l', 'o'];
+      async function* mockStream() {
+        for (const c of chunks) yield c;
+      }
+      const mockSession = {
+        promptStreaming: vi.fn().mockReturnValue(mockStream()),
+        destroy: vi.fn(),
+      };
+      const mockAi = {
+        languageModel: { create: vi.fn().mockResolvedValue(mockSession) },
+      };
+
+      await simulateGenerate('hi', 'expand', chromeAiSettings, mockAi, postMessage, 'req-delta');
+
+      const updates = postMessage.mock.calls.filter((c: any) => c[0].type === 'update');
+      expect(updates).toHaveLength(5);
+      // The last update should contain the full assembled text
+      expect(updates[4][0].text).toBe('Hello');
+
+      expect(postMessage).toHaveBeenCalledWith({
+        type: 'complete', text: 'Hello', mode: 'expand', requestId: 'req-delta',
+      });
     });
 
     it('Given Chrome AI is ready, When generating with all 5 modes, Then each mode should work', async () => {

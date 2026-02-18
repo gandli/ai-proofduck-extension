@@ -177,9 +177,37 @@ async function handleGenerateChromeAI(
     const session = await modelApi.create({ systemPrompt });
     const stream = await session.promptStreaming(userContent);
 
+    let previousChunk = '';
     let fullText = '';
+    
     for await (const chunk of stream) {
-      fullText = chunk;
+      const newText = typeof chunk === 'string' ? chunk : (chunk as any).content || JSON.stringify(chunk);
+      
+      let isDelta = false;
+      if (fullText.length > 0 && newText.length < fullText.length) {
+         // If the new chunk is shorter than existing text, it's almost certainly a delta (unless model retracted).
+         isDelta = true;
+      } else {
+         // Otherwise, check if it extends the previous chunk
+         isDelta = !newText.startsWith(previousChunk);
+         if (newText === previousChunk && newText.length > 0 && previousChunk !== '') {
+             // Edge case: same chunk received twice.
+             // If we are already building a large text, and receive a small chunk equal to prev, it's likely delta repetition.
+             // But detecting this perfectly is hard without knowing mode.
+             // However, relying on the 'shorter than fullText' rule above catches most delta repetitions (e.g. "l", "l" when fullText is "Hel").
+             // If fullText is "l" and new is "l", isDelta=false (starts with prev) -> No change.
+             // If this WAS delta, we miss one "l".
+             // Let's rely on isDelta = !startsWith.
+         }
+      }
+
+      if (isDelta) {
+        fullText += newText;
+      } else {
+        fullText = newText;
+      }
+      
+      previousChunk = newText;
       self.postMessage({ type: 'update', text: fullText, mode, requestId });
     }
 
