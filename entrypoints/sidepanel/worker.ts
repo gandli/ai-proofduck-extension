@@ -134,24 +134,70 @@ async function handleGenerateOnline(text: string, mode: ModeKey, settings: Setti
     }
 }
 
+async function handleGenerateChromeAI(text: string, mode: ModeKey, settings: Settings, requestId?: string) {
+    try {
+        const ai = (globalThis as any).ai;
+        if (!ai?.languageModel) {
+            throw new Error("Chrome Built-in AI 不可用。请确保使用 Chrome 138+ 并已启用 Prompt API。");
+        }
+
+        const systemPrompt = getSystemPrompt(mode, settings);
+        const userContent = `【待处理文本】：\n${text}`;
+
+        const session = await ai.languageModel.create({ systemPrompt });
+        const stream = await session.promptStreaming(userContent);
+
+        let fullText = "";
+        for await (const chunk of stream) {
+            fullText = chunk;
+            self.postMessage({ type: "update", text: fullText, mode, requestId });
+        }
+
+        session.destroy();
+        self.postMessage({ type: "complete", text: fullText, mode, requestId });
+    } catch (error: unknown) {
+        const errMsg = error instanceof Error ? error.message : String(error);
+        self.postMessage({ type: "error", error: errMsg, mode, requestId });
+    }
+}
+
 self.onmessage = async (event: MessageEvent<WorkerInboundMessage>) => {
     const msg = event.data;
 
     if (msg.type === "load") {
-        try {
-            await WebLLMWorker.getEngine(msg.settings, (progress) => {
-                self.postMessage({
-                    type: "progress",
-                    progress: { status: "progress", progress: progress.progress * 100, text: progress.text }
+        if (msg.settings.engine === 'chrome-ai') {
+            try {
+                const ai = (globalThis as any).ai;
+                if (!ai?.languageModel) {
+                    throw new Error("Chrome Built-in AI not available");
+                }
+                const caps = await ai.languageModel.capabilities();
+                if (caps.available === 'no') {
+                    throw new Error("Chrome Built-in AI model not downloaded");
+                }
+                self.postMessage({ type: "ready" });
+            } catch (error: unknown) {
+                const errMsg = error instanceof Error ? error.message : String(error);
+                self.postMessage({ type: "error", error: errMsg });
+            }
+        } else {
+            try {
+                await WebLLMWorker.getEngine(msg.settings, (progress) => {
+                    self.postMessage({
+                        type: "progress",
+                        progress: { status: "progress", progress: progress.progress * 100, text: progress.text }
+                    });
                 });
-            });
-            self.postMessage({ type: "ready" });
-        } catch (error: unknown) {
-            const errMsg = error instanceof Error ? error.message : String(error);
-            self.postMessage({ type: "error", error: errMsg });
+                self.postMessage({ type: "ready" });
+            } catch (error: unknown) {
+                const errMsg = error instanceof Error ? error.message : String(error);
+                self.postMessage({ type: "error", error: errMsg });
+            }
         }
     } else if (msg.type === "generate") {
-        if (msg.settings.engine === 'online') {
+        if (msg.settings.engine === 'chrome-ai') {
+            handleGenerateChromeAI(msg.text, msg.mode, msg.settings, msg.requestId);
+        } else if (msg.settings.engine === 'online') {
             handleGenerateOnline(msg.text, msg.mode, msg.settings, msg.requestId);
         } else {
             localRequestQueue.push({ text: msg.text, mode: msg.mode, settings: msg.settings, requestId: msg.requestId });

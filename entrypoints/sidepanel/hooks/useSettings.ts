@@ -73,6 +73,10 @@ export function useSettings() {
 
     if (updated.engine === 'online') {
       setStatus('ready');
+    } else if (updated.engine === 'chrome-ai') {
+      if (engineChanged || statusRef.current === 'idle' || statusRef.current === 'error') {
+        setStatus('idle');
+      }
     } else if (engineChanged || modelChanged || statusRef.current === 'idle' || statusRef.current === 'error') {
       setStatus('loading');
       workerPostMessage?.({ type: 'load', settings: updated });
