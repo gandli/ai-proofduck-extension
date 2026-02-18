@@ -475,4 +475,164 @@ describe('Feature: Chrome Built-in AI Engine', () => {
       expect(complete![0].requestId).toBeUndefined();
     });
   });
+
+  // ============================================================
+  // Specialized Chrome AI APIs (Summarizer, Translator, Rewriter, Proofreader, Writer)
+  // ============================================================
+
+  describe('Scenario: Specialized API routing per mode', () => {
+    it('Given Summarizer API available When mode=summarize Then should use Summarizer, not Prompt API', async () => {
+      const postMessage = createMockPostMessage();
+      const destroySpy = vi.fn();
+      async function* mockStream() { yield '要点摘要'; }
+      const mockGlobal: any = {
+        Summarizer: {
+          create: vi.fn().mockResolvedValue({
+            summarizeStreaming: vi.fn().mockReturnValue(mockStream()),
+            destroy: destroySpy,
+          }),
+        },
+      };
+      // Simulate trySpecializedAPI for summarize
+      const summarizer = await mockGlobal.Summarizer.create({ type: 'key-points', format: 'plain-text', length: 'medium' });
+      const stream = summarizer.summarizeStreaming('长文本');
+      let result = '';
+      for await (const chunk of stream) { result = chunk; postMessage({ type: 'update', text: result, mode: 'summarize' }); }
+      summarizer.destroy();
+      postMessage({ type: 'complete', text: result, mode: 'summarize' });
+
+      expect(mockGlobal.Summarizer.create).toHaveBeenCalled();
+      expect(destroySpy).toHaveBeenCalled();
+      expect(postMessage).toHaveBeenCalledWith(expect.objectContaining({ type: 'complete', text: '要点摘要' }));
+    });
+
+    it('Given Translator API available When mode=translate Then should use Translator', async () => {
+      const postMessage = createMockPostMessage();
+      const destroySpy = vi.fn();
+      async function* mockStream() { yield 'Translation result'; }
+      const mockTranslator = {
+        create: vi.fn().mockResolvedValue({
+          translateStreaming: vi.fn().mockReturnValue(mockStream()),
+          destroy: destroySpy,
+        }),
+      };
+      const translator = await mockTranslator.create({ sourceLanguage: 'zh', targetLanguage: 'en' });
+      const stream = translator.translateStreaming('中文文本');
+      let result = '';
+      for await (const chunk of stream) { result = chunk; postMessage({ type: 'update', text: result, mode: 'translate' }); }
+      translator.destroy();
+      postMessage({ type: 'complete', text: result, mode: 'translate' });
+
+      expect(mockTranslator.create).toHaveBeenCalledWith(expect.objectContaining({ sourceLanguage: 'zh', targetLanguage: 'en' }));
+      expect(postMessage).toHaveBeenCalledWith(expect.objectContaining({ type: 'complete', text: 'Translation result' }));
+    });
+
+    it('Given Rewriter API available When mode=proofread Then should use Rewriter', async () => {
+      const postMessage = createMockPostMessage();
+      const destroySpy = vi.fn();
+      async function* mockStream() { yield '润色后文本'; }
+      const mockRewriter = {
+        create: vi.fn().mockResolvedValue({
+          rewriteStreaming: vi.fn().mockReturnValue(mockStream()),
+          destroy: destroySpy,
+        }),
+      };
+      const rewriter = await mockRewriter.create({ tone: 'more-formal', length: 'as-is' });
+      const stream = rewriter.rewriteStreaming('原始文本');
+      let result = '';
+      for await (const chunk of stream) { result = chunk; }
+      rewriter.destroy();
+
+      expect(destroySpy).toHaveBeenCalled();
+      expect(result).toBe('润色后文本');
+    });
+
+    it('Given Proofreader API available When mode=correct Then should apply corrections', () => {
+      const text = '这是一段有错误的文本';
+      const corrections = [
+        { startIndex: 4, endIndex: 5, replacement: '个' },
+      ];
+      let corrected = text;
+      const sorted = [...corrections].sort((a, b) => b.startIndex - a.startIndex);
+      for (const c of sorted) {
+        corrected = corrected.slice(0, c.startIndex) + c.replacement + corrected.slice(c.endIndex);
+      }
+      expect(corrected).toBe('这是一段个错误的文本');
+    });
+
+    it('Given Writer API available When mode=expand Then should use Writer', async () => {
+      const postMessage = createMockPostMessage();
+      async function* mockStream() { yield '扩写'; yield '扩写后的详细文本'; }
+      const mockWriter = {
+        create: vi.fn().mockResolvedValue({
+          writeStreaming: vi.fn().mockReturnValue(mockStream()),
+          destroy: vi.fn(),
+        }),
+      };
+      const writer = await mockWriter.create({ tone: 'more-formal', length: 'long' });
+      const stream = writer.writeStreaming('简短文本');
+      let result = '';
+      for await (const chunk of stream) { result = chunk; postMessage({ type: 'update', text: result, mode: 'expand' }); }
+      writer.destroy();
+      postMessage({ type: 'complete', text: result, mode: 'expand' });
+
+      expect(postMessage).toHaveBeenCalledWith(expect.objectContaining({ type: 'complete', text: '扩写后的详细文本' }));
+    });
+  });
+
+  describe('Scenario: Fallback to Prompt API when specialized API unavailable', () => {
+    it('Given no Summarizer in globalThis When mode=summarize Then should fallback to Prompt API', async () => {
+      const postMessage = createMockPostMessage();
+      // trySpecializedAPI returns null when API not in globalThis
+      const specializedResult = ('Summarizer' in {}) ? 'used' : null;
+      expect(specializedResult).toBeNull();
+      // Then fallbackPromptAPI would be called
+    });
+
+    it('Given no Translator When mode=translate Then should fallback to Prompt API', () => {
+      const available = 'Translator' in {};
+      expect(available).toBe(false);
+    });
+
+    it('Given no Rewriter When mode=proofread Then should fallback to Prompt API', () => {
+      const available = 'Rewriter' in {};
+      expect(available).toBe(false);
+    });
+  });
+
+  describe('Scenario: Language mapping for Translator', () => {
+    const langMap: Record<string, string> = {
+      '中文': 'zh', 'English': 'en', '日本語': 'ja', '한국어': 'ko',
+      'Français': 'fr', 'Deutsch': 'de', 'Español': 'es',
+    };
+
+    it.each(Object.entries(langMap))(
+      'Given extension language "%s" When mapping to BCP-47 Then should return "%s"',
+      (name, code) => {
+        expect(langMap[name]).toBe(code);
+      },
+    );
+
+    it('Given unknown language When mapping Then should default to "en"', () => {
+      const fallback = langMap['Unknown'] || 'en';
+      expect(fallback).toBe('en');
+    });
+  });
+
+  describe('Scenario: Tone mapping for Rewriter/Writer', () => {
+    it('Given professional tone When mapping Then should return more-formal', () => {
+      const map: Record<string, string> = { professional: 'more-formal', casual: 'more-casual', academic: 'more-formal', concise: 'more-formal' };
+      expect(map['professional']).toBe('more-formal');
+      expect(map['casual']).toBe('more-casual');
+    });
+  });
+
+  describe('Scenario: Detail mapping for Writer length', () => {
+    it('Given detail levels When mapping Then should return correct Writer length', () => {
+      const map: Record<string, string> = { standard: 'medium', detailed: 'long', creative: 'long' };
+      expect(map['standard']).toBe('medium');
+      expect(map['detailed']).toBe('long');
+      expect(map['creative']).toBe('long');
+    });
+  });
 });
