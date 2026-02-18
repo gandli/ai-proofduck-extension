@@ -53,11 +53,11 @@ async function processLocalQueue() {
     const { text, mode, settings, requestId } = localRequestQueue.shift()!;
     try {
       const systemPrompt = getSystemPrompt(mode, settings);
-      const userContent = `<TEXT>\n${text}\n</TEXT>`;
       const engine = await WebLLMWorker.getEngine(settings);
+      const finalPrompt = `[DIRECTIVE: OUTPUT ONLY THE RESULT. NO CHAT.]\n<TEXT>\n${text}\n</TEXT>\nResult:`;
       const messages: ChatCompletionMessageParam[] = [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: userContent },
+        { role: 'user', content: finalPrompt },
       ];
       const chunks = await engine.chat.completions.create({ messages, stream: true });
       let fullText = '';
@@ -84,8 +84,7 @@ async function handleGenerateOnline(
 ) {
   try {
     const systemPrompt = getSystemPrompt(mode, settings);
-    const userContent = `<TEXT>\n${text}\n</TEXT>`;
-
+    const finalPrompt = `[DIRECTIVE: OUTPUT ONLY THE RESULT. NO CHAT.]\n<TEXT>\n${text}\n</TEXT>\nResult:`;
     if (!settings.apiKey) throw new Error('请在设置中配置 API Key');
 
     const response = await fetch(`${settings.apiBaseUrl}/chat/completions`, {
@@ -98,7 +97,7 @@ async function handleGenerateOnline(
         model: settings.apiModel,
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: userContent },
+          { role: 'user', content: finalPrompt },
         ],
         stream: true,
       }),
@@ -213,9 +212,10 @@ async function handleGenerateChromeAI(
     }
 
     const systemPrompt = getSystemPrompt(mode, settings);
-    const userContent = `<TEXT>\n${text}\n</TEXT>`;
     const session = await modelApi.create({ systemPrompt });
-    const stream = await session.promptStreaming(userContent);
+    // Aggressively repeat instructions in the prompt itself to force adherence.
+    const finalPrompt = `[DIRECTIVE: OUTPUT ONLY THE RESULT. NO CHAT.]\n<TEXT>\n${text}\n</TEXT>\nResult:`;
+    const stream = await session.promptStreaming(finalPrompt);
     const fullText = await streamPromptApi(stream, mode, requestId);
     session.destroy();
     self.postMessage({ type: 'complete', text: fullText, mode, requestId });
