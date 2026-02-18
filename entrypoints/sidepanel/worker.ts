@@ -1,5 +1,5 @@
 import { MLCEngine, InitProgressReport, ChatCompletionMessageParam } from '@mlc-ai/web-llm';
-import { getSystemPrompt } from './worker-utils';
+import { getSystemPrompt, LANG_MAP } from './worker-utils';
 import type { Settings, ModeKey, WorkerInboundMessage } from './types';
 
 class WebLLMWorker {
@@ -54,7 +54,8 @@ async function processLocalQueue() {
     try {
       const systemPrompt = getSystemPrompt(mode, settings);
       const engine = await WebLLMWorker.getEngine(settings);
-      const finalPrompt = `[DIRECTIVE: OUTPUT ONLY THE RESULT. NO CHAT.]\n<TEXT>\n${text}\n</TEXT>\nResult:`;
+      const targetLang = LANG_MAP[settings.extensionLanguage || '中文'] || settings.extensionLanguage || 'Chinese';
+      const finalPrompt = `[MODE: ${mode.toUpperCase()}]\n[ACTION: PROCESS THE TEXT BELOW INTO ${targetLang}]\n<TEXT_TO_PROCESS>\n${text}\n</TEXT_TO_PROCESS>\n[FINAL RESULT]:`;
       const messages: ChatCompletionMessageParam[] = [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: finalPrompt },
@@ -84,7 +85,8 @@ async function handleGenerateOnline(
 ) {
   try {
     const systemPrompt = getSystemPrompt(mode, settings);
-    const finalPrompt = `[DIRECTIVE: OUTPUT ONLY THE RESULT. NO CHAT.]\n<TEXT>\n${text}\n</TEXT>\nResult:`;
+    const targetLang = LANG_MAP[settings.extensionLanguage || '中文'] || settings.extensionLanguage || 'Chinese';
+    const finalPrompt = `[MODE: ${mode.toUpperCase()}]\n[ACTION: PROCESS THE TEXT BELOW INTO ${targetLang}]\n<TEXT_TO_PROCESS>\n${text}\n</TEXT_TO_PROCESS>\n[FINAL RESULT]:`;
     if (!settings.apiKey) throw new Error('请在设置中配置 API Key');
 
     const response = await fetch(`${settings.apiBaseUrl}/chat/completions`, {
@@ -213,8 +215,9 @@ async function handleGenerateChromeAI(
 
     const systemPrompt = getSystemPrompt(mode, settings);
     const session = await modelApi.create({ systemPrompt });
-    // Aggressively repeat instructions in the prompt itself to force adherence.
-    const finalPrompt = `[DIRECTIVE: OUTPUT ONLY THE RESULT. NO CHAT.]\n<TEXT>\n${text}\n</TEXT>\nResult:`;
+    const targetLang = LANG_MAP[settings.extensionLanguage || '中文'] || settings.extensionLanguage || 'Chinese';
+    // Aggressive reinforcement of the task immediately before the data.
+    const finalPrompt = `[MODE: ${mode.toUpperCase()}]\n[ACTION: PROCESS THE TEXT BELOW INTO ${targetLang}]\n<TEXT_TO_PROCESS>\n${text}\n</TEXT_TO_PROCESS>\n[FINAL RESULT]:`;
     const stream = await session.promptStreaming(finalPrompt);
     const fullText = await streamPromptApi(stream, mode, requestId);
     session.destroy();

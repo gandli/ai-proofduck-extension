@@ -1,7 +1,7 @@
 import { TONE_MAP, DETAIL_MAP, BASE_CONSTRAINT, PROMPTS } from './prompts';
 import { Settings } from './types';
 
-const LANG_MAP: Record<string, string> = {
+export const LANG_MAP: Record<string, string> = {
     '中文': 'Chinese',
     'English': 'English',
     '日本語': 'Japanese',
