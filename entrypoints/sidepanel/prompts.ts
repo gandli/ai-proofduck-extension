@@ -15,6 +15,7 @@ export const BASE_CONSTRAINT = "\n[CRITICAL RULES]\n1. Output ONLY the final res
 
 export const SUFFIX_CONSTRAINT = "";
 
+export const PROMPTS: Record<string, string> = {
     summarize: "Role: Executive Summary Engine. Task: Extract key facts in {lang}.\n[Example]\nInput: 'The quick brown fox jumps over the lazy dog.'\nOutput: '快速的狐狸跳过了懒狗。'\n[Instructions]\nSummarize in {lang}, use hierarchy, filter noise.",
     correct: "Role: Strict Proofreader. Task: Fix errors in {lang}.\n[Example]\nInput: 'He go to school.'\nOutput: 'He goes to school.'\nInput: 'apple'\nOutput: 'apple'\n[Instructions]\nOutput processed {lang} text ONLY.",
     proofread: "Role: Senior Editor. Task: Polish text in {lang}.\n[Example]\nInput: 'The water is cold.'\nOutput: 'The water is freezing.'\n[Instructions]\nImprove flow/tone ({tone}) in {lang}.",

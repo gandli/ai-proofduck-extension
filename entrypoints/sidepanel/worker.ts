@@ -213,7 +213,7 @@ async function handleGenerateChromeAI(
     }
 
     const systemPrompt = getSystemPrompt(mode, settings);
-    const userContent = `【待处理文本】：\n${text}`;
+    const userContent = `<TEXT>\n${text}\n</TEXT>`;
     const session = await modelApi.create({ systemPrompt });
     const stream = await session.promptStreaming(userContent);
     const fullText = await streamPromptApi(stream, mode, requestId);
