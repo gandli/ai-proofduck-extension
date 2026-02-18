@@ -148,153 +148,42 @@ async function handleGenerateOnline(
   }
 }
 
-// --- Chrome Built-in AI: per-mode specialized APIs with Prompt API fallback ---
-
-const CHROME_AI_SETUP_GUIDE =
-  'Please ensure:\n' +
-  '1. Chrome 138+ stable.\n' +
-  "2. chrome://flags/#prompt-api-for-gemini-nano : Enabled\n" +
-  "3. chrome://flags/#optimization-guide-on-device-model : Enabled BypassPerfRequirement\n" +
-  "4. chrome://components/ : Click 'Check for update' on 'Optimization Guide On Device Model'\n" +
-  'Relaunch Chrome after changes.';
-
-/** Map extension language names to BCP-47 codes for Translator API */
-function langToBcp47(lang: string): string {
-  const map: Record<string, string> = {
-    '中文': 'zh', 'English': 'en', '日本語': 'ja', '한국어': 'ko',
-    'Français': 'fr', 'Deutsch': 'de', 'Español': 'es',
-  };
-  return map[lang] || 'en';
-}
-
-/** Tone mapping for Rewriter/Writer API */
-function mapTone(tone: string): string {
-  const map: Record<string, string> = {
-    professional: 'more-formal', casual: 'more-casual',
-    academic: 'more-formal', concise: 'more-formal',
-  };
-  return map[tone] || 'as-is';
-}
-
-/** Detail mapping for Writer API length */
-function mapLength(detail: string): string {
-  const map: Record<string, string> = {
-    standard: 'medium', detailed: 'long', creative: 'long',
-  };
-  return map[detail] || 'medium';
-}
-
-/** Helper: stream accumulated chunks from Chrome AI APIs */
-async function streamAccumulated(
-  stream: AsyncIterable<string>,
-  mode: ModeKey,
-  requestId: string | undefined,
-) {
+// Helper: adaptive streaming — handles both AsyncIterable and ReadableStream
+async function streamPromptApi(stream: any, mode: ModeKey, requestId: string | undefined): Promise<string> {
   let fullText = '';
-  for await (const chunk of stream) {
-    fullText = typeof chunk === 'string' ? chunk : String(chunk);
-    self.postMessage({ type: 'update', text: fullText, mode, requestId });
-  }
-  return fullText;
-}
 
-/** Try using the specialized Chrome AI API for this mode; returns null if unavailable */
-async function trySpecializedAPI(
-  text: string,
-  mode: ModeKey,
-  settings: Settings,
-  requestId?: string,
-): Promise<string | null> {
-  const g = globalThis as any;
-
-  if (mode === 'summarize' && 'Summarizer' in g) {
-    const summarizer = await g.Summarizer.create({
-      type: 'key-points',
-      format: 'plain-text',
-      length: 'medium',
-    });
-    const stream = summarizer.summarizeStreaming(text);
-    const result = await streamAccumulated(stream, mode, requestId);
-    summarizer.destroy();
-    return result;
-  }
-
-  if (mode === 'translate' && 'Translator' in g) {
-    const sourceLang = (await g.LanguageDetector?.create())
-      ? (await (await g.LanguageDetector.create()).detect(text))?.[0]?.detectedLanguage || 'en'
-      : 'en';
-    const targetLang = langToBcp47(settings.extensionLanguage);
-    if (sourceLang === targetLang) return text; // no-op
-    const translator = await g.Translator.create({ sourceLanguage: sourceLang, targetLanguage: targetLang });
-    const stream = translator.translateStreaming(text);
-    const result = await streamAccumulated(stream, mode, requestId);
-    translator.destroy();
-    return result;
-  }
-
-  if (mode === 'proofread' && 'Rewriter' in g) {
-    const rewriter = await g.Rewriter.create({
-      tone: mapTone(settings.tone),
-      length: 'as-is',
-    });
-    const stream = rewriter.rewriteStreaming(text);
-    const result = await streamAccumulated(stream, mode, requestId);
-    rewriter.destroy();
-    return result;
-  }
-
-  if (mode === 'correct' && 'Proofreader' in g) {
-    const proofreader = await g.Proofreader.create();
-    // Proofreader returns corrections, not streamed text
-    const corrections = await proofreader.proofread(text);
-    let correctedText = text;
-    // Apply corrections in reverse order to preserve offsets
-    const sorted = [...corrections].sort((a: any, b: any) => b.startIndex - a.startIndex);
-    for (const c of sorted) {
-      if (c.replacement != null) {
-        correctedText = correctedText.slice(0, c.startIndex) + c.replacement + correctedText.slice(c.endIndex);
+  // Handle ReadableStream (e.g. from Translator, Summarizer)
+  if (stream && typeof (stream as any).getReader === 'function') {
+    const reader = (stream as ReadableStream<string>).getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (value != null) {
+        const newText = typeof value === 'string' ? value : JSON.stringify(value);
+        // Smart update: some Chrome AI APIs (Summarizer, Translator) return accumulated text,
+        // while others might return deltas. We check if newText starts with fullText.
+        if (fullText && newText.startsWith(fullText)) {
+          fullText = newText;
+        } else {
+          fullText += newText;
+        }
+        self.postMessage({ type: 'update', text: fullText, mode, requestId });
       }
     }
-    proofreader.destroy();
-    self.postMessage({ type: 'update', text: correctedText, mode, requestId });
-    return correctedText;
+    return fullText;
   }
 
-  if (mode === 'expand' && 'Writer' in g) {
-    const writer = await g.Writer.create({
-      tone: mapTone(settings.tone),
-      length: mapLength(settings.detailLevel),
-    });
-    const stream = writer.writeStreaming(text);
-    const result = await streamAccumulated(stream, mode, requestId);
-    writer.destroy();
-    return result;
+  // Handle AsyncIterable (e.g. from Prompt API / LanguageModel).
+  // Chrome's promptStreaming() sends DELTA chunks — each chunk is just the new text.
+  // We concatenate all chunks to build the full output.
+  for await (const chunk of stream) {
+    const newText = typeof chunk === 'string' ? chunk : (chunk as any).content || JSON.stringify(chunk);
+    if (newText) {
+      fullText += newText;
+      self.postMessage({ type: 'update', text: fullText, mode, requestId });
+    }
   }
-
-  return null; // specialized API not available for this mode
-}
-
-/** Fallback: use Prompt API (languageModel) with system prompt */
-async function fallbackPromptAPI(
-  text: string,
-  mode: ModeKey,
-  settings: Settings,
-  requestId?: string,
-): Promise<string> {
-  const ai = (globalThis as any).ai;
-  const modelApi = ai?.languageModel || (globalThis as any).LanguageModel;
-
-  if (!modelApi) {
-    throw new Error(`Chrome Built-in AI not available.\n${CHROME_AI_SETUP_GUIDE}`);
-  }
-
-  const systemPrompt = getSystemPrompt(mode, settings);
-  const userContent = `【待处理文本】：\n${text}`;
-  const session = await modelApi.create({ systemPrompt });
-  const stream = await session.promptStreaming(userContent);
-  const result = await streamAccumulated(stream, mode, requestId);
-  session.destroy();
-  return result;
+  return fullText;
 }
 
 async function handleGenerateChromeAI(
@@ -304,12 +193,32 @@ async function handleGenerateChromeAI(
   requestId?: string,
 ) {
   try {
-    // Try specialized API first, fallback to Prompt API
-    let result = await trySpecializedAPI(text, mode, settings, requestId);
-    if (result === null) {
-      result = await fallbackPromptAPI(text, mode, settings, requestId);
+    // Use only the stable Prompt API (LanguageModel) for all modes.
+    // Specialized APIs (Translator, Summarizer, Rewriter, Proofreader) cause hard
+    // worker process crashes in extension service worker contexts and are not used.
+    const ai = (globalThis as any).ai;
+    const modelApi = ai?.languageModel || (globalThis as any).LanguageModel;
+
+    if (!modelApi) {
+      const debugInfo = !ai ? "'ai' and 'LanguageModel' undefined" : "'languageModel' undefined";
+      throw new Error(
+        `Chrome Built-in AI not available (${debugInfo}).\n` +
+          'Please ensure:\n' +
+          '1. Chrome 128+ (Dev/Canary).\n' +
+          "2. chrome://flags/#prompt-api-for-gemini-nano : Enabled\n" +
+          "3. chrome://flags/#optimization-guide-on-device-model : Enabled BypassPerfRequirement\n" +
+          "4. chrome://components/ : Click 'Check for update' on 'Optimization Guide On Device Model'\n" +
+          'Relaunch Chrome after changes.',
+      );
     }
-    self.postMessage({ type: 'complete', text: result, mode, requestId });
+
+    const systemPrompt = getSystemPrompt(mode, settings);
+    const userContent = `【待处理文本】：\n${text}`;
+    const session = await modelApi.create({ systemPrompt });
+    const stream = await session.promptStreaming(userContent);
+    const fullText = await streamPromptApi(stream, mode, requestId);
+    session.destroy();
+    self.postMessage({ type: 'complete', text: fullText, mode, requestId });
   } catch (error: unknown) {
     const errMsg = error instanceof Error ? error.message : String(error);
     self.postMessage({ type: 'error', error: errMsg, mode, requestId });
