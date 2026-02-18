@@ -7,12 +7,10 @@ export function getSystemPrompt(mode: string, settings: Partial<Settings>) {
     const selectedTone = TONE_MAP[settings?.tone ?? 'professional'] || TONE_MAP.professional;
     const selectedDetail = DETAIL_MAP[settings?.detailLevel ?? 'standard'] || DETAIL_MAP.standard;
 
-    const resultCommand = `直接且仅输出 ${targetLang} 结果文本：`;
-
+    const resultCommand = `请直接输出最终的 ${targetLang} 结果：`;
     let promptTemplate = PROMPTS[mode] || PROMPTS.proofread;
-
+    promptTemplate = promptTemplate.replace(/{lang}/g, targetLang);
     promptTemplate = promptTemplate.replace("{tone}", selectedTone);
     promptTemplate = promptTemplate.replace("{detail}", selectedDetail);
-
     return `${promptTemplate}${BASE_CONSTRAINT}${resultCommand}${SUFFIX_CONSTRAINT}`;
 }
