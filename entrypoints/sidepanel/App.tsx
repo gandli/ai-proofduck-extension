@@ -73,6 +73,7 @@ function App() {
   const worker = useRef<Worker | null>(null);
   const settingsRef = useRef(settings);
   const statusRef = useRef(status);
+  const saveTimeoutRef = useRef<any>(null);
   const [modelSearch, setModelSearch] = useState('');
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -333,18 +334,25 @@ function App() {
     const engineChanged = newSettings.engine && newSettings.engine !== settings.engine;
     const modelChanged = newSettings.localModel && newSettings.localModel !== settings.localModel;
 
-    // Persist settings
-    if (typeof browser !== 'undefined' && browser.storage) {
-      const { apiKey, ...settingsWithoutKey } = updated;
-      await browser.storage.local.set({ settings: { ...settingsWithoutKey, apiKey: '' } });
-      if (apiKey) {
-        await browser.storage.session.set({ apiKey }).catch(() => {
-          browser.storage.local.set({ settings: updated });
-        });
-      }
+    // Persist settings (Debounced)
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
     }
 
-    // Handle engine/model side effects
+    saveTimeoutRef.current = setTimeout(async () => {
+      if (typeof browser !== 'undefined' && browser.storage) {
+        const { apiKey, ...settingsWithoutKey } = updated;
+        await browser.storage.local.set({ settings: { ...settingsWithoutKey, apiKey: '' } });
+        if (apiKey) {
+          await browser.storage.session.set({ apiKey }).catch(() => {
+            browser.storage.local.set({ settings: updated });
+          });
+        }
+      }
+      saveTimeoutRef.current = null;
+    }, 500);
+
+    // Handle engine/model side effects (Immediate)
     if (updated.engine === 'online') {
       setStatus('ready');
     } else if (engineChanged || modelChanged || status === 'idle' || status === 'error') {
