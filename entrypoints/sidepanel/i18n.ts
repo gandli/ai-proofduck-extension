@@ -198,7 +198,13 @@ export const translations: Record<string, any> = {
         copied: 'コピーしました！',
         clear_btn: 'クリア',
         char_count: '文字',
-        auto_speak_label: '結果を自動的に読み上げる'
+        auto_speak_label: '結果を自動的に読み上げる',
+        connection_error: 'Could not fetch page content. Please click on the page or use context menu to activate (due to permission restrictions).',
+        recommended_label: 'Recommended',
+        ram_info: 'System RAM detected: ~',
+        search_placeholder: 'Search models...',
+        history_label: 'Recently Used',
+        select_category: 'Select Category'
     },
     '한국어': {
         title: 'AI 어시스턴트',
@@ -261,7 +267,13 @@ export const translations: Record<string, any> = {
         copied: '복사됨!',
         clear_btn: '지우기',
         char_count: '자',
-        auto_speak_label: '결과 자동 읽기'
+        auto_speak_label: '결과 자동 읽기',
+        connection_error: 'Could not fetch page content. Please click on the page or use context menu to activate (due to permission restrictions).',
+        recommended_label: 'Recommended',
+        ram_info: 'System RAM detected: ~',
+        search_placeholder: 'Search models...',
+        history_label: 'Recently Used',
+        select_category: 'Select Category'
     },
     'Français': {
         title: 'Assistant IA',
@@ -324,7 +336,13 @@ export const translations: Record<string, any> = {
         copied: 'Copié !',
         clear_btn: 'Effacer',
         char_count: 'carac.',
-        auto_speak_label: 'Lecture automatique des résultats'
+        auto_speak_label: 'Lecture automatique des résultats',
+        connection_error: 'Could not fetch page content. Please click on the page or use context menu to activate (due to permission restrictions).',
+        recommended_label: 'Recommended',
+        ram_info: 'System RAM detected: ~',
+        search_placeholder: 'Search models...',
+        history_label: 'Recently Used',
+        select_category: 'Select Category'
     },
     'Deutsch': {
         title: 'KI-Assistent',
@@ -387,7 +405,13 @@ export const translations: Record<string, any> = {
         copied: 'Kopiert!',
         clear_btn: 'Löschen',
         char_count: 'Zeichen',
-        auto_speak_label: 'Ergebnisse automatisch vorlesen'
+        auto_speak_label: 'Ergebnisse automatisch vorlesen',
+        connection_error: 'Could not fetch page content. Please click on the page or use context menu to activate (due to permission restrictions).',
+        recommended_label: 'Recommended',
+        ram_info: 'System RAM detected: ~',
+        search_placeholder: 'Search models...',
+        history_label: 'Recently Used',
+        select_category: 'Select Category'
     },
     'Español': {
         title: 'Asistente de IA',
@@ -450,6 +474,12 @@ export const translations: Record<string, any> = {
         copied: '¡Copiado!',
         clear_btn: 'Limpiar',
         char_count: 'carácteres',
-        auto_speak_label: 'Lectura automática de resultados'
+        auto_speak_label: 'Lectura automática de resultados',
+        connection_error: 'Could not fetch page content. Please click on the page or use context menu to activate (due to permission restrictions).',
+        recommended_label: 'Recommended',
+        ram_info: 'System RAM detected: ~',
+        search_placeholder: 'Search models...',
+        history_label: 'Recently Used',
+        select_category: 'Select Category'
     }
 };
