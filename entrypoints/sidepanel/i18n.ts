@@ -66,7 +66,9 @@ export const translations: Record<string, any> = {
         ram_info: '检测到系统内存约为 ',
         search_placeholder: '搜索模型...',
         history_label: '最近使用',
-        select_category: '选择分类'
+        select_category: '选择分类',
+        fetch_page_content: '获取网页内容',
+        close_btn: '关闭'
     },
     'English': {
         title: 'AI Assistant',
@@ -135,7 +137,9 @@ export const translations: Record<string, any> = {
         ram_info: 'System RAM detected: ~',
         search_placeholder: 'Search models...',
         history_label: 'Recently Used',
-        select_category: 'Select Category'
+        select_category: 'Select Category',
+        fetch_page_content: 'Fetch Page Content',
+        close_btn: 'Close'
     },
     '日本語': {
         title: 'AIアシスタント',
@@ -198,7 +202,15 @@ export const translations: Record<string, any> = {
         copied: 'コピーしました！',
         clear_btn: 'クリア',
         char_count: '文字',
-        auto_speak_label: '結果を自動的に読み上げる'
+        auto_speak_label: '結果を自動的に読み上げる',
+        connection_error: 'ページの内容を取得できませんでした。ページをクリックするか、コンテキストメニューを使用してアクティブにしてください（権限の制限のため）。',
+        recommended_label: '推奨',
+        ram_info: 'システムメモリ: ~',
+        search_placeholder: 'モデルを検索...',
+        history_label: '最近使用',
+        select_category: 'カテゴリを選択',
+        fetch_page_content: 'ページ内容を取得',
+        close_btn: '閉じる'
     },
     '한국어': {
         title: 'AI 어시스턴트',
@@ -261,7 +273,15 @@ export const translations: Record<string, any> = {
         copied: '복사됨!',
         clear_btn: '지우기',
         char_count: '자',
-        auto_speak_label: '결과 자동 읽기'
+        auto_speak_label: '결과 자동 읽기',
+        connection_error: '페이지 콘텐츠를 가져올 수 없습니다. 페이지를 클릭하거나 컨텍스트 메뉴를 사용하여 활성화하세요(권한 제한으로 인해).',
+        recommended_label: '추천',
+        ram_info: '시스템 메모리: ~',
+        search_placeholder: '모델 검색...',
+        history_label: '최근 사용',
+        select_category: '카테고리 선택',
+        fetch_page_content: '페이지 콘텐츠 가져오기',
+        close_btn: '닫기'
     },
     'Français': {
         title: 'Assistant IA',
@@ -324,7 +344,15 @@ export const translations: Record<string, any> = {
         copied: 'Copié !',
         clear_btn: 'Effacer',
         char_count: 'carac.',
-        auto_speak_label: 'Lecture automatique des résultats'
+        auto_speak_label: 'Lecture automatique des résultats',
+        connection_error: 'Impossible de récupérer le contenu de la page. Veuillez cliquer sur la page ou utiliser le menu contextuel pour l\'activer (en raison des restrictions de permission).',
+        recommended_label: 'Recommandé',
+        ram_info: 'Mémoire système : ~',
+        search_placeholder: 'Rechercher des modèles...',
+        history_label: 'Récemment utilisé',
+        select_category: 'Sélectionner une catégorie',
+        fetch_page_content: 'Récupérer le contenu de la page',
+        close_btn: 'Fermer'
     },
     'Deutsch': {
         title: 'KI-Assistent',
@@ -387,7 +415,15 @@ export const translations: Record<string, any> = {
         copied: 'Kopiert!',
         clear_btn: 'Löschen',
         char_count: 'Zeichen',
-        auto_speak_label: 'Ergebnisse automatisch vorlesen'
+        auto_speak_label: 'Ergebnisse automatisch vorlesen',
+        connection_error: 'Seiteninhalt konnte nicht abgerufen werden. Bitte klicken Sie auf die Seite oder verwenden Sie das Kontextmenü zur Aktivierung (aufgrund von Berechtigungsbeschränkungen).',
+        recommended_label: 'Empfohlen',
+        ram_info: 'System-RAM: ~',
+        search_placeholder: 'Modelle suchen...',
+        history_label: 'Zuletzt verwendet',
+        select_category: 'Kategorie auswählen',
+        fetch_page_content: 'Seiteninhalt abrufen',
+        close_btn: 'Schließen'
     },
     'Español': {
         title: 'Asistente de IA',
@@ -450,6 +486,14 @@ export const translations: Record<string, any> = {
         copied: '¡Copiado!',
         clear_btn: 'Limpiar',
         char_count: 'carácteres',
-        auto_speak_label: 'Lectura automática de resultados'
+        auto_speak_label: 'Lectura automática de resultados',
+        connection_error: 'No se pudo obtener el contenido de la página. Haga clic en la página o use el menú contextual para activar (debido a restricciones de permisos).',
+        recommended_label: 'Recomendado',
+        ram_info: 'Memoria del sistema: ~',
+        search_placeholder: 'Buscar modelos...',
+        history_label: 'Recientemente utilizado',
+        select_category: 'Seleccionar categoría',
+        fetch_page_content: 'Obtener contenido de la página',
+        close_btn: 'Cerrar'
     }
 };
