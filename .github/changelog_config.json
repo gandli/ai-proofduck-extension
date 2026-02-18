@@ -1,0 +1,60 @@
+{
+  "categories": [
+    {
+      "title": "🚀 Features",
+      "labels": ["feature", "enhancement"]
+    },
+    {
+      "title": "🐛 Fixes",
+      "labels": ["fix", "bug"]
+    },
+    {
+      "title": "🧪 Testing",
+      "labels": ["test"]
+    },
+    {
+      "title": "🛠 Refactoring",
+      "labels": ["refactor"]
+    },
+    {
+      "title": "📝 Documentation",
+      "labels": ["documentation"]
+    },
+    {
+      "title": "🧹 Chore",
+      "labels": ["chore"]
+    }
+  ],
+  "ignore_labels": [
+    "ignore"
+  ],
+  "template": "${{CHANGELOG}}\n\n<details>\n<summary><b>Full Changelog</b></summary>\n${{RELEASES}}\n</details>",
+  "pr_template": "- ${{TITLE}} #${{NUMBER}} by @${{AUTHOR}}",
+  "empty_template": "No significant changes in this release.",
+  "label_extractor": [
+    {
+      "pattern": "^(feat|feature|enhancement)(\\(.*\\))?:",
+      "target": "feature"
+    },
+    {
+      "pattern": "^(fix|bug)(\\(.*\\))?:",
+      "target": "fix"
+    },
+    {
+      "pattern": "^refactor(\\(.*\\))?:",
+      "target": "refactor"
+    },
+    {
+      "pattern": "^test(\\(.*\\))?:",
+      "target": "test"
+    },
+    {
+      "pattern": "^docs(\\(.*\\))?:",
+      "target": "documentation"
+    },
+    {
+      "pattern": "^chore(\\(.*\\))?:",
+      "target": "chore"
+    }
+  ]
+}
