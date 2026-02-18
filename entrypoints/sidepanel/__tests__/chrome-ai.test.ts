@@ -1,0 +1,363 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import type { Settings, ModeKey } from '../types';
+import { DEFAULT_SETTINGS } from '../types';
+
+// ============================================================
+// BDD Tests: Chrome Built-in AI (Gemini Nano) Engine
+// ============================================================
+
+// --- Helpers ---
+
+const chromeAiSettings: Settings = {
+  ...DEFAULT_SETTINGS,
+  engine: 'chrome-ai',
+};
+
+function createMockPostMessage() {
+  return vi.fn();
+}
+
+/** Simulate the worker's chrome-ai load logic (extracted from worker.ts) */
+async function simulateLoad(
+  settings: Settings,
+  ai: any,
+  postMessage: ReturnType<typeof vi.fn>,
+) {
+  if (settings.engine === 'chrome-ai') {
+    try {
+      if (!ai?.languageModel) {
+        throw new Error('Chrome Built-in AI not available');
+      }
+      const caps = await ai.languageModel.capabilities();
+      if (caps.available === 'no') {
+        throw new Error('Chrome Built-in AI model not downloaded');
+      }
+      postMessage({ type: 'ready' });
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      postMessage({ type: 'error', error: errMsg });
+    }
+  }
+}
+
+/** Simulate the worker's chrome-ai generate logic (extracted from worker.ts) */
+async function simulateGenerate(
+  text: string,
+  mode: ModeKey,
+  settings: Settings,
+  ai: any,
+  postMessage: ReturnType<typeof vi.fn>,
+  requestId?: string,
+) {
+  try {
+    if (!ai?.languageModel) {
+      throw new Error('Chrome Built-in AI 不可用。请确保使用 Chrome 138+ 并已启用 Prompt API。');
+    }
+    const session = await ai.languageModel.create({ systemPrompt: 'test' });
+    const stream = await session.promptStreaming(text);
+
+    let fullText = '';
+    for await (const chunk of stream) {
+      fullText = chunk;
+      postMessage({ type: 'update', text: fullText, mode, requestId });
+    }
+
+    session.destroy();
+    postMessage({ type: 'complete', text: fullText, mode, requestId });
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    postMessage({ type: 'error', error: errMsg, mode, requestId });
+  }
+}
+
+// --- BDD Tests ---
+
+describe('Feature: Chrome Built-in AI Engine', () => {
+
+  describe('Scenario: Detect Chrome AI availability', () => {
+
+    it('Given Chrome supports Prompt API, When loading chrome-ai engine, Then it should report ready', async () => {
+      const postMessage = createMockPostMessage();
+      const mockAi = {
+        languageModel: {
+          capabilities: vi.fn().mockResolvedValue({ available: 'readily' }),
+        },
+      };
+
+      await simulateLoad(chromeAiSettings, mockAi, postMessage);
+
+      expect(postMessage).toHaveBeenCalledWith({ type: 'ready' });
+    });
+
+    it('Given Chrome does NOT support Prompt API, When loading chrome-ai engine, Then it should report error', async () => {
+      const postMessage = createMockPostMessage();
+
+      await simulateLoad(chromeAiSettings, undefined, postMessage);
+
+      expect(postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'error', error: expect.stringContaining('not available') }),
+      );
+    });
+
+    it('Given ai.languageModel exists but model not downloaded, When loading, Then it should report error', async () => {
+      const postMessage = createMockPostMessage();
+      const mockAi = {
+        languageModel: {
+          capabilities: vi.fn().mockResolvedValue({ available: 'no' }),
+        },
+      };
+
+      await simulateLoad(chromeAiSettings, mockAi, postMessage);
+
+      expect(postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'error', error: expect.stringContaining('not downloaded') }),
+      );
+    });
+
+    it('Given ai exists but languageModel is null, When loading, Then it should report error', async () => {
+      const postMessage = createMockPostMessage();
+      const mockAi = { languageModel: null };
+
+      await simulateLoad(chromeAiSettings, mockAi, postMessage);
+
+      expect(postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'error' }),
+      );
+    });
+  });
+
+  describe('Scenario: Streaming text generation via Chrome AI', () => {
+
+    it('Given Chrome AI is ready, When generating with "correct" mode, Then it should stream updates and complete', async () => {
+      const postMessage = createMockPostMessage();
+      const chunks = ['校对', '校对结果', '校对结果：已修正'];
+      async function* mockStream() {
+        for (const c of chunks) yield c;
+      }
+      const mockSession = {
+        promptStreaming: vi.fn().mockReturnValue(mockStream()),
+        destroy: vi.fn(),
+      };
+      const mockAi = {
+        languageModel: {
+          create: vi.fn().mockResolvedValue(mockSession),
+        },
+      };
+
+      await simulateGenerate('测试文本', 'correct', chromeAiSettings, mockAi, postMessage, 'req-1');
+
+      // Should have 3 update messages (one per chunk)
+      const updates = postMessage.mock.calls.filter((c: any) => c[0].type === 'update');
+      expect(updates).toHaveLength(3);
+      expect(updates[0][0].text).toBe('校对');
+      expect(updates[1][0].text).toBe('校对结果');
+      expect(updates[2][0].text).toBe('校对结果：已修正');
+
+      // Should complete with final text
+      expect(postMessage).toHaveBeenCalledWith({
+        type: 'complete', text: '校对结果：已修正', mode: 'correct', requestId: 'req-1',
+      });
+
+      // Session should be destroyed
+      expect(mockSession.destroy).toHaveBeenCalled();
+    });
+
+    it('Given Chrome AI is ready, When generating with all 5 modes, Then each mode should work', async () => {
+      const modes: ModeKey[] = ['summarize', 'correct', 'proofread', 'translate', 'expand'];
+
+      for (const mode of modes) {
+        const postMessage = createMockPostMessage();
+        async function* mockStream() { yield '结果'; }
+        const mockSession = {
+          promptStreaming: vi.fn().mockReturnValue(mockStream()),
+          destroy: vi.fn(),
+        };
+        const mockAi = {
+          languageModel: { create: vi.fn().mockResolvedValue(mockSession) },
+        };
+
+        await simulateGenerate('文本', mode, chromeAiSettings, mockAi, postMessage);
+
+        expect(postMessage).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'complete', mode }),
+        );
+      }
+    });
+
+    it('Given Chrome AI session creation fails, When generating, Then it should report error with mode', async () => {
+      const postMessage = createMockPostMessage();
+      const mockAi = {
+        languageModel: {
+          create: vi.fn().mockRejectedValue(new Error('Session limit reached')),
+        },
+      };
+
+      await simulateGenerate('文本', 'proofread', chromeAiSettings, mockAi, postMessage, 'req-2');
+
+      expect(postMessage).toHaveBeenCalledWith({
+        type: 'error', error: 'Session limit reached', mode: 'proofread', requestId: 'req-2',
+      });
+    });
+
+    it('Given Chrome AI stream throws mid-way, When generating, Then it should report error', async () => {
+      const postMessage = createMockPostMessage();
+      async function* failingStream() {
+        yield '部分结果';
+        throw new Error('Stream interrupted');
+      }
+      const mockSession = {
+        promptStreaming: vi.fn().mockReturnValue(failingStream()),
+        destroy: vi.fn(),
+      };
+      const mockAi = {
+        languageModel: { create: vi.fn().mockResolvedValue(mockSession) },
+      };
+
+      await simulateGenerate('文本', 'summarize', chromeAiSettings, mockAi, postMessage);
+
+      // Should have sent at least one update before error
+      expect(postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'update', text: '部分结果' }),
+      );
+      expect(postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'error', error: 'Stream interrupted' }),
+      );
+    });
+
+    it('Given AI not available, When generating, Then it should report descriptive error', async () => {
+      const postMessage = createMockPostMessage();
+
+      await simulateGenerate('文本', 'translate', chromeAiSettings, undefined, postMessage);
+
+      expect(postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'error',
+          error: expect.stringContaining('Chrome 138+'),
+          mode: 'translate',
+        }),
+      );
+    });
+  });
+
+  describe('Scenario: Engine selection and settings', () => {
+
+    it('Given engine is set to chrome-ai, Then settings.engine should be "chrome-ai"', () => {
+      expect(chromeAiSettings.engine).toBe('chrome-ai');
+    });
+
+    it('Given chrome-ai engine, Then no apiKey or localModel should be required', () => {
+      // chrome-ai doesn't need API key or local model config
+      const settings: Settings = { ...DEFAULT_SETTINGS, engine: 'chrome-ai' };
+      // These fields exist but are irrelevant for chrome-ai
+      expect(settings.apiKey).toBe('');
+      expect(settings.localModel).toBeTruthy(); // has default but not used
+    });
+  });
+
+  describe('Scenario: Session lifecycle management', () => {
+
+    it('Given a successful generation, When complete, Then session.destroy() should be called exactly once', async () => {
+      const postMessage = createMockPostMessage();
+      async function* mockStream() { yield '完成'; }
+      const mockSession = {
+        promptStreaming: vi.fn().mockReturnValue(mockStream()),
+        destroy: vi.fn(),
+      };
+      const mockAi = {
+        languageModel: { create: vi.fn().mockResolvedValue(mockSession) },
+      };
+
+      await simulateGenerate('文本', 'correct', chromeAiSettings, mockAi, postMessage);
+
+      expect(mockSession.destroy).toHaveBeenCalledTimes(1);
+    });
+
+    it('Given systemPrompt is passed, When creating session, Then create() receives systemPrompt', async () => {
+      const postMessage = createMockPostMessage();
+      async function* mockStream() { yield 'ok'; }
+      const mockSession = {
+        promptStreaming: vi.fn().mockReturnValue(mockStream()),
+        destroy: vi.fn(),
+      };
+      const mockAi = {
+        languageModel: { create: vi.fn().mockResolvedValue(mockSession) },
+      };
+
+      await simulateGenerate('文本', 'correct', chromeAiSettings, mockAi, postMessage);
+
+      expect(mockAi.languageModel.create).toHaveBeenCalledWith(
+        expect.objectContaining({ systemPrompt: expect.any(String) }),
+      );
+    });
+  });
+
+  describe('Scenario: Capability detection edge cases', () => {
+
+    it('Given capabilities() returns "after-download", When loading, Then it should report ready (model will auto-download)', async () => {
+      const postMessage = createMockPostMessage();
+      const mockAi = {
+        languageModel: {
+          capabilities: vi.fn().mockResolvedValue({ available: 'after-download' }),
+        },
+      };
+
+      await simulateLoad(chromeAiSettings, mockAi, postMessage);
+
+      // 'after-download' !== 'no', so it passes
+      expect(postMessage).toHaveBeenCalledWith({ type: 'ready' });
+    });
+
+    it('Given capabilities() throws, When loading, Then it should report error', async () => {
+      const postMessage = createMockPostMessage();
+      const mockAi = {
+        languageModel: {
+          capabilities: vi.fn().mockRejectedValue(new Error('Permission denied')),
+        },
+      };
+
+      await simulateLoad(chromeAiSettings, mockAi, postMessage);
+
+      expect(postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'error', error: 'Permission denied' }),
+      );
+    });
+  });
+
+  describe('Scenario: RequestId propagation', () => {
+
+    it('Given a requestId, When streaming, Then all messages should carry the same requestId', async () => {
+      const postMessage = createMockPostMessage();
+      async function* mockStream() { yield 'a'; yield 'b'; }
+      const mockSession = {
+        promptStreaming: vi.fn().mockReturnValue(mockStream()),
+        destroy: vi.fn(),
+      };
+      const mockAi = {
+        languageModel: { create: vi.fn().mockResolvedValue(mockSession) },
+      };
+
+      await simulateGenerate('文本', 'expand', chromeAiSettings, mockAi, postMessage, 'req-42');
+
+      for (const call of postMessage.mock.calls) {
+        expect(call[0].requestId).toBe('req-42');
+      }
+    });
+
+    it('Given no requestId, When streaming, Then messages should have undefined requestId', async () => {
+      const postMessage = createMockPostMessage();
+      async function* mockStream() { yield 'x'; }
+      const mockSession = {
+        promptStreaming: vi.fn().mockReturnValue(mockStream()),
+        destroy: vi.fn(),
+      };
+      const mockAi = {
+        languageModel: { create: vi.fn().mockResolvedValue(mockSession) },
+      };
+
+      await simulateGenerate('文本', 'summarize', chromeAiSettings, mockAi, postMessage);
+
+      const complete = postMessage.mock.calls.find((c: any) => c[0].type === 'complete');
+      expect(complete![0].requestId).toBeUndefined();
+    });
+  });
+});
