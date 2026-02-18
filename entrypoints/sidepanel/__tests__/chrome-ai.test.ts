@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
 import type { Settings, ModeKey } from '../types';
 import { DEFAULT_SETTINGS } from '../types';
 
@@ -21,15 +21,44 @@ function createMockPostMessage() {
 async function simulateLoad(
   settings: Settings,
   ai: any,
-  postMessage: ReturnType<typeof vi.fn>,
+  postMessage: Mock,
 ) {
   if (settings.engine === 'chrome-ai') {
     try {
-      if (!ai?.languageModel) {
-        throw new Error('Chrome Built-in AI not available');
+      const modelApi = ai?.languageModel || (globalThis as any).LanguageModel;
+
+      if (!modelApi) {
+        // ... (error message omitted for brevity as it remains same)
+         const debugInfo = !ai ? "'ai' and 'LanguageModel' undefined" : "'languageModel' undefined";
+        throw new Error(
+            `Chrome Built-in AI not available (${debugInfo}).\n` +
+            "Please ensure:\n" +
+            "1. Chrome 128+ (Dev/Canary).\n" +
+            "2. chrome://flags/#prompt-api-for-gemini-nano : Enabled\n" +
+            "3. chrome://flags/#optimization-guide-on-device-model : Enabled BypassPerfRequirement\n" +
+            "4. chrome://components/ : Click 'Check for update' on 'Optimization Guide On Device Model'\n" +
+            "Relaunch Chrome after changes."
+        );
       }
-      const caps = await ai.languageModel.capabilities();
-      if (caps.available === 'no') {
+      
+      let available = 'no';
+      if (modelApi && typeof modelApi.capabilities === 'function') {
+         const caps = await modelApi.capabilities();
+         available = caps.available;
+      } else if (ai && typeof ai.capabilities === 'function') {
+         const caps = await ai.capabilities();
+         available = caps.available;
+      } else {
+          try {
+            const session = await modelApi.create({ systemPrompt: ' ' });
+            await session.destroy();
+            available = 'readily';
+          } catch (e) {
+             throw new Error("Chrome AI found but 'capabilities' missing and session creation failed. Update Chrome.");
+          }
+      }
+
+      if (available === 'no') {
         throw new Error('Chrome Built-in AI model not downloaded');
       }
       postMessage({ type: 'ready' });
@@ -46,14 +75,25 @@ async function simulateGenerate(
   mode: ModeKey,
   settings: Settings,
   ai: any,
-  postMessage: ReturnType<typeof vi.fn>,
+  postMessage: Mock,
   requestId?: string,
 ) {
   try {
-    if (!ai?.languageModel) {
-      throw new Error('Chrome Built-in AI 不可用。请确保使用 Chrome 138+ 并已启用 Prompt API。');
+    const modelApi = ai?.languageModel || (globalThis as any).LanguageModel;
+
+    if (!modelApi) {
+      const debugInfo = !ai ? "'ai' and 'LanguageModel' undefined" : "'languageModel' undefined";
+      throw new Error(
+        `Chrome Built-in AI not available (${debugInfo}).\n` +
+          'Please ensure:\n' +
+          '1. Chrome 128+ (Dev/Canary).\n' +
+          "2. chrome://flags/#prompt-api-for-gemini-nano : Enabled\n" +
+          "3. chrome://flags/#optimization-guide-on-device-model : Enabled BypassPerfRequirement\n" +
+          "4. chrome://components/ : Click 'Check for update' on 'Optimization Guide On Device Model'\n" +
+          'Relaunch Chrome after changes.',
+      );
     }
-    const session = await ai.languageModel.create({ systemPrompt: 'test' });
+    const session = await modelApi.create({ systemPrompt: 'test' });
     const stream = await session.promptStreaming(text);
 
     let fullText = '';
@@ -95,7 +135,7 @@ describe('Feature: Chrome Built-in AI Engine', () => {
       await simulateLoad(chromeAiSettings, undefined, postMessage);
 
       expect(postMessage).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'error', error: expect.stringContaining('not available') }),
+        expect.objectContaining({ type: 'error', error: expect.stringContaining("'ai' and 'LanguageModel' undefined") }),
       );
     });
 
@@ -121,10 +161,40 @@ describe('Feature: Chrome Built-in AI Engine', () => {
       await simulateLoad(chromeAiSettings, mockAi, postMessage);
 
       expect(postMessage).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'error' }),
+        expect.objectContaining({ type: 'error', error: expect.stringContaining('languageModel') }),
       );
     });
+
+
+    it('Given window.ai is missing but window.LanguageModel exists, When loading, Then it should report ready', async () => {
+      const postMessage = createMockPostMessage();
+      (globalThis as any).LanguageModel = {
+        capabilities: vi.fn().mockResolvedValue({ available: 'readily' }),
+      };
+
+      await simulateLoad(chromeAiSettings, undefined, postMessage);
+
+      expect(postMessage).toHaveBeenCalledWith({ type: 'ready' });
+      delete (globalThis as any).LanguageModel;
+    });
+
+    it('Given capabilities missing but create works, When loading, Then it should report ready', async () => {
+      const postMessage = createMockPostMessage();
+      const mockSession = { destroy: vi.fn() };
+      const mockAi = {
+        languageModel: {
+           create: vi.fn().mockResolvedValue(mockSession)
+        },
+      };
+
+      await simulateLoad(chromeAiSettings, mockAi, postMessage);
+
+      expect(postMessage).toHaveBeenCalledWith({ type: 'ready' });
+      expect(mockSession.destroy).toHaveBeenCalled();
+    });
   });
+
+
 
   describe('Scenario: Streaming text generation via Chrome AI', () => {
 
@@ -232,7 +302,7 @@ describe('Feature: Chrome Built-in AI Engine', () => {
       expect(postMessage).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'error',
-          error: expect.stringContaining('Chrome 138+'),
+          error: expect.stringContaining("'ai' and 'LanguageModel' undefined"),
           mode: 'translate',
         }),
       );
