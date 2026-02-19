@@ -1,0 +1,3 @@
+## 2024-05-23 - Accessibility of Icon-Only Buttons
+**Learning:** Icon-only buttons often rely solely on `title` attributes for accessibility, which is insufficient for screen readers. `aria-label` provides a reliable accessible name. Also, translation keys must be consistent across all languages to prevent test failures and broken UIs.
+**Action:** Always add `aria-label` to icon-only buttons, mirroring the `title` or using a dedicated translation key. When adding new translation keys, backfill them to all supported languages (even with English fallbacks) to ensure test compliance and stability.
