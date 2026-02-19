@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, memo } from 'react';
 import { ModeKey, MODES } from '../types';
 
 interface ResultPanelProps {
@@ -11,7 +11,8 @@ interface ResultPanelProps {
   t: Record<string, string>;
 }
 
-export function ResultPanel({
+// Memoized to prevent re-renders when parent state updates (e.g. typing in input)
+export const ResultPanel = memo(function ResultPanel({
   mode, modeResults, setModeResults, generatingModes, status, engine, t,
 }: ResultPanelProps) {
   const [copied, setCopied] = useState(false);
@@ -70,4 +71,4 @@ export function ResultPanel({
       </div>
     </section>
   );
-}
+});
