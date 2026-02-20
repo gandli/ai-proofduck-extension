@@ -114,6 +114,8 @@ function App() {
 
   const t = translations[settings.extensionLanguage] || translations['中文'];
 
+  const handleOpenSettings = useCallback(() => setShowSettings(true), [setShowSettings]);
+
   if (isInitializing) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-[#fbfbfb] dark:bg-brand-dark-bg animate-pulse">
@@ -141,7 +143,7 @@ function App() {
           </div>
         )}
 
-        <ModeSelector mode={mode} setMode={setMode} t={t} onOpenSettings={() => setShowSettings(true)} />
+        <ModeSelector mode={mode} setMode={setMode} t={t} onOpenSettings={handleOpenSettings} />
 
         <section className="flex flex-col flex-1 min-h-0">
           <div className="flex items-center justify-between mb-2.5">
