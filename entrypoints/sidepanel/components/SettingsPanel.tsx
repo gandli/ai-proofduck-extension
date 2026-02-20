@@ -25,7 +25,12 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
       <div className="flex flex-col gap-4 w-full p-6 pb-4 bg-[#fbfbfb] rounded-t-[20px] max-h-[90vh] overflow-y-auto shadow-[-10px_25px_rgba(0,0,0,0.1)] animate-slideInUp dark:bg-brand-dark-bg dark:shadow-[-10px_25px_rgba(0,0,0,0.3)]">
         <div className="flex items-center justify-between mb-2">
           <h2 className="m-0 text-xl font-extrabold">{t.settings}</h2>
-          <button className="flex items-center justify-center w-8 h-8 text-slate-500 border-none rounded-full cursor-pointer bg-slate-100 dark:bg-brand-dark-surface dark:text-slate-400" onClick={onClose}>
+          <button
+            className="flex items-center justify-center w-8 h-8 text-slate-500 border-none rounded-full cursor-pointer bg-slate-100 dark:bg-brand-dark-surface dark:text-slate-400"
+            onClick={onClose}
+            aria-label={t.close_btn || 'Close'}
+            title={t.close_btn || 'Close'}
+          >
             <CloseIcon />
           </button>
         </div>
