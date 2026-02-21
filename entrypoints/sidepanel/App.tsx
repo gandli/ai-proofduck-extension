@@ -103,6 +103,8 @@ function App() {
 
   const modeDef = MODES.find(m => m.key === mode)!;
 
+  const handleOpenSettings = useCallback(() => setShowSettings(true), [setShowSettings]);
+
   const handleCopyResult = useCallback(() => {
     const text = modeResults[mode];
     if (!text) return;
@@ -141,7 +143,7 @@ function App() {
           </div>
         )}
 
-        <ModeSelector mode={mode} setMode={setMode} t={t} onOpenSettings={() => setShowSettings(true)} />
+        <ModeSelector mode={mode} setMode={setMode} t={t} onOpenSettings={handleOpenSettings} />
 
         <section className="flex flex-col flex-1 min-h-0">
           <div className="flex items-center justify-between mb-2.5">
