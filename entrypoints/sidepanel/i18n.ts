@@ -63,6 +63,7 @@ export const translations: Record<string, any> = {
         clear_btn: '清除',
         char_count: '字符',
         auto_speak_label: '自动朗读结果',
+        fetch_page_content: '获取页面内容',
         connection_error: '无法获取网页内容。请确保已在当前页面点击或通过右键菜单激活（由于最小权限限制）。',
         recommended_label: '推荐',
         ram_info: '检测到系统内存约为 ',
@@ -141,6 +142,7 @@ export const translations: Record<string, any> = {
         clear_btn: 'Clear',
         char_count: 'chars',
         auto_speak_label: 'Auto Speak Results',
+        fetch_page_content: 'Fetch Page Content',
         connection_error: 'Could not fetch page content. Please click on the page or use context menu to activate (due to permission restrictions).',
         recommended_label: 'Recommended',
         ram_info: 'System RAM detected: ~',
@@ -219,6 +221,7 @@ export const translations: Record<string, any> = {
         clear_btn: 'クリア',
         char_count: '文字',
         auto_speak_label: '結果を自動的に読み上げる',
+        fetch_page_content: 'ページコンテンツを取得',
         connection_error: 'ページのコンテンツを取得できませんでした。現在のページをクリックするか、コンテキストメニューから有効化してください。'
     },
     '한국어': {
@@ -285,6 +288,7 @@ export const translations: Record<string, any> = {
         clear_btn: '지우기',
         char_count: '자',
         auto_speak_label: '결과 자동 읽기',
+        fetch_page_content: '페이지 콘텐츠 가져오기',
         connection_error: '페이지 콘텐츠를 가져올 수 없습니다. 현재 페이지를 클릭하거나 컨텍스트 메뉴를 통해 활성화하세요.'
     },
     'Français': {
@@ -351,6 +355,7 @@ export const translations: Record<string, any> = {
         clear_btn: 'Effacer',
         char_count: 'carac.',
         auto_speak_label: 'Lecture automatique des résultats',
+        fetch_page_content: 'Récupérer le contenu de la page',
         connection_error: 'Impossible de récupérer le contenu de la page. Veuillez cliquer sur la page ou utiliser le menu contextuel pour activer.'
     },
     'Deutsch': {
@@ -417,6 +422,7 @@ export const translations: Record<string, any> = {
         clear_btn: 'Löschen',
         char_count: 'Zeichen',
         auto_speak_label: 'Ergebnisse automatisch vorlesen',
+        fetch_page_content: 'Seiteninhalt abrufen',
         connection_error: 'Seiteninhalt konnte nicht abgerufen werden. Bitte klicken Sie auf die Seite oder aktivieren Sie über das Kontextmenü.'
     },
     'Español': {
@@ -483,6 +489,7 @@ export const translations: Record<string, any> = {
         clear_btn: 'Limpiar',
         char_count: 'carácteres',
         auto_speak_label: 'Lectura automática de resultados',
+        fetch_page_content: 'Obtener contenido de la página',
         connection_error: 'No se pudo obtener el contenido de la página. Haga clic en la página o active a través del menú contextual.'
     }
 };
