@@ -38,6 +38,7 @@ export function ResultPanel({
         </h3>
         {result && (
           <button
+            aria-label={t.copy_btn || 'Copy'}
             className="flex items-center justify-center p-1.5 text-slate-500 transition-all bg-white border border-slate-200 rounded-md cursor-pointer shadow-sm hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange hover:shadow-md hover:-translate-y-px dark:bg-brand-dark-surface dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]"
             onClick={handleCopy}
             title={t.copy_btn || 'Copy'}
