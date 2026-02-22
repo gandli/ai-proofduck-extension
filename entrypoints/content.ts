@@ -130,20 +130,29 @@ export default defineContentScript({
         actionSection.classList.remove('hidden');
         if (copyBtn) (copyBtn as HTMLElement).style.visibility = 'hidden';
         
-        actionContentEl.innerHTML = `
-          <div class="flex flex-col gap-3">
-            <span class="text-[13px] leading-relaxed text-slate-600 dark:text-slate-400">${msg}</span>
-            <button id="popup-action-btn" class="w-full py-2 bg-brand-orange text-white text-[12px] font-bold rounded-lg shadow-sm transition-all hover:bg-brand-orange-dark hover:shadow-md active:scale-[0.98]">
-              ${btnText}
-            </button>
-          </div>
-        `;
+        // Clear previous content
+        actionContentEl.textContent = '';
+
+        const container = document.createElement('div');
+        container.className = 'flex flex-col gap-3';
+
+        const msgSpan = document.createElement('span');
+        msgSpan.className = 'text-[13px] leading-relaxed text-slate-600 dark:text-slate-400';
+        msgSpan.textContent = msg;
         
-        const btn = shadowRootNode.getElementById('popup-action-btn');
-        btn?.addEventListener('click', (e) => {
+        const btn = document.createElement('button');
+        btn.id = 'popup-action-btn';
+        btn.className = 'w-full py-2 bg-brand-orange text-white text-[12px] font-bold rounded-lg shadow-sm transition-all hover:bg-brand-orange-dark hover:shadow-md active:scale-[0.98]';
+        btn.textContent = btnText;
+
+        btn.addEventListener('click', (e) => {
           e.stopPropagation();
           onAction();
         });
+
+        container.appendChild(msgSpan);
+        container.appendChild(btn);
+        actionContentEl.appendChild(container);
       };
 
       const showTranslateUI = () => {
