@@ -1,0 +1,3 @@
+## 2025-02-18 - [Accessibility: Icon-only Buttons]
+**Learning:** Icon-only buttons (like Clear, Fetch, Copy, Settings) rely solely on `title` attributes, which are insufficient for screen readers. Adding `aria-label` provides a robust accessible name. Also, `i18n` files were missing keys for several languages, causing test failures when adding new keys, highlighting the need for comprehensive fallback strategies or complete translations.
+**Action:** When adding icon-only buttons, always include `aria-label`. When modifying `i18n` files, check all language objects to prevent regressions in tests that verify key completeness.
