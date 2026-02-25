@@ -71,6 +71,9 @@ function App() {
     postMessage({ type: 'generate', text: activeText, mode: activeMode, settings: settingsRef.current });
   }, [selectedText, mode, generatingModes, postMessage, settingsRef]);
 
+  // Memoize settings handler to prevent re-renders of ModeSelector when typing
+  const handleOpenSettings = useCallback(() => setShowSettings(true), [setShowSettings]);
+
   useEffect(() => {
     loadPersistedSettings().then(res => {
       let currentText = res.text;
@@ -141,7 +144,7 @@ function App() {
           </div>
         )}
 
-        <ModeSelector mode={mode} setMode={setMode} t={t} onOpenSettings={() => setShowSettings(true)} />
+        <ModeSelector mode={mode} setMode={setMode} t={t} onOpenSettings={handleOpenSettings} />
 
         <section className="flex flex-col flex-1 min-h-0">
           <div className="flex items-center justify-between mb-2.5">
