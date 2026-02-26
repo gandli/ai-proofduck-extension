@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { TONE_MAP, DETAIL_MAP, PROMPTS, BASE_CONSTRAINT, SUFFIX_CONSTRAINT } from '../prompts';
+import { TONE_MAP, DETAIL_MAP, PROMPTS, BASE_CONSTRAINT } from '../prompts';
 
 describe('Feature: Prompts System', () => {
   describe('Scenario: TONE_MAP Validation', () => {
@@ -62,11 +62,7 @@ describe('Feature: Prompts System', () => {
 
   describe('Scenario: Constraints', () => {
     it('Given BASE_CONSTRAINT When checking Then should contain prohibition keywords', () => {
-      expect(BASE_CONSTRAINT).toContain('禁止');
-    });
-
-    it('Given SUFFIX_CONSTRAINT When checking Then should contain output instruction', () => {
-      expect(SUFFIX_CONSTRAINT).toContain('严禁');
+      expect(BASE_CONSTRAINT).toContain('Output ONLY');
     });
   });
 });
