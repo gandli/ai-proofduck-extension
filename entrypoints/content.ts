@@ -48,7 +48,10 @@ export default defineContentScript({
 
       const closeBtn = createElementWithClass('button', 'flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 hover:text-brand-orange dark:bg-[#2d2d44] dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:text-[#ff7a3d]');
       closeBtn.id = 'close-popup-btn';
-      closeBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`; // SVG is safe
+      // Safe SVG creation via DOMParser
+      const parser = new DOMParser();
+      const closeIcon = parser.parseFromString('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>', 'image/svg+xml').documentElement;
+      closeBtn.appendChild(closeIcon);
 
       header.appendChild(statusContainer);
       header.appendChild(closeBtn);
@@ -86,7 +89,12 @@ export default defineContentScript({
 
       const copyBtn = createElementWithClass('button', 'flex items-center gap-1 px-2.5 py-1 bg-white border border-slate-200 rounded-md text-[11px] font-semibold text-slate-500 transition-colors hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange dark:bg-[#2d2d44] dark:border-[#4a4a6a] dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]');
       copyBtn.id = 'copy-translation-btn';
-      copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span>Copy</span>`; // SVG + Text is safe
+      const copyIcon = parser.parseFromString('<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>', 'image/svg+xml').documentElement;
+      copyBtn.appendChild(copyIcon);
+      const copySpan = document.createElement('span');
+      copySpan.textContent = 'Copy';
+      copyBtn.appendChild(copySpan);
+
       footer.appendChild(copyBtn);
       popup.appendChild(footer);
 
@@ -104,15 +112,30 @@ export default defineContentScript({
         if (text && text !== 'Translating...') {
           try {
             await navigator.clipboard.writeText(text);
-            const originalInnerHtml = copyBtn.innerHTML;
             
-            // Copied state
-            copyBtn.innerHTML = '<span>Copied!</span>';
+            // Copied state (DOM manipulation without innerHTML)
+            while (copyBtn.firstChild) {
+              copyBtn.removeChild(copyBtn.firstChild);
+            }
+            const copiedSpan = document.createElement('span');
+            copiedSpan.textContent = 'Copied!';
+            copyBtn.appendChild(copiedSpan);
+
             copyBtn.classList.add('bg-brand-orange', 'text-white', 'border-brand-orange');
             copyBtn.classList.remove('bg-white', 'text-slate-500', 'hover:bg-brand-orange-light', 'hover:text-brand-orange');
             
             setTimeout(() => {
-              copyBtn.innerHTML = originalInnerHtml;
+              // Restore original state
+              while (copyBtn.firstChild) {
+                copyBtn.removeChild(copyBtn.firstChild);
+              }
+              // Re-parse icon to ensure fresh node
+              const freshIcon = parser.parseFromString('<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>', 'image/svg+xml').documentElement;
+              copyBtn.appendChild(freshIcon);
+              const freshSpan = document.createElement('span');
+              freshSpan.textContent = 'Copy';
+              copyBtn.appendChild(freshSpan);
+
               copyBtn.classList.remove('bg-brand-orange', 'text-white', 'border-brand-orange');
               copyBtn.classList.add('bg-white', 'text-slate-500', 'hover:bg-brand-orange-light', 'hover:text-brand-orange');
             }, 2000);
@@ -161,7 +184,7 @@ export default defineContentScript({
         container.appendChild(msgSpan);
         container.appendChild(actionBtn);
         actionContentEl.appendChild(container);
-        
+
         actionBtn.addEventListener('click', (e) => {
           e.stopPropagation();
           onAction();
@@ -358,7 +381,13 @@ export default defineContentScript({
       shadowRootNode.appendChild(twStyle);
 
       const icon = document.createElement('div');
-      icon.innerHTML = SVG_STRING;
+      // Using DOMParser for the main icon as well
+      const parser = new DOMParser();
+      const svgDoc = parser.parseFromString(SVG_STRING, 'image/svg+xml');
+      if (svgDoc.documentElement.nodeName === 'svg') {
+        icon.appendChild(svgDoc.documentElement);
+      }
+
       // Using Tailwind for dimensions, transition, hover scale, and drop shadow
       icon.className = 'w-6 h-6 flex drop-shadow-md transition-transform duration-200 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] hover:scale-[1.15]';
 
