@@ -244,10 +244,15 @@ async function processLocalQueue() {
             });
 
             let fullText = "";
+            let lastUpdateTime = 0;
             for await (const chunk of chunks) {
                 const content = chunk.choices[0]?.delta?.content || "";
                 fullText += content;
-                self.postMessage({ type: "update", text: fullText, mode, requestId });
+                const now = Date.now();
+                if (now - lastUpdateTime >= 50) {
+                    self.postMessage({ type: "update", text: fullText, mode, requestId });
+                    lastUpdateTime = now;
+                }
             }
             self.postMessage({ type: "complete", text: fullText, mode, requestId });
         } catch (error: any) {
@@ -291,6 +296,7 @@ async function handleGenerateOnline(text: string, mode: ModeKey, settings: Setti
         const reader = response.body?.getReader();
         const decoder = new TextDecoder();
         let fullText = "";
+        let lastUpdateTime = 0;
 
         if (reader) {
             let buffer = "";
@@ -311,7 +317,11 @@ async function handleGenerateOnline(text: string, mode: ModeKey, settings: Setti
                     try {
                         const json = JSON.parse(dataStr);
                         fullText += json.choices[0]?.delta?.content || "";
-                        self.postMessage({ type: "update", text: fullText, mode, requestId });
+                        const now = Date.now();
+                        if (now - lastUpdateTime >= 50) {
+                            self.postMessage({ type: "update", text: fullText, mode, requestId });
+                            lastUpdateTime = now;
+                        }
                     } catch (e) {
                         buffer = line + '\n' + buffer;
                     }
@@ -327,6 +337,7 @@ async function handleGenerateOnline(text: string, mode: ModeKey, settings: Setti
 
 async function streamPromptApi(stream: any, mode: ModeKey, requestId: string | undefined): Promise<string> {
   let fullText = '';
+  let lastUpdateTime = 0;
   if (stream && typeof (stream as any).getReader === 'function') {
     const reader = (stream as ReadableStream<string>).getReader();
     while (true) {
@@ -336,7 +347,11 @@ async function streamPromptApi(stream: any, mode: ModeKey, requestId: string | u
         const newText = typeof value === 'string' ? value : JSON.stringify(value);
         if (fullText && newText.startsWith(fullText)) fullText = newText;
         else fullText += newText;
-        self.postMessage({ type: 'update', text: fullText, mode, requestId });
+        const now = Date.now();
+        if (now - lastUpdateTime >= 50) {
+          self.postMessage({ type: 'update', text: fullText, mode, requestId });
+          lastUpdateTime = now;
+        }
       }
     }
     return fullText;
@@ -345,7 +360,11 @@ async function streamPromptApi(stream: any, mode: ModeKey, requestId: string | u
     const newText = typeof chunk === 'string' ? chunk : (chunk as any).content || JSON.stringify(chunk);
     if (newText) {
       fullText += newText;
-      self.postMessage({ type: 'update', text: fullText, mode, requestId });
+      const now = Date.now();
+      if (now - lastUpdateTime >= 50) {
+        self.postMessage({ type: 'update', text: fullText, mode, requestId });
+        lastUpdateTime = now;
+      }
     }
   }
   return fullText;
