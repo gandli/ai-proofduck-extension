@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fakeBrowser } from 'wxt/testing';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('Feature: Background Script', () => {
   beforeEach(() => {
-    fakeBrowser.reset();
+    (browser.storage.local.get as any).mockClear();
+    (browser.storage.local.set as any).mockClear();
   });
 
   describe('Scenario: Side panel behavior', () => {
@@ -29,7 +29,11 @@ describe('Feature: Background Script', () => {
   describe('Scenario: Context menu click handling', () => {
     it('Given selection text When menu clicked Then should store to browser.storage', async () => {
       const selectionText = '测试文本';
+      // Mock retrieving the stored value
+      (browser.storage.local.get as any).mockResolvedValueOnce({ selectedText });
+
       await browser.storage.local.set({ selectedText: selectionText });
+      expect(browser.storage.local.set).toHaveBeenCalledWith({ selectedText: selectionText });
 
       const result = await browser.storage.local.get('selectedText');
       expect(result.selectedText).toBe('测试文本');
@@ -37,11 +41,16 @@ describe('Feature: Background Script', () => {
 
     it('Given no selection text When menu clicked Then should not store', async () => {
       const info = { menuItemId: 'ai-proofduck-process', selectionText: undefined };
+      // Mock retrieving nothing
+      (browser.storage.local.get as any).mockResolvedValueOnce({});
+
       if (info.selectionText) {
         await browser.storage.local.set({ selectedText: info.selectionText });
       }
+
       const result = await browser.storage.local.get('selectedText');
       expect(result.selectedText).toBeUndefined();
+      expect(browser.storage.local.set).not.toHaveBeenCalled();
     });
 
     it('Given different menu ID When clicked Then should not process', () => {

@@ -18,6 +18,13 @@ export default defineContentScript({
       localModel?: string;
     }
 
+    const createElementWithClass = (tag: string, className: string, textContent?: string) => {
+      const el = document.createElement(tag);
+      el.className = className;
+      if (textContent) el.textContent = textContent;
+      return el;
+    };
+
     const createTranslationPopup = () => {
       const container = document.createElement('div');
       container.id = 'ai-proofduck-translation-popup';
@@ -28,71 +35,86 @@ export default defineContentScript({
       twStyle.textContent = tailwindStyles;
       shadowRootNode.appendChild(twStyle);
 
-      shadowRootNode.appendChild(twStyle);
+      const popup = createElementWithClass('div', 'w-[300px] flex flex-col gap-2 p-3 bg-[#fbfbfb] rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.12)] border border-slate-200 text-[#1a1a1a] dark:bg-[#1a1a2e] dark:border-[#3f3f5a] dark:text-slate-200');
 
-      const popup = document.createElement('div');
-      popup.className = 'w-[300px] flex flex-col gap-2 p-3 bg-[#fbfbfb] rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.12)] border border-slate-200 text-[#1a1a1a] dark:bg-[#1a1a2e] dark:border-[#3f3f5a] dark:text-slate-200';
-      popup.innerHTML = `
-        <div class="flex items-center justify-between mb-0.5">
-          <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-brand-orange-light dark:bg-[#2d2d44]">
-            <span class="w-1.5 h-1.5 rounded-full bg-brand-orange"></span>
-            <span class="text-[10px] font-bold text-brand-orange uppercase tracking-wide" id="status-label">TRANSLATING</span>
-          </div>
-          <button class="flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 hover:text-brand-orange dark:bg-[#2d2d44] dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:text-[#ff7a3d]" id="close-popup-btn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
-        </div>
-        
-        <div class="flex flex-col gap-1">
-          <div class="px-0.5 text-[9px] font-bold text-slate-400 uppercase tracking-wide">ORIGINAL</div>
-          <div class="w-full max-h-[100px] overflow-y-auto p-2.5 bg-white border border-slate-200 rounded-lg text-[12.5px] leading-relaxed text-slate-500 whitespace-pre-wrap break-words dark:bg-[#23233a] dark:border-[#3f3f5a] dark:text-slate-400" id="source-display"></div>
-        </div>
+      // Header
+      const header = createElementWithClass('div', 'flex items-center justify-between mb-0.5');
+      const statusContainer = createElementWithClass('div', 'flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-brand-orange-light dark:bg-[#2d2d44]');
+      const statusDot = createElementWithClass('span', 'w-1.5 h-1.5 rounded-full bg-brand-orange');
+      const statusLabel = createElementWithClass('span', 'text-[10px] font-bold text-brand-orange uppercase tracking-wide', 'TRANSLATING');
+      statusLabel.id = 'status-label';
+      statusContainer.appendChild(statusDot);
+      statusContainer.appendChild(statusLabel);
 
-        <div class="flex flex-col gap-1" id="translation-section">
-          <div class="px-0.5 text-[9px] font-bold text-slate-400 uppercase tracking-wide">TRANSLATION</div>
-          <div class="w-full max-h-[120px] overflow-y-auto p-2.5 bg-[#fff5eb] border border-brand-orange/20 rounded-lg text-[12.5px] leading-relaxed text-[#1a1a1a] font-medium whitespace-pre-wrap break-words dark:bg-[#2d1f10] dark:border-brand-orange/30 dark:text-slate-200" id="translation-text">Translating...</div>
-        </div>
+      const closeBtn = createElementWithClass('button', 'flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 hover:text-brand-orange dark:bg-[#2d2d44] dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:text-[#ff7a3d]');
+      closeBtn.id = 'close-popup-btn';
+      closeBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`; // SVG is safe
 
-        <div class="hidden flex flex-col gap-1" id="action-section">
-          <div class="px-0.5 text-[9px] font-bold text-slate-400 uppercase tracking-wide">SETUP GUIDE</div>
-          <div class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg dark:bg-[#2d2d44] dark:border-[#3f3f5a]" id="action-content"></div>
-        </div>
+      header.appendChild(statusContainer);
+      header.appendChild(closeBtn);
+      popup.appendChild(header);
 
-        <div class="flex items-center justify-between pt-2 mt-0.5 border-t border-slate-100 dark:border-[#2d2d44]">
-          <div class="flex items-center gap-1 text-[11px] font-extrabold text-brand-orange">AI Proofduck 🐣</div>
-          <button class="flex items-center gap-1 px-2.5 py-1 bg-white border border-slate-200 rounded-md text-[11px] font-semibold text-slate-500 transition-colors hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange dark:bg-[#2d2d44] dark:border-[#4a4a6a] dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]" id="copy-translation-btn">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-            <span>Copy</span>
-          </button>
-        </div>
-      `;
+      // Original Text Section
+      const originalSection = createElementWithClass('div', 'flex flex-col gap-1');
+      originalSection.appendChild(createElementWithClass('div', 'px-0.5 text-[9px] font-bold text-slate-400 uppercase tracking-wide', 'ORIGINAL'));
+      const sourceDisplay = createElementWithClass('div', 'w-full max-h-[100px] overflow-y-auto p-2.5 bg-white border border-slate-200 rounded-lg text-[12.5px] leading-relaxed text-slate-500 whitespace-pre-wrap break-words dark:bg-[#23233a] dark:border-[#3f3f5a] dark:text-slate-400');
+      sourceDisplay.id = 'source-display';
+      originalSection.appendChild(sourceDisplay);
+      popup.appendChild(originalSection);
+
+      // Translation Section
+      const translationSection = createElementWithClass('div', 'flex flex-col gap-1');
+      translationSection.id = 'translation-section';
+      translationSection.appendChild(createElementWithClass('div', 'px-0.5 text-[9px] font-bold text-slate-400 uppercase tracking-wide', 'TRANSLATION'));
+      const translationText = createElementWithClass('div', 'w-full max-h-[120px] overflow-y-auto p-2.5 bg-[#fff5eb] border border-brand-orange/20 rounded-lg text-[12.5px] leading-relaxed text-[#1a1a1a] font-medium whitespace-pre-wrap break-words dark:bg-[#2d1f10] dark:border-brand-orange/30 dark:text-slate-200', 'Translating...');
+      translationText.id = 'translation-text';
+      translationSection.appendChild(translationText);
+      popup.appendChild(translationSection);
+
+      // Action Section (Hidden by default)
+      const actionSection = createElementWithClass('div', 'hidden flex flex-col gap-1');
+      actionSection.id = 'action-section';
+      actionSection.appendChild(createElementWithClass('div', 'px-0.5 text-[9px] font-bold text-slate-400 uppercase tracking-wide', 'SETUP GUIDE'));
+      const actionContent = createElementWithClass('div', 'w-full p-3 bg-slate-50 border border-slate-200 rounded-lg dark:bg-[#2d2d44] dark:border-[#3f3f5a]');
+      actionContent.id = 'action-content';
+      actionSection.appendChild(actionContent);
+      popup.appendChild(actionSection);
+
+      // Footer
+      const footer = createElementWithClass('div', 'flex items-center justify-between pt-2 mt-0.5 border-t border-slate-100 dark:border-[#2d2d44]');
+      footer.appendChild(createElementWithClass('div', 'flex items-center gap-1 text-[11px] font-extrabold text-brand-orange', 'AI Proofduck 🐣'));
+
+      const copyBtn = createElementWithClass('button', 'flex items-center gap-1 px-2.5 py-1 bg-white border border-slate-200 rounded-md text-[11px] font-semibold text-slate-500 transition-colors hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange dark:bg-[#2d2d44] dark:border-[#4a4a6a] dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]');
+      copyBtn.id = 'copy-translation-btn';
+      copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span>Copy</span>`; // SVG + Text is safe
+      footer.appendChild(copyBtn);
+      popup.appendChild(footer);
 
       shadowRootNode.appendChild(popup);
       
       // Events
-      shadowRootNode.getElementById('close-popup-btn')?.addEventListener('click', (e: MouseEvent) => {
+      closeBtn.addEventListener('click', (e: MouseEvent) => {
         e.stopPropagation();
         hideTranslation();
       });
       
-      shadowRootNode.getElementById('copy-translation-btn')?.addEventListener('click', async (e: MouseEvent) => {
+      copyBtn.addEventListener('click', async (e: MouseEvent) => {
         e.stopPropagation();
-        const text = shadowRootNode.getElementById('translation-text')?.textContent;
+        const text = translationText.textContent;
         if (text && text !== 'Translating...') {
           try {
             await navigator.clipboard.writeText(text);
-            const btn = shadowRootNode.getElementById('copy-translation-btn') as HTMLButtonElement;
-            const originalHtml = btn.innerHTML;
+            const originalInnerHtml = copyBtn.innerHTML;
             
-            // Copied state style
-            btn.innerHTML = '<span>Copied!</span>';
-            btn.classList.add('bg-brand-orange', 'text-white', 'border-brand-orange');
-            btn.classList.remove('bg-white', 'text-slate-500', 'hover:bg-brand-orange-light', 'hover:text-brand-orange');
+            // Copied state
+            copyBtn.innerHTML = '<span>Copied!</span>';
+            copyBtn.classList.add('bg-brand-orange', 'text-white', 'border-brand-orange');
+            copyBtn.classList.remove('bg-white', 'text-slate-500', 'hover:bg-brand-orange-light', 'hover:text-brand-orange');
             
             setTimeout(() => {
-              btn.innerHTML = originalHtml;
-              btn.classList.remove('bg-brand-orange', 'text-white', 'border-brand-orange');
-              btn.classList.add('bg-white', 'text-slate-500', 'hover:bg-brand-orange-light', 'hover:text-brand-orange');
+              copyBtn.innerHTML = originalInnerHtml;
+              copyBtn.classList.remove('bg-brand-orange', 'text-white', 'border-brand-orange');
+              copyBtn.classList.add('bg-white', 'text-slate-500', 'hover:bg-brand-orange-light', 'hover:text-brand-orange');
             }, 2000);
           } catch (err) {
             console.error('[AI Proofduck] Copy failed:', err);
@@ -130,17 +152,17 @@ export default defineContentScript({
         actionSection.classList.remove('hidden');
         if (copyBtn) (copyBtn as HTMLElement).style.visibility = 'hidden';
         
-        actionContentEl.innerHTML = `
-          <div class="flex flex-col gap-3">
-            <span class="text-[13px] leading-relaxed text-slate-600 dark:text-slate-400">${msg}</span>
-            <button id="popup-action-btn" class="w-full py-2 bg-brand-orange text-white text-[12px] font-bold rounded-lg shadow-sm transition-all hover:bg-brand-orange-dark hover:shadow-md active:scale-[0.98]">
-              ${btnText}
-            </button>
-          </div>
-        `;
+        actionContentEl.innerHTML = ''; // Clear previous content
+        const container = createElementWithClass('div', 'flex flex-col gap-3');
+        const msgSpan = createElementWithClass('span', 'text-[13px] leading-relaxed text-slate-600 dark:text-slate-400', msg);
+        const actionBtn = createElementWithClass('button', 'w-full py-2 bg-brand-orange text-white text-[12px] font-bold rounded-lg shadow-sm transition-all hover:bg-brand-orange-dark hover:shadow-md active:scale-[0.98]', btnText);
+        actionBtn.id = 'popup-action-btn';
+
+        container.appendChild(msgSpan);
+        container.appendChild(actionBtn);
+        actionContentEl.appendChild(container);
         
-        const btn = shadowRootNode.getElementById('popup-action-btn');
-        btn?.addEventListener('click', (e) => {
+        actionBtn.addEventListener('click', (e) => {
           e.stopPropagation();
           onAction();
         });
