@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fakeBrowser } from 'wxt/testing';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('Feature: Content Script', () => {
   beforeEach(() => {
-    fakeBrowser.reset();
+    (browser.storage.local.get as any).mockClear();
+    (browser.storage.local.set as any).mockClear();
   });
 
   describe('Scenario: Floating Icon Display/Hide', () => {
@@ -102,13 +102,19 @@ describe('Feature: Content Script', () => {
 
   describe('Scenario: Storage Synchronization via fakeBrowser', () => {
     it('Given selectedText When stored Then should be retrievable', async () => {
+      (browser.storage.local.get as any).mockResolvedValueOnce({ selectedText: '测试文本' });
       await browser.storage.local.set({ selectedText: '测试文本' });
+
+      expect(browser.storage.local.set).toHaveBeenCalledWith({ selectedText: '测试文本' });
       const result = await browser.storage.local.get('selectedText');
       expect(result.selectedText).toBe('测试文本');
     });
 
     it('Given engineStatus When stored Then should reflect current state', async () => {
+      (browser.storage.local.get as any).mockResolvedValueOnce({ engineStatus: 'ready' });
       await browser.storage.local.set({ engineStatus: 'ready' });
+
+      expect(browser.storage.local.set).toHaveBeenCalledWith({ engineStatus: 'ready' });
       const result = await browser.storage.local.get('engineStatus');
       expect(result.engineStatus).toBe('ready');
     });

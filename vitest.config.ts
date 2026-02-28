@@ -1,9 +1,10 @@
 import { defineConfig } from 'vitest/config';
-import { WxtVitest } from 'wxt/testing/vitest-plugin';
 
 export default defineConfig({
-  plugins: [WxtVitest()],
   test: {
+    environment: 'happy-dom',
     exclude: ['tests/e2e/**', 'node_modules/**'],
+    setupFiles: ['./entrypoints/sidepanel/__tests__/setup.ts'],
+    globals: true,
   },
 });
