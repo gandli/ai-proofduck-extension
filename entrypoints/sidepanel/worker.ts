@@ -51,7 +51,7 @@ self.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Respo
     return originalFetch(input, init);
 };
 // ------------------------------------
-import { getSystemPrompt, LANG_MAP } from "./worker-utils";
+import { getSystemPrompt, formatUserPrompt, LANG_MAP } from "./worker-utils";
 import type { Settings, ModeKey, WorkerInboundMessage } from './types';
 
 class WebLLMWorker {
@@ -230,7 +230,7 @@ async function processLocalQueue() {
             const systemPrompt = getSystemPrompt(mode, settings);
             const engine = await WebLLMWorker.getEngine(settings);
             const targetLang = LANG_MAP[settings.extensionLanguage || '中文'] || settings.extensionLanguage || 'Chinese';
-            const finalPrompt = `[MODE: ${mode.toUpperCase()}]\n[ACTION: PROCESS THE TEXT BELOW INTO ${targetLang}]\n<TEXT_TO_PROCESS>\n${text}\n</TEXT_TO_PROCESS>\n[FINAL RESULT]:`;
+            const finalPrompt = formatUserPrompt(text, mode, targetLang);
             
             const messages: ChatCompletionMessageParam[] = [
                 { role: "system", content: systemPrompt },
@@ -263,7 +263,7 @@ async function handleGenerateOnline(text: string, mode: ModeKey, settings: Setti
     try {
         const systemPrompt = getSystemPrompt(mode, settings);
         const targetLang = LANG_MAP[settings.extensionLanguage || '中文'] || settings.extensionLanguage || 'Chinese';
-        const finalPrompt = `[MODE: ${mode.toUpperCase()}]\n[ACTION: PROCESS THE TEXT BELOW INTO ${targetLang}]\n<TEXT_TO_PROCESS>\n${text}\n</TEXT_TO_PROCESS>\n[FINAL RESULT]:`;
+        const finalPrompt = formatUserPrompt(text, mode, targetLang);
 
         if (!settings.apiKey) throw new Error("请在设置中配置 API Key");
 
@@ -360,7 +360,7 @@ async function handleGenerateChromeAI(text: string, mode: ModeKey, settings: Set
     const systemPrompt = getSystemPrompt(mode, settings);
     const session = await modelApi.create({ systemPrompt });
     const targetLang = LANG_MAP[settings.extensionLanguage || '中文'] || settings.extensionLanguage || 'Chinese';
-    const finalPrompt = `[MODE: ${mode.toUpperCase()}]\n[ACTION: PROCESS THE TEXT BELOW INTO ${targetLang}]\n<TEXT_TO_PROCESS>\n${text}\n</TEXT_TO_PROCESS>\n[FINAL RESULT]:`;
+    const finalPrompt = formatUserPrompt(text, mode, targetLang);
     const stream = await session.promptStreaming(finalPrompt);
     const fullText = await streamPromptApi(stream, mode, requestId);
     session.destroy();
