@@ -1,5 +1,6 @@
 import { Settings } from '../types';
 import { ExportIcon, ImportIcon } from './Icons';
+import { isValidModelUrl } from '../utils/urlValidation';
 
 interface ModelImportExportProps {
   settings: Settings;
@@ -27,6 +28,11 @@ export function ModelImportExport({ settings, status, setStatus, setProgress, se
         const relativePath = file.webkitRelativePath.split('/').slice(1).join('/');
         if (!relativePath) continue;
         const url = new URL(relativePath, baseUrl).toString();
+
+        if (!isValidModelUrl(url)) {
+          throw new Error(`Invalid model URL: ${url}`);
+        }
+
         await cache.put(url, new Response(file));
         count++;
         setProgress({ progress: (count / total) * 100, text: `${t.importing} (${count}/${total})` });
@@ -112,6 +118,11 @@ export function ModelImportExport({ settings, status, setStatus, setProgress, se
         const size = Number(view.getBigUint64(offset));
         const data = new Uint8Array(buffer, offset + 8, size);
         offset += 8 + size;
+
+        if (!isValidModelUrl(url)) {
+          throw new Error(`Invalid model URL in package: ${url}`);
+        }
+
         await cache.put(url, new Response(data));
         setProgress({ progress: ((i + 1) / fileCount) * 100, text: `${t.importing} (${i + 1}/${fileCount})` });
       }
