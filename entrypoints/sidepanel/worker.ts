@@ -144,16 +144,18 @@ class WebLLMWorker {
         const model = settings.localModel || "Qwen2.5-0.5B-Instruct-q4f16_1-MLC";
 
         // If engine exists and is ready, just update LRU and return
-        if (this.engines.has(cacheKey) && this.engineReadyStatus.get(cacheKey)) {
+        const existingEngine = this.engines.get(cacheKey);
+        if (existingEngine && this.engineReadyStatus.get(cacheKey)) {
             console.log(`[Worker] Reusing cached engine for: ${cacheKey}`);
             this.updateLRU(cacheKey);
-            return this.engines.get(cacheKey)!;
+            return existingEngine;
         }
 
         // If currently loading, wait for the existing lock
-        if (this.loadLocks.has(cacheKey)) {
+        const existingLock = this.loadLocks.get(cacheKey);
+        if (existingLock) {
             console.log(`[Worker] Waiting for existing load lock: ${cacheKey}`);
-            await this.loadLocks.get(cacheKey);
+            await existingLock;
             return this.engines.get(cacheKey)!;
         }
 
