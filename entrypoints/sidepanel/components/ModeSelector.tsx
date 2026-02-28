@@ -29,6 +29,8 @@ export function ModeSelector({ mode, setMode, t, onOpenSettings }: ModeSelectorP
       <button
         className="flex items-center justify-center px-3 ml-0 text-slate-500 transition-all rounded-lg cursor-pointer bg-brand-orange-light hover:bg-white hover:text-brand-orange hover:shadow-sm dark:bg-brand-dark-surface dark:text-slate-400 dark:hover:bg-[#2a2a3e] dark:hover:text-[#ff7a3d]"
         onClick={onOpenSettings}
+        aria-label={t.settings || 'Settings'}
+        title={t.settings || 'Settings'}
       >
         <SettingsIcon />
       </button>

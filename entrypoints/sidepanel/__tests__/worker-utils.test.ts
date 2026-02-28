@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getSystemPrompt } from '../worker-utils';
-import { TONE_MAP, DETAIL_MAP, BASE_CONSTRAINT, SUFFIX_CONSTRAINT } from '../prompts';
+import { TONE_MAP, DETAIL_MAP, BASE_CONSTRAINT } from '../prompts';
 
 const baseSettings = {
   extensionLanguage: '中文',
@@ -16,14 +16,13 @@ describe('Feature: getSystemPrompt', () => {
         const prompt = getSystemPrompt(mode, baseSettings);
         expect(prompt.length).toBeGreaterThan(50);
         expect(prompt).toContain(BASE_CONSTRAINT);
-        expect(prompt).toContain(SUFFIX_CONSTRAINT);
-        expect(prompt).toContain('中文');
+        expect(prompt).toContain('Chinese');
       },
     );
 
     it('Given unknown mode When generating prompt Then should fallback to proofread', () => {
-      const prompt = getSystemPrompt('unknown_mode', baseSettings);
-      expect(prompt).toContain('大厂资深文案编辑');
+      const prompt = getSystemPrompt('unknown_mode' as any, baseSettings);
+      expect(prompt).toContain('Polish and improve');
     });
   });
 
@@ -56,11 +55,15 @@ describe('Feature: getSystemPrompt', () => {
   });
 
   describe('Scenario: Language targeting', () => {
-    it.each(['English', '日本語', 'Français'])(
-      'Given language "%s" When generating prompt Then should target that language',
-      (lang) => {
+    it.each([
+      ['English', 'English'],
+      ['日本語', 'Japanese'],
+      ['Français', 'French']
+    ])(
+      'Given language "%s" When generating prompt Then should target "%s"',
+      (lang, targetLang) => {
         const prompt = getSystemPrompt('summarize', { ...baseSettings, extensionLanguage: lang });
-        expect(prompt).toContain(lang);
+        expect(prompt).toContain(targetLang);
       },
     );
   });
@@ -71,18 +74,12 @@ describe('Feature: getSystemPrompt', () => {
         expect(getSystemPrompt(mode, baseSettings)).toContain(BASE_CONSTRAINT);
       }
     });
-
-    it('Given any mode When generating Then should always include SUFFIX_CONSTRAINT', () => {
-      for (const mode of ['summarize', 'correct', 'proofread', 'translate', 'expand']) {
-        expect(getSystemPrompt(mode, baseSettings)).toContain(SUFFIX_CONSTRAINT);
-      }
-    });
   });
 
   describe('Scenario: Edge cases', () => {
     it('Given empty settings When generating Then should use defaults', () => {
       const prompt = getSystemPrompt('summarize', {});
-      expect(prompt).toContain('中文'); // default language
+      expect(prompt).toContain('Chinese'); // default language
     });
 
     it('Given undefined tone When generating Then should fallback to professional', () => {

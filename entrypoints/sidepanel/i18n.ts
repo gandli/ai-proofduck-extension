@@ -75,7 +75,9 @@ export const translations: Record<string, any> = {
             '2. 访问 chrome://flags/#prompt-api-for-gemini-nano 并选择 "Enabled"。',
             '3. 访问 chrome://flags/#optimization-guide-on-device-model 并选择 "Enabled BypassPrefRequirement"。',
             '4. 访问 chrome://components，找到 "Optimization Guide On Device Model" 并点击 "Check for Update" 下载模型。如果没看到，请重启浏览器并刷新页面。'
-        ]
+        ],
+        close_btn: '关闭',
+        fetch_page_content: '提取网页内容'
     },
     'English': {
         title: 'AI Assistant',
@@ -153,7 +155,9 @@ export const translations: Record<string, any> = {
             "chrome://flags/#prompt-api-for-gemini-nano\nSelect 'Enabled'",
             "chrome://flags/#optimization-guide-on-device-model\nSelect 'Enabled BypassPrefRequirement'",
             "chrome://components\nClick 'Check for Update' on Optimization Guide On Device Model to download the model. If you don't see Optimization Guide, ensure you have set the flags correctly above, relaunch your browser, and refresh the page."
-        ]
+        ],
+        close_btn: 'Close',
+        fetch_page_content: 'Fetch Page Content'
     },
     '日本語': {
         title: 'AIアシスタント',
@@ -219,7 +223,21 @@ export const translations: Record<string, any> = {
         clear_btn: 'クリア',
         char_count: '文字',
         auto_speak_label: '結果を自動的に読み上げる',
-        connection_error: 'ページのコンテンツを取得できませんでした。現在のページをクリックするか、コンテキストメニューから有効化してください。'
+        connection_error: 'ページのコンテンツを取得できませんでした。現在のページをクリックするか、コンテキストメニューから有効化してください。',
+        recommended_label: 'Recommended',
+        ram_info: 'System RAM detected: ~',
+        search_placeholder: 'Search models...',
+        history_label: 'Recently Used',
+        select_category: 'Select Category',
+        chrome_ai_guidance_title: 'How to enable Chrome Built-in AI (Gemini Nano):',
+        chrome_ai_guidance_steps: [
+            'Please make sure you are using Chrome version 127 or higher.',
+            "chrome://flags/#prompt-api-for-gemini-nano\nSelect 'Enabled'",
+            "chrome://flags/#optimization-guide-on-device-model\nSelect 'Enabled BypassPrefRequirement'",
+            "chrome://components\nClick 'Check for Update' on Optimization Guide On Device Model to download the model. If you don't see Optimization Guide, ensure you have set the flags correctly above, relaunch your browser, and refresh the page."
+        ],
+        close_btn: 'Close',
+        fetch_page_content: 'Fetch Page Content'
     },
     '한국어': {
         title: 'AI 어시스턴트',
@@ -285,7 +303,21 @@ export const translations: Record<string, any> = {
         clear_btn: '지우기',
         char_count: '자',
         auto_speak_label: '결과 자동 읽기',
-        connection_error: '페이지 콘텐츠를 가져올 수 없습니다. 현재 페이지를 클릭하거나 컨텍스트 메뉴를 통해 활성화하세요.'
+        connection_error: '페이지 콘텐츠를 가져올 수 없습니다. 현재 페이지를 클릭하거나 컨텍스트 메뉴를 통해 활성화하세요.',
+        recommended_label: 'Recommended',
+        ram_info: 'System RAM detected: ~',
+        search_placeholder: 'Search models...',
+        history_label: 'Recently Used',
+        select_category: 'Select Category',
+        chrome_ai_guidance_title: 'How to enable Chrome Built-in AI (Gemini Nano):',
+        chrome_ai_guidance_steps: [
+            'Please make sure you are using Chrome version 127 or higher.',
+            "chrome://flags/#prompt-api-for-gemini-nano\nSelect 'Enabled'",
+            "chrome://flags/#optimization-guide-on-device-model\nSelect 'Enabled BypassPrefRequirement'",
+            "chrome://components\nClick 'Check for Update' on Optimization Guide On Device Model to download the model. If you don't see Optimization Guide, ensure you have set the flags correctly above, relaunch your browser, and refresh the page."
+        ],
+        close_btn: 'Close',
+        fetch_page_content: 'Fetch Page Content'
     },
     'Français': {
         title: 'Assistant IA',
@@ -351,7 +383,21 @@ export const translations: Record<string, any> = {
         clear_btn: 'Effacer',
         char_count: 'carac.',
         auto_speak_label: 'Lecture automatique des résultats',
-        connection_error: 'Impossible de récupérer le contenu de la page. Veuillez cliquer sur la page ou utiliser le menu contextuel pour activer.'
+        connection_error: 'Impossible de récupérer le contenu de la page. Veuillez cliquer sur la page ou utiliser le menu contextuel pour activer.',
+        recommended_label: 'Recommended',
+        ram_info: 'System RAM detected: ~',
+        search_placeholder: 'Search models...',
+        history_label: 'Recently Used',
+        select_category: 'Select Category',
+        chrome_ai_guidance_title: 'How to enable Chrome Built-in AI (Gemini Nano):',
+        chrome_ai_guidance_steps: [
+            'Please make sure you are using Chrome version 127 or higher.',
+            "chrome://flags/#prompt-api-for-gemini-nano\nSelect 'Enabled'",
+            "chrome://flags/#optimization-guide-on-device-model\nSelect 'Enabled BypassPrefRequirement'",
+            "chrome://components\nClick 'Check for Update' on Optimization Guide On Device Model to download the model. If you don't see Optimization Guide, ensure you have set the flags correctly above, relaunch your browser, and refresh the page."
+        ],
+        close_btn: 'Close',
+        fetch_page_content: 'Fetch Page Content'
     },
     'Deutsch': {
         title: 'KI-Assistent',
@@ -417,7 +463,21 @@ export const translations: Record<string, any> = {
         clear_btn: 'Löschen',
         char_count: 'Zeichen',
         auto_speak_label: 'Ergebnisse automatisch vorlesen',
-        connection_error: 'Seiteninhalt konnte nicht abgerufen werden. Bitte klicken Sie auf die Seite oder aktivieren Sie über das Kontextmenü.'
+        connection_error: 'Seiteninhalt konnte nicht abgerufen werden. Bitte klicken Sie auf die Seite oder aktivieren Sie über das Kontextmenü.',
+        recommended_label: 'Recommended',
+        ram_info: 'System RAM detected: ~',
+        search_placeholder: 'Search models...',
+        history_label: 'Recently Used',
+        select_category: 'Select Category',
+        chrome_ai_guidance_title: 'How to enable Chrome Built-in AI (Gemini Nano):',
+        chrome_ai_guidance_steps: [
+            'Please make sure you are using Chrome version 127 or higher.',
+            "chrome://flags/#prompt-api-for-gemini-nano\nSelect 'Enabled'",
+            "chrome://flags/#optimization-guide-on-device-model\nSelect 'Enabled BypassPrefRequirement'",
+            "chrome://components\nClick 'Check for Update' on Optimization Guide On Device Model to download the model. If you don't see Optimization Guide, ensure you have set the flags correctly above, relaunch your browser, and refresh the page."
+        ],
+        close_btn: 'Close',
+        fetch_page_content: 'Fetch Page Content'
     },
     'Español': {
         title: 'Asistente de IA',
@@ -483,6 +543,20 @@ export const translations: Record<string, any> = {
         clear_btn: 'Limpiar',
         char_count: 'carácteres',
         auto_speak_label: 'Lectura automática de resultados',
-        connection_error: 'No se pudo obtener el contenido de la página. Haga clic en la página o active a través del menú contextual.'
+        connection_error: 'No se pudo obtener el contenido de la página. Haga clic en la página o active a través del menú contextual.',
+        recommended_label: 'Recommended',
+        ram_info: 'System RAM detected: ~',
+        search_placeholder: 'Search models...',
+        history_label: 'Recently Used',
+        select_category: 'Select Category',
+        chrome_ai_guidance_title: 'How to enable Chrome Built-in AI (Gemini Nano):',
+        chrome_ai_guidance_steps: [
+            'Please make sure you are using Chrome version 127 or higher.',
+            "chrome://flags/#prompt-api-for-gemini-nano\nSelect 'Enabled'",
+            "chrome://flags/#optimization-guide-on-device-model\nSelect 'Enabled BypassPrefRequirement'",
+            "chrome://components\nClick 'Check for Update' on Optimization Guide On Device Model to download the model. If you don't see Optimization Guide, ensure you have set the flags correctly above, relaunch your browser, and refresh the page."
+        ],
+        close_btn: 'Close',
+        fetch_page_content: 'Fetch Page Content'
     }
 };
