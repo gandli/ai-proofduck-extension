@@ -30,7 +30,7 @@ describe('Feature: Background Script', () => {
     it('Given selection text When menu clicked Then should store to browser.storage', async () => {
       const selectionText = '测试文本';
       // Mock retrieving the stored value
-      (browser.storage.local.get as any).mockResolvedValueOnce({ selectedText });
+      (browser.storage.local.get as any).mockResolvedValueOnce({ selectedText: selectionText });
 
       await browser.storage.local.set({ selectedText: selectionText });
       expect(browser.storage.local.set).toHaveBeenCalledWith({ selectedText: selectionText });

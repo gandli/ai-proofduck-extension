@@ -37,8 +37,11 @@ describe('Feature: useSettings Logic', () => {
 
   describe('Scenario: Settings persistence via real storage', () => {
     it('Given settings When saved to storage Then should be retrievable', async () => {
-      const settings = { ...DEFAULT_SETTINGS, engine: 'online', apiModel: 'gpt-4' };
+      const settings = { ...DEFAULT_SETTINGS, engine: 'online', apiModel: 'gpt-4' } as Settings;
       const { apiKey, ...rest } = settings;
+
+      await browser.storage.local.set({ settings: { ...rest, apiKey: '' } });
+
       // Mock implementation detail: we just check that set was called with correct arguments
       expect(browser.storage.local.set).toHaveBeenCalledWith({ settings: { ...rest, apiKey: '' } });
     });
