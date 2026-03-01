@@ -66,6 +66,9 @@ export function LocalModelSelector({ settings, updateSettings, postMessage, stat
       <button 
         className="w-full flex items-center justify-between p-3 border border-slate-200 rounded-xl bg-slate-50 text-sm transition-all hover:bg-white hover:border-brand-orange focus:outline-none dark:bg-brand-dark-bg dark:border-[#4a4a6a] dark:text-slate-200"
         onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        aria-labelledby="localModelLabel"
       >
         <span className="truncate font-medium">
           {currentModel ? currentModel.name : t.model_label}
@@ -74,7 +77,7 @@ export function LocalModelSelector({ settings, updateSettings, postMessage, stat
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-2 z-[1100] bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden animate-slideInDown dark:bg-[#1a1a2e] dark:border-slate-800">
+        <div className="absolute left-0 right-0 top-full mt-2 z-[1100] bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden animate-slideInDown dark:bg-[#1a1a2e] dark:border-slate-800" role="listbox" aria-label="Models">
           <div className="p-3 border-b border-slate-100 dark:border-slate-800">
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
@@ -87,6 +90,7 @@ export function LocalModelSelector({ settings, updateSettings, postMessage, stat
                 className="w-full pl-9 pr-4 py-2 bg-slate-100 border-none rounded-lg text-sm focus:ring-2 focus:ring-brand-orange/20 outline-none dark:bg-slate-800 dark:text-slate-200"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
+                aria-label={t.search_placeholder || "Search models..."}
               />
             </div>
           </div>
