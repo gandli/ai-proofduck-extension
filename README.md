@@ -12,9 +12,9 @@
 
   <p>
     <a href="#-features">Features</a> •
-    <a href="#-privacy">Privacy</a> •
-    <a href="#-installation">Installation</a> •
-    <a href="#-tech-stack">Tech Stack</a>
+    <a href="#-changelog-sync">Changelog Sync</a> •
+    <a href="#-testing">Testing</a> •
+    <a href="#-privacy">Privacy</a>
   </p>
 
   <p>
@@ -28,7 +28,7 @@
 
 <br />
 
-> **AI Proofduck** is an immersive AI writing assistant residing in your browser's side panel. Leveraging cutting-edge WebGPU/WASM technology, we bring large model inference capabilities directly to your browser, ensuring absolute data privacy and lightning-fast response speeds.
+> **AI Proofduck** is a translate-first AI writing assistant for browser side panels. It now supports **Chrome Built-in AI**, **local WebGPU/WASM inference**, and **public translation/API fallback** (Google/Baidu/OpenAI-compatible), balancing privacy, compatibility, and instant usability.
 
 ---
 
@@ -46,11 +46,48 @@ AI Proofduck focuses on improving the quality of your web-based writing with fiv
 
 ### 🚀 Hybrid Intelligence
 
-We offer flexible inference engine choices to meet different scenario needs:
+We provide three engine paths for different environments:
 
-- **⚡ WebGPU**: Utilizes hardware acceleration for extremely fast local inference (Recommended).
-- **🧩 WASM**: Pure CPU local inference with the best compatibility and lightweight efficiency.
-- **☁️ Online API**: Supports connection to OpenAI/Gemini compatible cloud models for maximum performance.
+- **🧠 Chrome Built-in AI**: Run on-device AI directly in Chrome sidepanel when available.
+- **⚡ Local WebGPU / WASM**: Fast local acceleration + broad CPU compatibility.
+- **🌍 Public Translation & API**: Use Google/Baidu translation services or OpenAI-compatible APIs as fallback.
+
+---
+
+## 🔄 Changelog Sync
+
+The `gh-pages` landing page changelog is synced from `main` branch:
+
+- **EN page**: fetches and renders `main/CHANGELOG.md` automatically.
+- **ZH page**: keeps localized changelog copy for Chinese readers.
+- Supports inline markdown rendering in changelog items:
+  - `**bold**`
+  - `` `code` ``
+  - `[link](https://example.com)`
+
+Refresh strategy:
+
+- Polling interval: **once per day**
+- Smart refresh on page `focus` and `visibilitychange`
+
+---
+
+## 🧪 Testing
+
+Landing page E2E tests are powered by Playwright.
+
+```bash
+npm install
+npx playwright install chromium
+npm run test:e2e
+```
+
+Current coverage includes:
+
+- EN/ZH section rendering and key copy
+- language switch view-state preservation
+- back-to-top button behavior
+- dynamic changelog markdown rendering
 
 ---
 
