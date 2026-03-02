@@ -113,9 +113,9 @@ export interface ModeDefinition {
 }
 
 export const MODES: ModeDefinition[] = [
+  { key: 'translate', labelKey: 'mode_translate', resultLabelKey: 'result_translate' },
   { key: 'summarize', labelKey: 'mode_summarize', resultLabelKey: 'result_summarize' },
   { key: 'correct', labelKey: 'mode_correct', resultLabelKey: 'result_correct' },
   { key: 'proofread', labelKey: 'mode_proofread', resultLabelKey: 'result_proofread' },
-  { key: 'translate', labelKey: 'mode_translate', resultLabelKey: 'result_translate' },
   { key: 'expand', labelKey: 'mode_expand', resultLabelKey: 'result_expand' },
 ];

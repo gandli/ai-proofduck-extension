@@ -46,11 +46,11 @@ It uses a **local-first routing strategy**:
 
 ## ✨ Features
 
-- **🚀 Multi-Mode Writing Assistance**:
+- **🚀 Multi-Mode Writing Assistance** (Translate-first UX):
+  - **Translate**: Accurate translation between languages (supports full-page translation).
   - **Summarize**: Quickly extract key points from long texts.
   - **Correct**: Fix grammar and spelling errors.
   - **Proofread**: Polish sentences for better flow and professionalism.
-  - **Translate**: Accurate translation between languages.
   - **Expand**: Enrich details based on existing content.
 - **🔒 Local-First Privacy Path**: Prefer Chrome Built-in AI or local WebGPU/WASM models (e.g., Qwen2.5) for on-device processing.
 - **🌐 Cloud-Enhanced Path**: Compatible with OpenAI-format APIs (e.g., OpenRouter / Cloudflare AI presets) for stronger remote models.
