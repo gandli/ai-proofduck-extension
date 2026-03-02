@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { renderHook, act } from '@testing-library/react';
 import { DEFAULT_SETTINGS } from '../types';
 import type { Settings } from '../types';
+import { useSettings } from '../hooks/useSettings';
 
 describe('Feature: useSettings Logic', () => {
   beforeEach(() => {
@@ -37,7 +39,13 @@ describe('Feature: useSettings Logic', () => {
 
   describe('Scenario: Settings persistence via real storage', () => {
     it('Given settings When saved to storage Then should be retrievable', async () => {
-      const settings = { ...DEFAULT_SETTINGS, engine: 'online', apiModel: 'gpt-4' };
+      const { result } = renderHook(() => useSettings());
+      const settings = { ...DEFAULT_SETTINGS, engine: 'online' as const, apiModel: 'gpt-4' };
+
+      await act(async () => {
+        await result.current.updateSettings(settings);
+      });
+
       const { apiKey, ...rest } = settings;
       // Mock implementation detail: we just check that set was called with correct arguments
       expect(browser.storage.local.set).toHaveBeenCalledWith({ settings: { ...rest, apiKey: '' } });
