@@ -940,6 +940,16 @@ const base = import.meta.env.BASE_URL;
 
     <Footer />
 
+    <button
+      id="backToTopBtn"
+      type="button"
+      aria-label="Back to top"
+      class="fixed bottom-6 right-6 z-[1200] w-12 h-12 rounded-full bg-ac text-white shadow-floating flex items-center justify-center transition-all duration-300 opacity-0 translate-y-3 pointer-events-none hover:scale-105 hover:shadow-xl"
+      onclick="scrollToTop()"
+    >
+      <i data-lucide="chevrons-up" class="w-5 h-5"></i>
+    </button>
+
     <!-- Gallery Modal -->
     <div
       id="galleryModal"

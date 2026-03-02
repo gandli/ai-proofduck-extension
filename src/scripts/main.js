@@ -342,6 +342,19 @@ window.addEventListener("DOMContentLoaded", () => {
 
 // Smooth scroll to top for home link
 // Initialize on page load and astro transitions
+function toggleBackToTopButton() {
+  const btn = document.getElementById('backToTopBtn');
+  if (!btn) return;
+  const show = window.scrollY > 380;
+  btn.classList.toggle('opacity-0', !show);
+  btn.classList.toggle('translate-y-3', !show);
+  btn.classList.toggle('pointer-events-none', !show);
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function init() {
   // Re-bind listeners safely for Astro transitions.
   bindUiListeners();
@@ -349,10 +362,13 @@ function init() {
   if (document.querySelector(".slideshow-container")) {
     showSlides(slideIndex);
   }
+
+  toggleBackToTopButton();
 }
 
 document.addEventListener('DOMContentLoaded', init);
 document.addEventListener('astro:page-load', init);
+window.addEventListener('scroll', toggleBackToTopButton, { passive: true });
 
 // Smooth scrolling for specific links
 document.addEventListener('click', (e) => {
@@ -446,3 +462,4 @@ function switchLanguage(lang) {
 
 window.switchLanguage = switchLanguage;
 window.setLang = setLang;
+window.scrollToTop = scrollToTop;
