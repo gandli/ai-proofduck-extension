@@ -80,7 +80,10 @@ export const translations: Record<string, any> = {
         ],
         fallback_free_api_btn: '改用免费 API 方案',
         fallback_free_api_note: '已切换到在线 API（免费模型预设），请在设置中填写 API Key。',
-        api_key_hint: '可使用 OpenRouter 免费模型，或任意 OpenAI 兼容服务商的 API Key。'
+        api_key_hint: '可使用 OpenRouter 免费模型，或任意 OpenAI 兼容服务商的 API Key。',
+        preset_openrouter_free: '使用 OpenRouter 免费预设',
+        preset_cloudflare: '使用 Cloudflare AI 预设',
+        preset_cloudflare_hint: 'Cloudflare 需把 Base URL 中 <ACCOUNT_ID> 替换为你的账号 ID。'
     },
     'English': {
         title: 'AI Assistant',
@@ -163,7 +166,10 @@ export const translations: Record<string, any> = {
         ],
         fallback_free_api_btn: 'Switch to free API fallback',
         fallback_free_api_note: 'Switched to Online API (free-model preset). Please provide your API key in settings.',
-        api_key_hint: 'Use a free OpenRouter key, or any OpenAI-compatible provider API key.'
+        api_key_hint: 'Use a free OpenRouter key, or any OpenAI-compatible provider API key.',
+        preset_openrouter_free: 'Use OpenRouter free preset',
+        preset_cloudflare: 'Use Cloudflare AI preset',
+        preset_cloudflare_hint: 'For Cloudflare, replace <ACCOUNT_ID> in Base URL with your account id.'
     },
     '日本語': {
         title: 'AIアシスタント',
