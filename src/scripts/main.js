@@ -3,6 +3,9 @@ let currentLang = localStorage.getItem("preferredLang") || "en";
 let translations = {};
 const CHANGELOG_RAW_URL = 'https://raw.githubusercontent.com/gandli/ai-proofduck-extension/main/CHANGELOG.md';
 const LANG_SWITCH_SCROLL_KEY = 'langSwitchScrollState';
+const CHANGELOG_POLL_MS = 3 * 60 * 1000;
+let changelogPollTimer = null;
+let lastChangelogDigest = '';
 
 // Initialize language
 async function initLang() {
@@ -93,11 +96,24 @@ async function hydrateChangelogFromMain() {
     const res = await fetch(CHANGELOG_RAW_URL, { cache: 'no-store' });
     if (!res.ok) return;
     const md = await res.text();
+
+    // Skip rerender when changelog has not changed.
+    if (md === lastChangelogDigest) return;
+    lastChangelogDigest = md;
+
     const parsed = parseChangelogMarkdown(md);
     renderChangelog(parsed);
   } catch (e) {
     console.warn('Failed to hydrate changelog from main:', e);
   }
+}
+
+function startChangelogListener() {
+  if (changelogPollTimer) return;
+  changelogPollTimer = window.setInterval(() => {
+    if (document.hidden) return;
+    hydrateChangelogFromMain();
+  }, CHANGELOG_POLL_MS);
 }
 
 // Set language function
@@ -364,6 +380,7 @@ function init() {
     showSlides(slideIndex);
   }
 
+  startChangelogListener();
   restoreScrollAfterLanguageSwitch();
   toggleBackToTopButton();
 }
