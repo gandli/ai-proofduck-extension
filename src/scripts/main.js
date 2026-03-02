@@ -1,12 +1,102 @@
 // State
 let currentLang = localStorage.getItem("preferredLang") || "en";
 let translations = {};
+const CHANGELOG_RAW_URL = 'https://raw.githubusercontent.com/gandli/ai-proofduck-extension/main/CHANGELOG.md';
 
 // Initialize language
 async function initLang() {
   // Use the HTML lang attribute as the primary source of truth (set by Astro server)
   const initialLang = document.documentElement.lang || localStorage.getItem("preferredLang") || "en";
   await setLang(initialLang);
+}
+
+function parseChangelogMarkdown(md) {
+  const lines = md.split(/\r?\n/);
+  const versions = [];
+  let current = null;
+  let section = null;
+
+  for (const raw of lines) {
+    const line = raw.trim();
+    const versionMatch = line.match(/^##\s+\[(v?[^\]]+)\]\s*-\s*(.+)$/);
+    if (versionMatch) {
+      if (current) versions.push(current);
+      current = {
+        version: versionMatch[1],
+        date: versionMatch[2],
+        added: [],
+        changed: [],
+        fixed: [],
+      };
+      section = null;
+      continue;
+    }
+
+    if (!current) continue;
+
+    if (/^###\s+Added/i.test(line)) { section = 'added'; continue; }
+    if (/^###\s+Changed/i.test(line)) { section = 'changed'; continue; }
+    if (/^###\s+Fixed/i.test(line)) { section = 'fixed'; continue; }
+
+    if (line.startsWith('- ') && section) {
+      current[section].push(line.slice(2));
+    }
+  }
+  if (current) versions.push(current);
+  return versions.slice(0, 3);
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function renderChangelog(versions) {
+  const mount = document.getElementById('changelog-content');
+  if (!mount || !versions?.length) return;
+
+  const titleAdded = translations.cl_added || 'Added';
+  const titleChanged = translations.cl_changed || 'Changed';
+  const titleFixed = translations.cl_fixed || 'Fixed';
+
+  const renderList = (items, accent = 'before:text-t3') => {
+    if (!items.length) return '';
+    return `<ul class="space-y-2.5">${items
+      .map((it) => `<li class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 ${accent} before:font-bold">${escapeHtml(it)}</li>`)
+      .join('')}</ul>`;
+  };
+
+  mount.innerHTML = versions
+    .map((v) => `
+      <div class="bg-bg2 border border-b1 rounded-[20px] p-8 mb-8 shadow-premium animate-fade-up">
+        <div class="flex items-center gap-3 mb-6 border-b border-b1 pb-4">
+          <span class="bg-ac text-white px-3 py-1 rounded-full font-bold text-[0.9rem]">${escapeHtml(v.version)}</span>
+          <span class="text-t2 text-[0.9rem] font-medium">${escapeHtml(v.date)}</span>
+        </div>
+        <div class="space-y-6">
+          ${v.added.length ? `<div><h4 class="text-base mb-3 pl-3 border-l-4 border-ac font-bold">${escapeHtml(titleAdded)}</h4>${renderList(v.added)}</div>` : ''}
+          ${v.changed.length ? `<div><h4 class="text-base mb-3 pl-3 border-l-4 border-amber-500 font-bold">${escapeHtml(titleChanged)}</h4>${renderList(v.changed)}</div>` : ''}
+          ${v.fixed.length ? `<div><h4 class="text-base mb-3 pl-3 border-l-4 border-emerald-500 font-bold">${escapeHtml(titleFixed)}</h4>${renderList(v.fixed)}</div>` : ''}
+        </div>
+      </div>
+    `)
+    .join('');
+}
+
+async function hydrateChangelogFromMain() {
+  try {
+    const res = await fetch(CHANGELOG_RAW_URL, { cache: 'no-store' });
+    if (!res.ok) return;
+    const md = await res.text();
+    const parsed = parseChangelogMarkdown(md);
+    renderChangelog(parsed);
+  } catch (e) {
+    console.warn('Failed to hydrate changelog from main:', e);
+  }
 }
 
 // Set language function
@@ -56,6 +146,8 @@ async function setLang(lang) {
       document.querySelector('meta[name="description"]').content =
         "浏览器内置 AI 写作助手，支持摘要、纠错、润色、翻译、扩写五大模式。完全本地推理，隐私保护，开箱即用。";
     }
+
+    await hydrateChangelogFromMain();
   } catch (error) {
     console.error("Failed to load translations:", error);
   }
