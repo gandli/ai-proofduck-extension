@@ -1,5 +1,4 @@
-export const SVG_STRING = `
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+export const SVG_STRING = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg height="24" viewBox="0 0 512 512" fill="none" version="1.1" id="svg218"
     xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
     <g clip-path="url(#clip0_0_50)" filter="url(#filter0_d_0_50)" id="g42" transform="translate(-120,-50)">

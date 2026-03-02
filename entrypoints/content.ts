@@ -373,6 +373,13 @@ export default defineContentScript({
     const createFloatingIcon = () => {
       const container = document.createElement('div');
       container.id = 'ai-proofduck-icon-container';
+      // Force absolute positioning and high z-index to avoid page interference
+      container.style.position = 'absolute';
+      container.style.zIndex = '2147483647';
+      container.style.display = 'none';
+      container.style.pointerEvents = 'auto';
+      container.style.cursor = 'pointer';
+      
       const shadowRootNode = container.attachShadow({ mode: 'open' });
 
       // Tailwind styles
@@ -381,15 +388,25 @@ export default defineContentScript({
       shadowRootNode.appendChild(twStyle);
 
       const icon = document.createElement('div');
-      // Using DOMParser for the main icon as well
-      const parser = new DOMParser();
-      const svgDoc = parser.parseFromString(SVG_STRING, 'image/svg+xml');
-      if (svgDoc.documentElement.nodeName === 'svg') {
-        icon.appendChild(svgDoc.documentElement);
-      }
-
-      // Using Tailwind for dimensions, transition, hover scale, and drop shadow
+      // Using Tailwind for basic styling and layout
       icon.className = 'w-6 h-6 flex drop-shadow-md transition-transform duration-200 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] hover:scale-[1.15]';
+
+      // Robust SVG parsing: remove any leading/trailing whitespace
+      const parser = new DOMParser();
+      const svgDoc = parser.parseFromString(SVG_STRING.trim(), 'image/svg+xml');
+      
+      const parserError = svgDoc.getElementsByTagName('parsererror');
+      if (parserError.length > 0) {
+        console.error('[AI Proofduck] SVG parse error:', parserError[0].textContent);
+        // Fallback or debug info
+        const errorMsg = document.createElement('div');
+        errorMsg.textContent = '🐣';
+        icon.appendChild(errorMsg);
+      } else if (svgDoc.documentElement && svgDoc.documentElement.nodeName === 'svg') {
+        icon.appendChild(svgDoc.documentElement);
+      } else {
+        console.error('[AI Proofduck] SVG document root not found or invalid.');
+      }
 
       shadowRootNode.appendChild(icon);
 
