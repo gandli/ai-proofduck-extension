@@ -379,6 +379,33 @@ document.addEventListener('click', (e) => {
 
 
 
+function detectCurrentSectionId() {
+  const sections = Array.from(document.querySelectorAll('section[id]'));
+  if (!sections.length) return '';
+
+  // Use navbar-aware anchor line instead of max visible area.
+  const anchorY = 140;
+
+  // 1) Section currently crossing anchor line.
+  const active = sections.find((section) => {
+    const rect = section.getBoundingClientRect();
+    return rect.top <= anchorY && rect.bottom > anchorY;
+  });
+  if (active) return active.id;
+
+  // 2) Fallback: nearest section top to anchor line.
+  let nearest = '';
+  let bestDist = Number.POSITIVE_INFINITY;
+  sections.forEach((section) => {
+    const dist = Math.abs(section.getBoundingClientRect().top - anchorY);
+    if (dist < bestDist) {
+      bestDist = dist;
+      nearest = section.id;
+    }
+  });
+  return nearest;
+}
+
 function switchLanguage(lang) {
   const currentPath = window.location.pathname;
   const isGhPages = currentPath.startsWith('/ai-proofduck-extension');
@@ -387,18 +414,8 @@ function switchLanguage(lang) {
   // keep the currently visible section when switching language
   let hash = window.location.hash;
   if (!hash && window.scrollY > 100) {
-    const sections = document.querySelectorAll('section[id]');
-    let maxVisibility = 0;
-    let visibleId = '';
-    sections.forEach(section => {
-      const rect = section.getBoundingClientRect();
-      const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
-      if (visibleHeight > maxVisibility) {
-        maxVisibility = visibleHeight;
-        visibleId = section.id;
-      }
-    });
-    if (visibleId) hash = `#${visibleId}`;
+    const id = detectCurrentSectionId();
+    if (id) hash = `#${id}`;
   }
 
   // strip base + language prefix
