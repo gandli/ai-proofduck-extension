@@ -98,6 +98,36 @@ jobs:
             dist/*.zip
             dist/*.crx
 
+      - name: Auto-update Unreleased changelog (main push)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.release_meta.outputs.tag == '' && github.actor != 'github-actions[bot]'
+        shell: bash
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [[ -n "$LAST_TAG" ]]; then
+            RANGE="${LAST_TAG}..HEAD"
+          else
+            RANGE="HEAD~15..HEAD"
+          fi
+
+          TMP=/tmp/unreleased_items.md
+          git log --no-merges --pretty='- %s (%h)' $RANGE | head -n 20 > "$TMP"
+          if [[ ! -s "$TMP" ]]; then
+            echo "- (auto) no new commits since last release." > "$TMP"
+          fi
+
+          awk '
+            BEGIN{inblk=0}
+            /<!-- AUTO-UNRELEASED-START -->/{print; system("cat /tmp/unreleased_items.md"); inblk=1; next}
+            /<!-- AUTO-UNRELEASED-END -->/{inblk=0; print; next}
+            !inblk{print}
+          ' CHANGELOG.md > /tmp/CHANGELOG.md && mv /tmp/CHANGELOG.md CHANGELOG.md
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "docs(changelog): refresh unreleased section" || true
+          git push origin HEAD:main || true
+
       - name: Build Changelog
         if: steps.release_meta.outputs.tag != ''
         id: build_changelog
