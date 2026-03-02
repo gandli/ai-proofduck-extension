@@ -2,6 +2,7 @@
 let currentLang = localStorage.getItem("preferredLang") || "en";
 let translations = {};
 const CHANGELOG_RAW_URL = 'https://raw.githubusercontent.com/gandli/ai-proofduck-extension/main/CHANGELOG.md';
+const LANG_SWITCH_SCROLL_KEY = 'langSwitchScrollState';
 
 // Initialize language
 async function initLang() {
@@ -363,6 +364,7 @@ function init() {
     showSlides(slideIndex);
   }
 
+  restoreScrollAfterLanguageSwitch();
   toggleBackToTopButton();
 }
 
@@ -395,31 +397,29 @@ document.addEventListener('click', (e) => {
 
 
 
-function detectCurrentSectionId() {
-  const sections = Array.from(document.querySelectorAll('section[id]'));
-  if (!sections.length) return '';
+function restoreScrollAfterLanguageSwitch() {
+  try {
+    const raw = sessionStorage.getItem(LANG_SWITCH_SCROLL_KEY);
+    if (!raw) return;
 
-  // Use navbar-aware anchor line instead of max visible area.
-  const anchorY = 140;
-
-  // 1) Section currently crossing anchor line.
-  const active = sections.find((section) => {
-    const rect = section.getBoundingClientRect();
-    return rect.top <= anchorY && rect.bottom > anchorY;
-  });
-  if (active) return active.id;
-
-  // 2) Fallback: nearest section top to anchor line.
-  let nearest = '';
-  let bestDist = Number.POSITIVE_INFINITY;
-  sections.forEach((section) => {
-    const dist = Math.abs(section.getBoundingClientRect().top - anchorY);
-    if (dist < bestDist) {
-      bestDist = dist;
-      nearest = section.id;
+    const state = JSON.parse(raw);
+    const isFresh = Date.now() - (state.ts || 0) < 15000;
+    if (!isFresh) {
+      sessionStorage.removeItem(LANG_SWITCH_SCROLL_KEY);
+      return;
     }
-  });
-  return nearest;
+
+    const y = Math.max(0, Number(state.y) || 0);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: y, behavior: 'auto' });
+        sessionStorage.removeItem(LANG_SWITCH_SCROLL_KEY);
+        toggleBackToTopButton();
+      });
+    });
+  } catch (_) {
+    sessionStorage.removeItem(LANG_SWITCH_SCROLL_KEY);
+  }
 }
 
 function switchLanguage(lang) {
@@ -427,12 +427,15 @@ function switchLanguage(lang) {
   const isGhPages = currentPath.startsWith('/ai-proofduck-extension');
   const basePrefix = isGhPages ? '/ai-proofduck-extension' : '';
 
-  // keep the currently visible section when switching language
-  let hash = window.location.hash;
-  if (!hash && window.scrollY > 100) {
-    const id = detectCurrentSectionId();
-    if (id) hash = `#${id}`;
-  }
+  // keep exact visual position across language pages
+  try {
+    sessionStorage.setItem(
+      LANG_SWITCH_SCROLL_KEY,
+      JSON.stringify({ y: window.scrollY, ts: Date.now() })
+    );
+  } catch (_) {}
+
+  const hash = window.location.hash;
 
   // strip base + language prefix
   let relative = currentPath;
