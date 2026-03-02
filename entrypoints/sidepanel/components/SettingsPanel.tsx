@@ -83,6 +83,29 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
         {settings.engine === 'online' && (
           <div className="flex flex-col gap-3 p-4 bg-white border border-slate-200 rounded-xl dark:bg-brand-dark-surface dark:border-slate-700">
             <h3 className="m-0 text-sm font-bold text-slate-800 dark:text-slate-200">{t.api_config}</h3>
+            <div className="flex gap-2 flex-wrap">
+              <button
+                type="button"
+                className="px-2.5 py-1.5 text-[12px] rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
+                onClick={() => updateSettings({
+                  apiBaseUrl: 'https://openrouter.ai/api/v1',
+                  apiModel: 'openrouter/openrouter/free',
+                })}
+              >
+                {t.preset_openrouter_free || 'Use OpenRouter free preset'}
+              </button>
+              <button
+                type="button"
+                className="px-2.5 py-1.5 text-[12px] rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
+                onClick={() => updateSettings({
+                  apiBaseUrl: 'https://api.cloudflare.com/client/v4/accounts/<ACCOUNT_ID>/ai/v1',
+                  apiModel: 'cloudflare-ai/@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+                })}
+              >
+                {t.preset_cloudflare || 'Use Cloudflare AI preset'}
+              </button>
+            </div>
+            <small className="text-[11px] text-slate-400">{t.preset_cloudflare_hint || 'For Cloudflare, replace <ACCOUNT_ID> in Base URL with your account id.'}</small>
             <div className="flex flex-col gap-1.5">
               <label className={labelClass}>API Base URL</label>
               <input className={inputClass} type="text" value={settings.apiBaseUrl} onChange={e => updateSettings({ apiBaseUrl: e.target.value })} />
