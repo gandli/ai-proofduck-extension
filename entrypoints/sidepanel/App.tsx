@@ -37,6 +37,8 @@ function App() {
     setModeResults, setGeneratingModes, setSelectedText, setShowSettings,
   });
 
+  const t = translations[settings.extensionLanguage] || translations['中文'];
+
   const handleFetchContent = async (onComplete?: (text: string) => void) => {
     setError('');
     try {
@@ -119,7 +121,7 @@ function App() {
     }, postMessage);
     setError(t.fallback_free_api_note || 'Switched to online free API preset. Please configure API key.');
     setShowSettings(true);
-  }, [postMessage, setError, setShowSettings, t.fallback_free_api_note, updateSettings]);
+  }, [postMessage, setError, setShowSettings, t, updateSettings]);
 
   const handleCopyResult = useCallback(() => {
     const text = modeResults[mode];
@@ -131,8 +133,6 @@ function App() {
   }, [modeResults, mode]);
 
   const handleOpenSettings = useCallback(() => setShowSettings(true), [setShowSettings]);
-
-  const t = translations[settings.extensionLanguage] || translations['中文'];
 
   if (isInitializing) {
     return (
