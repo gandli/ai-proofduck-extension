@@ -75,6 +75,8 @@ export const translations: Record<string, any> = {
         history_label: '最近使用',
         select_category: '选择分类',
         fetch_page_content: '获取网页内容',
+        translate_full_page: '翻译全文',
+        translate_full_page_short: '全文翻译',
         chrome_ai_guidance_title: '如何开启 Chrome 内置 AI (Gemini Nano)：',
         chrome_ai_guidance_steps: [
             '1. 确保 Chrome 版本为 127 或更高。',
@@ -165,6 +167,8 @@ export const translations: Record<string, any> = {
         history_label: 'Recently Used',
         select_category: 'Select Category',
         fetch_page_content: 'Fetch Page Content',
+        translate_full_page: 'Translate Full Page',
+        translate_full_page_short: 'Full Translate',
         chrome_ai_guidance_title: 'How to enable Chrome Built-in AI (Gemini Nano):',
         chrome_ai_guidance_steps: [
             'Please make sure you are using Chrome version 127 or higher.',

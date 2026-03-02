@@ -21,7 +21,7 @@ interface WorkerMessage {
 function App() {
   const [selectedText, setSelectedText] = useState('');
   const [modeResults, setModeResults] = useState(emptyModeResults());
-  const [mode, setMode] = useState<ModeKey>('summarize');
+  const [mode, setMode] = useState<ModeKey>('translate');
   const [generatingModes, setGeneratingModes] = useState(emptyGeneratingModes());
   const [copied, setCopied] = useState(false);
 
@@ -58,6 +58,13 @@ function App() {
   const handleClear = () => {
     setSelectedText('');
     setModeResults({ summarize: '', correct: '', proofread: '', translate: '', expand: '' });
+  };
+
+  const handleTranslateFullPage = async () => {
+    setMode('translate');
+    await handleFetchContent((text) => {
+      setTimeout(() => handleAction(text, 'translate'), 50);
+    });
   };
 
   const handleAction = useCallback((overrideText?: string, overrideMode?: ModeKey) => {
@@ -162,6 +169,7 @@ function App() {
             <div className="flex gap-1.5">
               <button className="flex items-center justify-center p-1.5 text-slate-500 transition-all bg-white border border-slate-200 rounded-md cursor-pointer shadow-sm hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange hover:shadow-md hover:-translate-y-px dark:bg-brand-dark-surface dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]" onClick={() => { setSelectedText(''); setModeResults(emptyModeResults()); }} title={t.clear_btn || 'Clear'} aria-label={t.clear_btn || 'Clear'}><ClearIcon /></button>
               <button className="flex items-center justify-center p-1.5 transition-all border rounded-md cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-px bg-brand-orange-light border-brand-orange/20 text-brand-orange hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange dark:bg-brand-dark-surface dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]" onClick={() => handleFetchContent()} title={t.fetch_page_content || 'Fetch Page Content'} aria-label={t.fetch_page_content || 'Fetch Page Content'}><FetchIcon /></button>
+              <button className="px-2 py-1 text-[11px] font-semibold transition-all border rounded-md cursor-pointer shadow-sm bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-brand-dark-surface dark:border-slate-700 dark:text-slate-300" onClick={handleTranslateFullPage} title={t.translate_full_page || 'Translate Full Page'} aria-label={t.translate_full_page || 'Translate Full Page'}>{t.translate_full_page_short || '全文翻译'}</button>
             </div>
           </div>
           <div className="relative flex flex-col flex-1 min-h-0">
