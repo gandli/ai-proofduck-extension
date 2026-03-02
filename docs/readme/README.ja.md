@@ -1,9 +1,9 @@
 <div align="center">
   <h1>AI proofduck</h1>
-  <img src="public/icon.svg" alt="AI proofduck Logo" width="128" height="128" />
+  <img src="../../public/icon.svg" alt="AI proofduck Logo" width="128" height="128" />
 </div>
 
-[English](./README.md) | [中文](./README.zh-CN.md) | [한국어](./README.ko.md) | [Español](./README.es.md) | [Français](./README.fr.md) | [Changelog](./CHANGELOG.md)
+[English](../../README.md) | [中文](./README.zh-CN.md) | [한국어](./README.ko.md) | [Español](./README.es.md) | [Français](./README.fr.md) | [Changelog](../../CHANGELOG.md)
 
 ---
 
@@ -68,4 +68,4 @@ npm run build
 
 ## 📄 ライセンス
 
-[MIT](LICENSE)
+[MIT](../../LICENSE)

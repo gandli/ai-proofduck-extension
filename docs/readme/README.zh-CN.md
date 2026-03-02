@@ -1,9 +1,9 @@
 <div align="center">
   <h1>AI 校对鸭 (AI proofduck)</h1>
-  <img src="public/icon.svg" alt="AI proofduck Logo" width="128" height="128" />
+  <img src="../../public/icon.svg" alt="AI proofduck Logo" width="128" height="128" />
 </div>
 
-[English](./README.md) | [日本語](./README.ja.md) | [한국어](./README.ko.md) | [Español](./README.es.md) | [Français](./README.fr.md) | [Changelog](./CHANGELOG.md)
+[English](../../README.md) | [日本語](./README.ja.md) | [한국어](./README.ko.md) | [Español](./README.es.md) | [Français](./README.fr.md) | [Changelog](../../CHANGELOG.md)
 
 ---
 
@@ -13,21 +13,21 @@
   <table style="width: 100%; border-collapse: collapse; border: none;">
     <tr>
       <td align="center" style="border: none;">
-        <img src="store-assets/screenshot-en-summarize.png" width="300" alt="摘要功能" /><br/>
+        <img src="../../store-assets/screenshot-en-summarize.png" width="300" alt="摘要功能" /><br/>
         <sub>摘要界面 (英文)</sub>
       </td>
       <td align="center" style="border: none;">
-        <img src="store-assets/screenshot-en-translate.png" width="300" alt="翻译功能" /><br/>
+        <img src="../../store-assets/screenshot-en-translate.png" width="300" alt="翻译功能" /><br/>
         <sub>翻译界面 (英文)</sub>
       </td>
     </tr>
     <tr>
       <td align="center" style="border: none;">
-        <img src="store-assets/screenshot-zh-proofread.png" width="300" alt="润色功能" /><br/>
+        <img src="../../store-assets/screenshot-zh-proofread.png" width="300" alt="润色功能" /><br/>
         <sub>润色界面 (中文)</sub>
       </td>
       <td align="center" style="border: none;">
-        <img src="store-assets/screenshot-zh-settings.png" width="300" alt="设置界面" /><br/>
+        <img src="../../store-assets/screenshot-zh-settings.png" width="300" alt="设置界面" /><br/>
         <sub>设置面板</sub>
       </td>
     </tr>
@@ -155,4 +155,4 @@ AI 校对鸭是一款专注于提升网页文本写作质量的智能辅助工�
 
 ## 📄 许可证
 
-[MIT](LICENSE)
+[MIT](../../LICENSE)
