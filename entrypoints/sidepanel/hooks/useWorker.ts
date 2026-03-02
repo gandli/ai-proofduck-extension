@@ -2,10 +2,10 @@ import { useEffect, useRef, useCallback } from 'react';
 import {
   ModeKey,
   Settings,
-  WorkerOutboundMessage,
   emptyModeResults,
   emptyGeneratingModes,
 } from '../types';
+import { getSystemPrompt, formatUserPrompt, LANG_MAP } from '../worker-utils';
 
 interface UseWorkerOptions {
   settingsRef: React.RefObject<Settings>;
@@ -19,6 +19,29 @@ interface UseWorkerOptions {
   setShowSettings: (s: boolean) => void;
 }
 
+function getChromeModelApi() {
+  const ai = (globalThis as any).ai;
+  return ai?.languageModel || (globalThis as any).LanguageModel || null;
+}
+
+async function checkChromeAiAvailability() {
+  const modelApi = getChromeModelApi();
+  if (!modelApi) {
+    throw new Error(
+      "Chrome Built-in AI API unavailable. Please enable Prompt API flags and update model component.",
+    );
+  }
+
+  if (typeof modelApi.capabilities === 'function') {
+    const caps = await modelApi.capabilities();
+    if (!caps || caps.available === 'no') {
+      throw new Error('Chrome Built-in AI model not available or not downloaded');
+    }
+  }
+
+  return modelApi;
+}
+
 export function useWorker(opts: UseWorkerOptions) {
   const {
     settingsRef, statusRef,
@@ -29,6 +52,62 @@ export function useWorker(opts: UseWorkerOptions) {
 
   // Track the latest QUICK_TRANSLATE requestId
   const pendingQuickTranslateId = useRef<string | null>(null);
+
+  const runChromeAiGenerate = useCallback(async (msg: { text: string; mode: ModeKey; settings: Settings; requestId?: string }) => {
+    try {
+      const modelApi = await checkChromeAiAvailability();
+      const systemPrompt = getSystemPrompt(msg.mode, msg.settings);
+      const targetLang = LANG_MAP[msg.settings.extensionLanguage || '中文'] || msg.settings.extensionLanguage || 'Chinese';
+      const finalPrompt = formatUserPrompt(msg.text, msg.mode, targetLang);
+
+      const session = await modelApi.create({ systemPrompt });
+      const stream = await session.promptStreaming(finalPrompt);
+
+      let fullText = '';
+      let lastUpdateTime = 0;
+
+      if (stream && typeof stream.getReader === 'function') {
+        const reader = stream.getReader();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = typeof value === 'string' ? value : String(value ?? '');
+          if (fullText && chunk.startsWith(fullText)) fullText = chunk;
+          else fullText += chunk;
+          const now = Date.now();
+          if (now - lastUpdateTime >= 50) {
+            setModeResults(prev => ({ ...prev, [msg.mode]: fullText }));
+            setGeneratingModes(prev => ({ ...prev, [msg.mode]: true }));
+            lastUpdateTime = now;
+          }
+        }
+      } else {
+        for await (const part of stream) {
+          const chunk = typeof part === 'string' ? part : (part as any)?.content || String(part ?? '');
+          if (chunk) {
+            fullText += chunk;
+            const now = Date.now();
+            if (now - lastUpdateTime >= 50) {
+              setModeResults(prev => ({ ...prev, [msg.mode]: fullText }));
+              setGeneratingModes(prev => ({ ...prev, [msg.mode]: true }));
+              lastUpdateTime = now;
+            }
+          }
+        }
+      }
+
+      if (typeof session.destroy === 'function') {
+        await session.destroy();
+      }
+      setModeResults(prev => ({ ...prev, [msg.mode]: fullText }));
+      setGeneratingModes(prev => ({ ...prev, [msg.mode]: false }));
+      setError('');
+    } catch (e: unknown) {
+      const err = e instanceof Error ? e.message : String(e);
+      setError(`${msg.mode}: ${err}`);
+      setGeneratingModes(prev => ({ ...prev, [msg.mode]: false }));
+    }
+  }, [setError, setGeneratingModes, setModeResults]);
 
   useEffect(() => {
     // Listen for storage change to sync selection or settings tab
@@ -150,7 +229,30 @@ export function useWorker(opts: UseWorkerOptions) {
   }, []);
 
   const postMessage = useCallback((msg: any) => {
-    // Send to background instead of local worker
+    // Chrome built-in AI runs in sidepanel context for better API availability.
+    if (msg.type === 'load' && msg.settings?.engine === 'chrome-ai') {
+      setStatus('loading');
+      setProgress({ progress: 30, text: 'Checking Chrome Built-in AI...' });
+      checkChromeAiAvailability()
+        .then(() => {
+          setStatus('ready');
+          setProgress({ progress: 100, text: 'Chrome AI ready' });
+          setError('');
+        })
+        .catch((e: unknown) => {
+          const err = e instanceof Error ? e.message : String(e);
+          setStatus('error');
+          setError(`Load Error: ${err}`);
+        });
+      return;
+    }
+
+    if (msg.type === 'generate' && msg.settings?.engine === 'chrome-ai') {
+      runChromeAiGenerate(msg);
+      return;
+    }
+
+    // Send to background/offscreen for other engines
     if (msg.type === 'load') {
       browser.runtime.sendMessage({ type: 'INIT_ENGINE', settings: msg.settings });
     } else if (msg.type === 'generate') {
@@ -158,7 +260,7 @@ export function useWorker(opts: UseWorkerOptions) {
     } else if (msg.type === 'reset') {
       browser.runtime.sendMessage({ type: 'RESET_ENGINE' });
     }
-  }, []);
+  }, [runChromeAiGenerate, setError, setProgress, setStatus]);
 
   return { postMessage };
 }
