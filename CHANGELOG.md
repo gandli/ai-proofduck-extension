@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 <!-- AUTO-UNRELEASED-START -->
-- (auto) waiting for new commits on `main`.
+- ci(changelog): auto-refresh Unreleased section on main pushes (0b55aa5)
+- chore(docs): move multilingual READMEs into docs/readme (0bc0ea0)
+- docs(changelog): update for v0.1.5 (cd95888)
 <!-- AUTO-UNRELEASED-END -->
 
 ## [v0.1.5] - 2026-03-02
