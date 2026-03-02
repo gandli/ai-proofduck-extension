@@ -303,16 +303,11 @@ function startSlideTimer() {
   }, 5000); // Auto advance every 5 seconds
 }
 
-// Initialize on load
-window.addEventListener("DOMContentLoaded", () => {
-  initLang();
+let listenersBound = false;
 
-  // Initialize slideshow
-  const slides = document.getElementsByClassName("slide");
-  if (slides.length > 0) {
-    showSlides(slideIndex);
-    startSlideTimer();
-  }
+function bindUiListeners() {
+  if (listenersBound) return;
+  listenersBound = true;
 
   // Setup language switchers
   document.querySelectorAll('.lang-btn').forEach(btn => {
@@ -329,22 +324,31 @@ window.addEventListener("DOMContentLoaded", () => {
       img.addEventListener("click", () => openGallery(index));
     });
   }
+}
+
+// Initialize on load
+window.addEventListener("DOMContentLoaded", () => {
+  initLang();
+
+  // Initialize slideshow
+  const slides = document.getElementsByClassName("slide");
+  if (slides.length > 0) {
+    showSlides(slideIndex);
+    startSlideTimer();
+  }
+
+  bindUiListeners();
 });
 
 // Smooth scroll to top for home link
 // Initialize on page load and astro transitions
 function init() {
-  // We no longer call setLang() here with a hardcoded default, 
-  // because initLang() already handles it via initial detection.
-  
-  // Re-setup slideshow and gallery triggers if they exist
+  // Re-bind listeners safely for Astro transitions.
+  bindUiListeners();
+
   if (document.querySelector(".slideshow-container")) {
     showSlides(slideIndex);
   }
-
-  // Handle anchors with smooth scroll
-  // Removed strict scroll enforcement to allow native browser scroll restoration
-
 }
 
 document.addEventListener('DOMContentLoaded', init);
@@ -376,44 +380,16 @@ document.addEventListener('click', (e) => {
 
 
 function switchLanguage(lang) {
-  let hash = window.location.hash;
   const currentPath = window.location.pathname;
-  let newPath = currentPath;
+  const isGhPages = currentPath.startsWith('/ai-proofduck-extension');
+  const basePrefix = isGhPages ? '/ai-proofduck-extension' : '';
 
-  // Simple and robust path handling
-  if (lang === 'zh') {
-    if (!currentPath.includes('/zh/')) {
-      // Handle base path for gh-pages or root
-      const isGH = currentPath.includes('/ai-proofduck-extension');
-      if (isGH) {
-        newPath = currentPath.replace('/ai-proofduck-extension/', '/ai-proofduck-extension/zh/');
-      } else {
-        newPath = '/zh' + currentPath;
-      }
-    }
-  } else {
-    if (currentPath.includes('/zh/')) {
-      newPath = currentPath.replace('/zh/', '/');
-    }
-  }
-
-  // Final URL construction (avoiding triple slashes)
-  let finalUrl = newPath;
-  if (!finalUrl.endsWith('/') && !finalUrl.includes('.')) {
-    finalUrl += '/';
-  }
-  finalUrl = finalUrl.replace(/\/+/g, '/');
-  if (!finalUrl.startsWith('/')) finalUrl = '/' + finalUrl;
-  
-  // Re-append hash securely
-  if (hash) finalUrl += hash;
-
-  // Detect visible section if no hash is present
+  // keep the currently visible section when switching language
+  let hash = window.location.hash;
   if (!hash && window.scrollY > 100) {
     const sections = document.querySelectorAll('section[id]');
     let maxVisibility = 0;
     let visibleId = '';
-
     sections.forEach(section => {
       const rect = section.getBoundingClientRect();
       const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
@@ -422,13 +398,33 @@ function switchLanguage(lang) {
         visibleId = section.id;
       }
     });
-    
-    if (visibleId) {
-      finalUrl += `#${visibleId}`;
-    }
+    if (visibleId) hash = `#${visibleId}`;
   }
 
-  window.location.href = finalUrl;
+  // strip base + language prefix
+  let relative = currentPath;
+  if (basePrefix && relative.startsWith(basePrefix)) {
+    relative = relative.slice(basePrefix.length);
+  }
+  if (!relative.startsWith('/')) relative = '/' + relative;
+
+  const hasZh = relative === '/zh' || relative.startsWith('/zh/');
+  if (hasZh) {
+    relative = relative.replace(/^\/zh(?=\/|$)/, '') || '/';
+  }
+
+  let targetRelative = relative;
+  if (lang === 'zh') {
+    targetRelative = relative === '/' ? '/zh/' : `/zh${relative}`;
+  }
+
+  // normalize trailing slash for route pages
+  if (!targetRelative.includes('.') && !targetRelative.endsWith('/')) {
+    targetRelative += '/';
+  }
+
+  const finalUrl = `${basePrefix}${targetRelative}${hash || ''}`;
+  window.location.assign(finalUrl);
 }
 
 window.switchLanguage = switchLanguage;
