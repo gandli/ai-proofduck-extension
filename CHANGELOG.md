@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 <!-- AUTO-UNRELEASED-START -->
+- docs(changelog): fill missing v0.1.5 release notes (6839c8c)
+- docs(changelog): refresh unreleased section (169350e)
 - ci(changelog): auto-refresh Unreleased section on main pushes (0b55aa5)
 - chore(docs): move multilingual READMEs into docs/readme (0bc0ea0)
 - docs(changelog): update for v0.1.5 (cd95888)
