@@ -103,6 +103,16 @@ function App() {
 
   const modeDef = MODES.find(m => m.key === mode)!;
 
+  const handleUseFreeApiFallback = useCallback(() => {
+    updateSettings({
+      engine: 'online',
+      apiBaseUrl: 'https://openrouter.ai/api/v1',
+      apiModel: 'openrouter/openrouter/free',
+    }, postMessage);
+    setError(t.fallback_free_api_note || 'Switched to online free API preset. Please configure API key.');
+    setShowSettings(true);
+  }, [postMessage, setError, setShowSettings, t.fallback_free_api_note, updateSettings]);
+
   const handleCopyResult = useCallback(() => {
     const text = modeResults[mode];
     if (!text) return;
@@ -178,6 +188,12 @@ function App() {
                     </li>
                   ))}
                 </ol>
+                <button
+                  onClick={handleUseFreeApiFallback}
+                  className="mt-3 w-full py-2 px-3 text-[12px] font-semibold rounded-lg bg-brand-orange text-white hover:bg-brand-orange-dark transition-all"
+                >
+                  {t.fallback_free_api_btn || 'Switch to free API fallback'}
+                </button>
               </div>
             )}
           </div>
