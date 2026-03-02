@@ -18,6 +18,16 @@
   </p>
 
   <p>
+    🌐 Languages:
+    <a href="./README.md">English</a> |
+    <a href="./README.zh-CN.md">简体中文</a> |
+    <a href="./README.ja.md">日本語</a> |
+    <a href="./README.ko.md">한국어</a> |
+    <a href="./README.es.md">Español</a> |
+    <a href="./README.fr.md">Français</a>
+  </p>
+
+  <p>
     <a href="https://astro.build"><img src="https://img.shields.io/badge/Built%20with-Astro%205.0-orange?style=flat-square&logo=astro" alt="Built with Astro"></a>
     <a href="https://tailwindcss.com"><img src="https://img.shields.io/badge/Styled%20with-Tailwind-38B2AC?style=flat-square&logo=tailwind-css" alt="Styled with Tailwind CSS"></a>
     <a href="https://lucide.dev"><img src="https://img.shields.io/badge/Icons-Lucide-pink?style=flat-square&logo=lucide" alt="Lucide Icons"></a>
