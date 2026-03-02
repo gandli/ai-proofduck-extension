@@ -104,6 +104,7 @@ function App() {
   const modeDef = MODES.find(m => m.key === mode)!;
 
   const handleUseFreeApiFallback = useCallback(() => {
+    sessionStorage.setItem('focusApiKey', '1');
     updateSettings({
       engine: 'online',
       apiBaseUrl: 'https://openrouter.ai/api/v1',

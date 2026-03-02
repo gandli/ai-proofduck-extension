@@ -79,7 +79,8 @@ export const translations: Record<string, any> = {
             '4. 访问 chrome://components，找到 "Optimization Guide On Device Model" 并点击 "Check for Update" 下载模型。如果没看到，请重启浏览器并刷新页面。'
         ],
         fallback_free_api_btn: '改用免费 API 方案',
-        fallback_free_api_note: '已切换到在线 API（免费模型预设），请在设置中填写 API Key。'
+        fallback_free_api_note: '已切换到在线 API（免费模型预设），请在设置中填写 API Key。',
+        api_key_hint: '可使用 OpenRouter 免费模型，或任意 OpenAI 兼容服务商的 API Key。'
     },
     'English': {
         title: 'AI Assistant',
@@ -161,7 +162,8 @@ export const translations: Record<string, any> = {
             "chrome://components\nClick 'Check for Update' on Optimization Guide On Device Model to download the model. If you don't see Optimization Guide, ensure you have set the flags correctly above, relaunch your browser, and refresh the page."
         ],
         fallback_free_api_btn: 'Switch to free API fallback',
-        fallback_free_api_note: 'Switched to Online API (free-model preset). Please provide your API key in settings.'
+        fallback_free_api_note: 'Switched to Online API (free-model preset). Please provide your API key in settings.',
+        api_key_hint: 'Use a free OpenRouter key, or any OpenAI-compatible provider API key.'
     },
     '日本語': {
         title: 'AIアシスタント',

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Settings } from '../types';
 import { CloseIcon } from './Icons';
 import { ModelImportExport } from './ModelImportExport';
@@ -20,6 +21,18 @@ const inputClass = selectClass;
 const labelClass = "text-[11px] text-slate-500 font-semibold uppercase dark:text-slate-400";
 
 export function SettingsPanel({ settings, updateSettings, onClose, status, setStatus, setProgress, setError, postMessage, t }: SettingsPanelProps) {
+  const apiKeyInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (settings.engine !== 'online') return;
+    const shouldFocus = sessionStorage.getItem('focusApiKey') === '1';
+    if (shouldFocus && apiKeyInputRef.current) {
+      apiKeyInputRef.current.focus();
+      apiKeyInputRef.current.select();
+      sessionStorage.removeItem('focusApiKey');
+    }
+  }, [settings.engine]);
+
   return (
     <div className="fixed inset-0 z-[1000] flex items-end justify-center bg-black/40 backdrop-blur-[4px]">
       <div className="flex flex-col gap-4 w-full p-6 pb-4 bg-[#fbfbfb] rounded-t-[20px] max-h-[90vh] overflow-y-auto shadow-[-10px_25px_rgba(0,0,0,0.1)] animate-slideInUp dark:bg-brand-dark-bg dark:shadow-[-10px_25px_rgba(0,0,0,0.3)]">
@@ -76,7 +89,8 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
             </div>
             <div className="flex flex-col gap-1.5">
               <label className={labelClass}>API Key</label>
-              <input className={inputClass} type="password" value={settings.apiKey} onChange={e => updateSettings({ apiKey: e.target.value })} />
+              <input ref={apiKeyInputRef} className={inputClass} type="password" value={settings.apiKey} onChange={e => updateSettings({ apiKey: e.target.value })} />
+              <small className="text-[11px] text-slate-400">{t.api_key_hint || 'Get a free key from OpenRouter or your preferred OpenAI-compatible provider.'}</small>
             </div>
             <div className="flex flex-col gap-1.5">
               <label className={labelClass}>Model ID</label>
