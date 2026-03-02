@@ -16,6 +16,7 @@ export interface Settings {
   apiKey: string;
   apiModel: string;
   autoSpeak: boolean;
+  translateFallback?: 'none' | 'google-free' | 'mymemory';
   readyConfigs?: string[]; // track "ready" local model keys, e.g. ["local-gpu:Qwen2.5-0.5B"]
   failedConfigs?: string[]; // track "failed" local model keys
 }
@@ -31,6 +32,7 @@ export const DEFAULT_SETTINGS: Settings = {
   apiKey: '',
   apiModel: 'gpt-3.5-turbo',
   autoSpeak: false,
+  translateFallback: 'google-free',
   readyConfigs: [],
   failedConfigs: [],
 };

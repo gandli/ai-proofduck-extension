@@ -142,6 +142,14 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
               <option value="creative">{t.detail_creative}</option>
             </select>
           </div>
+          <div className="flex flex-col gap-1.5">
+            <label className={labelClass}>{t.translate_fallback_label || 'Translation Fallback'}</label>
+            <select className={selectClass} value={settings.translateFallback || 'google-free'} onChange={e => updateSettings({ translateFallback: e.target.value as any })}>
+              <option value="none">{t.translate_fallback_none || 'Disabled (AI only)'}</option>
+              <option value="google-free">{t.translate_fallback_google || 'Google free translate endpoint'}</option>
+              <option value="mymemory">{t.translate_fallback_mymemory || 'MyMemory free translate API'}</option>
+            </select>
+          </div>
           <div className="flex items-center gap-2.5 mt-1">
             <input type="checkbox" id="autoSpeak" checked={settings.autoSpeak} onChange={e => updateSettings({ autoSpeak: e.target.checked })} className="w-4 h-4 cursor-pointer" />
             <label htmlFor="autoSpeak" className="cursor-pointer mb-0">{t.auto_speak_label}</label>

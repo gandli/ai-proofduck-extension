@@ -24,6 +24,35 @@ function getChromeModelApi() {
   return ai?.languageModel || (globalThis as any).LanguageModel || null;
 }
 
+async function runTranslateFallback(text: string, targetLanguage: string, provider: 'none' | 'google-free' | 'mymemory' = 'google-free') {
+  const target = targetLanguage === '中文' ? 'zh-CN' :
+    targetLanguage === 'English' ? 'en' :
+    targetLanguage === '日本語' ? 'ja' :
+    targetLanguage === '한국어' ? 'ko' :
+    targetLanguage === 'Français' ? 'fr' :
+    targetLanguage === 'Deutsch' ? 'de' :
+    targetLanguage === 'Español' ? 'es' : 'en';
+
+  if (provider === 'none') throw new Error('Translation fallback is disabled');
+
+  if (provider === 'mymemory') {
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=auto|${encodeURIComponent(target)}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`MyMemory fallback failed: ${res.status}`);
+    const data = await res.json();
+    const out = data?.responseData?.translatedText;
+    if (!out) throw new Error('MyMemory fallback returned empty result');
+    return out;
+  }
+
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${encodeURIComponent(target)}&dt=t&q=${encodeURIComponent(text)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Google fallback failed: ${res.status}`);
+  const data = await res.json();
+  if (!Array.isArray(data) || !Array.isArray(data[0])) throw new Error('Google fallback parse failed');
+  return data[0].map((chunk: any[]) => chunk?.[0] || '').join('');
+}
+
 async function checkChromeAiAvailability() {
   const modelApi = getChromeModelApi();
   if (!modelApi) {
@@ -104,7 +133,24 @@ export function useWorker(opts: UseWorkerOptions) {
       setError('');
     } catch (e: unknown) {
       const err = e instanceof Error ? e.message : String(e);
-      setError(`${msg.mode}: ${err}`);
+      if (msg.mode === 'translate') {
+        try {
+          const fallback = await runTranslateFallback(
+            msg.text,
+            msg.settings.extensionLanguage || '中文',
+            msg.settings.translateFallback || 'google-free',
+          );
+          setModeResults(prev => ({ ...prev, [msg.mode]: fallback }));
+          setGeneratingModes(prev => ({ ...prev, [msg.mode]: false }));
+          setError('');
+          return;
+        } catch (fallbackErr) {
+          const ferr = fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr);
+          setError(`${msg.mode}: ${err} | fallback failed: ${ferr}`);
+        }
+      } else {
+        setError(`${msg.mode}: ${err}`);
+      }
       setGeneratingModes(prev => ({ ...prev, [msg.mode]: false }));
     }
   }, [setError, setGeneratingModes, setModeResults]);
@@ -252,6 +298,31 @@ export function useWorker(opts: UseWorkerOptions) {
       return;
     }
 
+    if (
+      msg.type === 'generate' &&
+      msg.mode === 'translate' &&
+      msg.settings?.engine === 'online' &&
+      !msg.settings?.apiKey
+    ) {
+      setGeneratingModes(prev => ({ ...prev, [msg.mode]: true }));
+      runTranslateFallback(
+        msg.text,
+        msg.settings.extensionLanguage || '中文',
+        msg.settings.translateFallback || 'google-free',
+      )
+        .then((translated) => {
+          setModeResults(prev => ({ ...prev, [msg.mode]: translated }));
+          setGeneratingModes(prev => ({ ...prev, [msg.mode]: false }));
+          setError('');
+        })
+        .catch((e: unknown) => {
+          const err = e instanceof Error ? e.message : String(e);
+          setGeneratingModes(prev => ({ ...prev, [msg.mode]: false }));
+          setError(`translate: ${err}`);
+        });
+      return;
+    }
+
     // Send to background/offscreen for other engines
     if (msg.type === 'load') {
       browser.runtime.sendMessage({ type: 'INIT_ENGINE', settings: msg.settings });
@@ -260,7 +331,7 @@ export function useWorker(opts: UseWorkerOptions) {
     } else if (msg.type === 'reset') {
       browser.runtime.sendMessage({ type: 'RESET_ENGINE' });
     }
-  }, [runChromeAiGenerate, setError, setProgress, setStatus]);
+  }, [runChromeAiGenerate, setError, setGeneratingModes, setModeResults, setProgress, setStatus]);
 
   return { postMessage };
 }
