@@ -36,7 +36,13 @@
 
 ---
 
-**AI proofduck** is an intelligent writing assistant extension for your browser sidepanel. Powered by advanced AI models (supporting both local WebGPU/WASM and online APIs), it provides real-time summarization, pivoting, proofreading, translation, and expansion of text.
+**AI proofduck** is a hybrid writing assistant extension for your browser sidepanel.
+
+It uses a **local-first routing strategy**:
+1. Chrome Built-in AI (Gemini Nano) when available
+2. Local WebGPU/WASM models as private on-device alternatives
+3. Online APIs for cloud-enhanced quality
+4. Translation-only fallback services to keep translation usable after install
 
 ## ✨ Features
 
@@ -46,8 +52,9 @@
   - **Proofread**: Polish sentences for better flow and professionalism.
   - **Translate**: Accurate translation between languages.
   - **Expand**: Enrich details based on existing content.
-- **🔒 Privacy First (Local Models)**: Run LLMs locally via WebGPU/WASM (e.g., Qwen2.5). Your data never leaves your browser.
-- **🌐 Online Model Support**: Compatible with OpenAI-format APIs for connecting to powerful cloud models.
+- **🔒 Local-First Privacy Path**: Prefer Chrome Built-in AI or local WebGPU/WASM models (e.g., Qwen2.5) for on-device processing.
+- **🌐 Cloud-Enhanced Path**: Compatible with OpenAI-format APIs (e.g., OpenRouter / Cloudflare AI presets) for stronger remote models.
+- **🛟 Translation Fallback Path**: Translate mode can use free third-party fallback services when AI engines or API keys are unavailable (configurable in settings).
 - **📑 Smart Content Fetching**:
   - Process selected text instantly.
   - Automatically fetch page body content when no text is selected for full-page summarization.
@@ -110,9 +117,15 @@ Built with [WXT](https://wxt.dev/), React, and TypeScript.
 Access settings via the gear icon in the sidepanel header or next to the mode selector.
 
 - **Engine Selection**:
+  - **Chrome Built-in AI**: Gemini Nano path (requires Chrome support + model availability).
   - **Local (WebGPU)**: GPU-accelerated local inference (requires model download).
   - **Local (WASM)**: CPU-based local inference (slower but broader compatibility).
   - **Online API**: Use standard OpenAI-compatible APIs (requires API Key & Base URL).
+- **Online Presets**:
+  - OpenRouter free preset
+  - Cloudflare AI preset
+- **Translation Fallback**:
+  - Disabled / Google free endpoint / MyMemory free API
 - **Language**: Toggle extension interface language.
 - **Model Parameters**: Configure `model` name when using Online API.
 
@@ -120,7 +133,11 @@ Access settings via the gear icon in the sidepanel header or next to the mode se
 
 ### 1. Single Purpose Description
 
-AI proofduck is an intelligent writing assistant focused on **improving the quality of web-based writing**. All functions (Summarize, Correct, Proofread, Translate, and Expand) are tightly aligned with the core goal of **"text optimization and processing."**
+AI proofduck is an intelligent writing assistant focused on **improving web writing quality**. All functions (Summarize, Correct, Proofread, Translate, Expand) serve the same core purpose: **text optimization and processing**.
+
+For compliance clarity:
+- Some capabilities depend on engine availability (Chrome Built-in AI / local model readiness / API key).
+- Translate mode includes optional fallback services to keep translation functional in constrained environments.
 
 ### 2. Permission Justifications
 
