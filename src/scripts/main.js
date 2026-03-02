@@ -6,6 +6,7 @@ const LANG_SWITCH_SCROLL_KEY = 'langSwitchScrollState';
 const CHANGELOG_POLL_MS = 3 * 60 * 1000;
 let changelogPollTimer = null;
 let lastChangelogDigest = '';
+let changelogTemplateHtml = '';
 
 // Initialize language
 async function initLang() {
@@ -91,6 +92,20 @@ function renderChangelog(versions) {
     .join('');
 }
 
+function restoreChangelogTemplate() {
+  const mount = document.getElementById('changelog-content');
+  if (!mount || !changelogTemplateHtml) return;
+  mount.innerHTML = changelogTemplateHtml;
+
+  // Re-apply current i18n after restoring template HTML.
+  mount.querySelectorAll('[data-i18n]').forEach((el) => {
+    const key = el.getAttribute('data-i18n');
+    if (key && translations[key]) {
+      el.innerHTML = translations[key];
+    }
+  });
+}
+
 async function hydrateChangelogFromMain() {
   try {
     const res = await fetch(CHANGELOG_RAW_URL, { cache: 'no-store' });
@@ -111,7 +126,7 @@ async function hydrateChangelogFromMain() {
 function startChangelogListener() {
   if (changelogPollTimer) return;
   changelogPollTimer = window.setInterval(() => {
-    if (document.hidden) return;
+    if (document.hidden || currentLang !== 'en') return;
     hydrateChangelogFromMain();
   }, CHANGELOG_POLL_MS);
 }
@@ -164,7 +179,11 @@ async function setLang(lang) {
         "浏览器内置 AI 写作助手，支持摘要、纠错、润色、翻译、扩写五大模式。完全本地推理，隐私保护，开箱即用。";
     }
 
-    await hydrateChangelogFromMain();
+    if (lang === 'zh') {
+      restoreChangelogTemplate();
+    } else {
+      await hydrateChangelogFromMain();
+    }
   } catch (error) {
     console.error("Failed to load translations:", error);
   }
@@ -375,6 +394,11 @@ function scrollToTop() {
 function init() {
   // Re-bind listeners safely for Astro transitions.
   bindUiListeners();
+
+  if (!changelogTemplateHtml) {
+    const mount = document.getElementById('changelog-content');
+    if (mount) changelogTemplateHtml = mount.innerHTML;
+  }
 
   if (document.querySelector(".slideshow-container")) {
     showSlides(slideIndex);
