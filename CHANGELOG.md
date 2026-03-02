@@ -11,6 +11,21 @@ All notable changes to this project will be documented in this file.
 
 ## [v0.1.5] - 2026-03-02
 
+### Added
+
+- **Release automation upgrade**: `workflow_dispatch` now supports optional version input to create tag + release in one flow.
+- **BDD coverage for translation routing**: added behavior scenarios for translate-first route selection and fallback behavior.
+
+### Changed
+
+- **Multilingual documentation expansion**: completed structured JA/KO/ES/FR README content.
+- **Documentation layout refactor**: moved multilingual READMEs into `docs/readme/` and updated related paths.
+
+### Fixed
+
+- **Translate-first stability**: strengthened i18n and mode-ordering tests to prevent regressions in sidepanel defaults and routing.
+- **Repository hygiene**: removed legacy `.Jules` directory to keep release artifacts and docs clean.
+
 ## [v0.1.4] - 2026-03-02
 
 ### Added
