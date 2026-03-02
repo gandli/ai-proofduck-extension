@@ -64,6 +64,10 @@ export function LocalModelSelector({ settings, updateSettings, postMessage, stat
   return (
     <div className="relative w-full" ref={dropdownRef}>
       <button 
+        id="modelSelectButton"
+        aria-labelledby="modelSelectLabel modelSelectButton"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
         className="w-full flex items-center justify-between p-3 border border-slate-200 rounded-xl bg-slate-50 text-sm transition-all hover:bg-white hover:border-brand-orange focus:outline-none dark:bg-brand-dark-bg dark:border-[#4a4a6a] dark:text-slate-200"
         onClick={() => setIsOpen(!isOpen)}
       >
@@ -74,7 +78,7 @@ export function LocalModelSelector({ settings, updateSettings, postMessage, stat
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-2 z-[1100] bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden animate-slideInDown dark:bg-[#1a1a2e] dark:border-slate-800">
+        <div role="listbox" className="absolute left-0 right-0 top-full mt-2 z-[1100] bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden animate-slideInDown dark:bg-[#1a1a2e] dark:border-slate-800">
           <div className="p-3 border-b border-slate-100 dark:border-slate-800">
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
@@ -112,6 +116,8 @@ export function LocalModelSelector({ settings, updateSettings, postMessage, stat
                 return (
                   <button
                     key={m.value}
+                    role="option"
+                    aria-selected={settings.localModel === m.value}
                     className={`w-full text-left p-3 rounded-lg mb-1 transition-all flex flex-col gap-1 ${settings.localModel === m.value ? 'bg-brand-orange/5 border border-brand-orange/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                     onClick={() => {
                       updateSettings({ localModel: m.value }, postMessage);
