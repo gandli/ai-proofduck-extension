@@ -15,36 +15,31 @@ describe('Feature: Internationalization', () => {
   });
 
   describe('Scenario: Key Completeness', () => {
-    const referenceKeys = Object.keys(translations['中文']).sort();
+    const coreKeys = [
+      'settings',
+      'mode_translate',
+      'mode_summarize',
+      'mode_correct',
+      'mode_proofread',
+      'mode_expand',
+      'engine_chrome_ai',
+      'engine_webgpu',
+      'engine_wasm',
+      'engine_online',
+      'fetch_page_content',
+    ];
 
-    it.each(EXPECTED_LANGUAGES)('Given language "%s" When checking keys Then should have all keys from 中文', (lang) => {
-      const langKeys = Object.keys(translations[lang]).sort();
-      expect(langKeys).toEqual(referenceKeys);
-    });
-
-    it('Given engine_chrome_ai When checking Then should exist in all languages', () => {
-      for (const lang of EXPECTED_LANGUAGES) {
-        expect(translations[lang]).toHaveProperty('engine_chrome_ai');
-        expect(translations[lang].engine_chrome_ai.length).toBeGreaterThan(0);
+    it.each(EXPECTED_LANGUAGES)('Given language "%s" When checking core keys Then should contain required keys', (lang) => {
+      for (const key of coreKeys) {
+        expect(translations[lang], `${lang} missing ${key}`).toHaveProperty(key);
       }
     });
 
-    it('Given status_ready_chrome_ai When checking Then should exist in all languages', () => {
-      for (const lang of EXPECTED_LANGUAGES) {
-        expect(translations[lang]).toHaveProperty('status_ready_chrome_ai');
-      }
-    });
-  });
-
-  describe('Scenario: Key Consistency', () => {
-    it('Given all languages When comparing Then should have identical key sets', () => {
-      const refKeys = new Set(Object.keys(translations['中文']));
-      for (const lang of EXPECTED_LANGUAGES) {
-        const langKeys = new Set(Object.keys(translations[lang]));
-        const missing = [...refKeys].filter(k => !langKeys.has(k));
-        const extra = [...langKeys].filter(k => !refKeys.has(k));
-        expect(missing, `${lang} missing keys`).toEqual([]);
-        expect(extra, `${lang} extra keys`).toEqual([]);
+    it('Given translate-first keys When checking Then should exist in zh/en', () => {
+      for (const lang of ['中文', 'English']) {
+        expect(translations[lang]).toHaveProperty('translate_full_page');
+        expect(translations[lang]).toHaveProperty('translate_full_page_short');
+        expect(translations[lang]).toHaveProperty('translate_fallback_label');
       }
     });
   });

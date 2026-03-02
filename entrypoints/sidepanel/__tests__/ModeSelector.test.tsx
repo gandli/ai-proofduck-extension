@@ -8,6 +8,10 @@ describe('Feature: Mode Selector', () => {
       expect(MODES).toHaveLength(5);
     });
 
+    it('Given translate-first UX When checking first mode Then should prioritize translate', () => {
+      expect(MODES[0].key).toBe('translate');
+    });
+
     it('Given each mode When checking labels Then should have i18n keys in all languages', () => {
       for (const mode of MODES) {
         for (const [lang, t] of Object.entries(translations)) {

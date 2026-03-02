@@ -8,9 +8,9 @@ describe('Feature: Types and Constants', () => {
       expect(MODES).toHaveLength(5);
     });
 
-    it('Given MODES When extracting keys Then should match expected mode keys', () => {
+    it('Given MODES When extracting keys Then should match expected mode keys with translate-first order', () => {
       const keys = MODES.map(m => m.key);
-      expect(keys).toEqual(['summarize', 'correct', 'proofread', 'translate', 'expand']);
+      expect(keys).toEqual(['translate', 'summarize', 'correct', 'proofread', 'expand']);
     });
 
     it('Given each MODE When checking Then should have key, labelKey, resultLabelKey', () => {
@@ -35,6 +35,7 @@ describe('Feature: Types and Constants', () => {
       expect(DEFAULT_SETTINGS.apiKey).toBe('');
       expect(DEFAULT_SETTINGS.apiModel).toBe('gpt-3.5-turbo');
       expect(DEFAULT_SETTINGS.autoSpeak).toBe(false);
+      expect(DEFAULT_SETTINGS.translateFallback).toBe('google-free');
     });
   });
 

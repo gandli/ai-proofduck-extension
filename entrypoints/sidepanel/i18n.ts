@@ -249,7 +249,19 @@ export const translations: Record<string, any> = {
         char_count: '文字',
         auto_speak_label: '結果を自動的に読み上げる',
         connection_error: 'ページのコンテンツを取得できませんでした。現在のページをクリックするか、コンテキストメニューから有効化してください。',
-        fetch_page_content: 'ページコンテンツを取得'
+        fetch_page_content: 'ページコンテンツを取得',
+        translate_full_page: 'ページ全体を翻訳',
+        translate_full_page_short: '全文翻訳',
+        translate_fallback_label: '翻訳フォールバック',
+        translate_fallback_none: '無効 (AIのみ)',
+        translate_fallback_google: 'Google 無料翻訳エンドポイント',
+        translate_fallback_mymemory: 'MyMemory 無料翻訳 API',
+        fallback_free_api_btn: '無料 API フォールバックへ切替',
+        fallback_free_api_note: 'オンライン API（無料モデルプリセット）に切り替えました。設定で API Key を入力してください。',
+        api_key_hint: 'OpenRouter の無料キー、または OpenAI 互換プロバイダの API キーを使用できます。',
+        preset_openrouter_free: 'OpenRouter 無料プリセットを使用',
+        preset_cloudflare: 'Cloudflare AI プリセットを使用',
+        preset_cloudflare_hint: 'Cloudflare を使う場合、Base URL の <ACCOUNT_ID> をあなたのアカウント ID に置き換えてください。'
     },
     '한국어': {
         title: 'AI 어시스턴트',
@@ -385,7 +397,19 @@ export const translations: Record<string, any> = {
         char_count: 'carac.',
         auto_speak_label: 'Lecture automatique des résultats',
         connection_error: 'Impossible de récupérer le contenu de la page. Veuillez cliquer sur la page ou utiliser le menu contextuel pour activer.',
-        fetch_page_content: 'Récupérer le contenu de la page'
+        fetch_page_content: 'Récupérer le contenu de la page',
+        translate_full_page: 'Traduire la page entière',
+        translate_full_page_short: 'Traduction page',
+        translate_fallback_label: 'Fallback de traduction',
+        translate_fallback_none: 'Désactivé (IA uniquement)',
+        translate_fallback_google: 'Endpoint Google gratuit',
+        translate_fallback_mymemory: 'API MyMemory gratuite',
+        fallback_free_api_btn: 'Basculer vers le fallback API gratuit',
+        fallback_free_api_note: 'Basculé vers l\'API en ligne (preset gratuit). Veuillez renseigner votre clé API.',
+        api_key_hint: 'Utilisez une clé OpenRouter gratuite ou une clé API compatible OpenAI.',
+        preset_openrouter_free: 'Utiliser le preset OpenRouter gratuit',
+        preset_cloudflare: 'Utiliser le preset Cloudflare AI',
+        preset_cloudflare_hint: 'Pour Cloudflare, remplacez <ACCOUNT_ID> dans Base URL par votre identifiant de compte.'
     },
     'Deutsch': {
         title: 'KI-Assistent',
@@ -453,7 +477,19 @@ export const translations: Record<string, any> = {
         char_count: 'Zeichen',
         auto_speak_label: 'Ergebnisse automatisch vorlesen',
         connection_error: 'Seiteninhalt konnte nicht abgerufen werden. Bitte klicken Sie auf die Seite oder aktivieren Sie über das Kontextmenü.',
-        fetch_page_content: 'Seiteninhalt abrufen'
+        fetch_page_content: 'Seiteninhalt abrufen',
+        translate_full_page: 'Ganze Seite übersetzen',
+        translate_full_page_short: 'Ganzseitig',
+        translate_fallback_label: 'Übersetzungs-Fallback',
+        translate_fallback_none: 'Deaktiviert (nur KI)',
+        translate_fallback_google: 'Google kostenloser Endpoint',
+        translate_fallback_mymemory: 'MyMemory kostenlose API',
+        fallback_free_api_btn: 'Auf kostenlose API-Fallback umschalten',
+        fallback_free_api_note: 'Auf Online-API (kostenloses Preset) umgestellt. Bitte API-Key in den Einstellungen eintragen.',
+        api_key_hint: 'Nutze einen kostenlosen OpenRouter-Key oder einen OpenAI-kompatiblen API-Key.',
+        preset_openrouter_free: 'OpenRouter-Free-Preset verwenden',
+        preset_cloudflare: 'Cloudflare-AI-Preset verwenden',
+        preset_cloudflare_hint: 'Für Cloudflare ersetze <ACCOUNT_ID> in der Base-URL durch deine Account-ID.'
     },
     'Español': {
         title: 'Asistente de IA',
