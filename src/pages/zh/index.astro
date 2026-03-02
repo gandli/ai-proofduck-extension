@@ -70,7 +70,92 @@ const base = import.meta.env.BASE_URL;
     </div>
   </div>
 
-  <section id="features" class="relative z-10 py-32 px-6 scroll-mt-20">
+  <section
+    id="screenshots"
+    class="relative z-10 py-32 px-6 bg-bg2/50 scroll-mt-20"
+  >
+    <div class="max-w-[1200px] mx-auto">
+      <div class="text-center mb-20 animate-fade-up">
+        <h2
+          class="text-4xl md:text-5xl font-black tracking-tight mb-4"
+          data-i18n="ss_h"
+        >
+          Visual Experience
+        </h2>
+        <p class="text-t2 text-lg font-medium" data-i18n="ss_p">
+          Crafted for focus, designed for perfection.
+        </p>
+      </div>
+      <div
+        class="relative max-w-4xl mx-auto rounded-[32px] overflow-hidden shadow-floating border-8 border-white/50"
+      >
+        <div class="hidden animate-[fade-in_0.5s] relative slide">
+          <img
+            src={base + "/images/screenshots/screenshot-en-summarize.png"}
+            alt="Summarize feature"
+            class="w-full block"
+          />
+        </div>
+        <div class="hidden animate-[fade-in_0.5s] relative slide">
+          <img
+            src={base + "/images/screenshots/screenshot-en-translate.png"}
+            alt="Translate feature"
+            class="w-full block"
+          />
+        </div>
+        <div class="hidden animate-[fade-in_0.5s] relative slide">
+          <img
+            src={base + "/images/screenshots/screenshot-zh-proofread.png"}
+            alt="Proofread feature"
+            class="w-full block"
+          />
+        </div>
+        <div class="hidden animate-[fade-in_0.5s] relative slide">
+          <img
+            src={base + "/images/screenshots/screenshot-zh-settings.png"}
+            alt="Settings"
+            class="w-full block"
+          />
+        </div>
+        <div class="hidden animate-[fade-in_0.5s] relative slide">
+          <img
+            src={base + "/images/screenshots/screenshot-zh-translate.png"}
+            alt="Translate feature"
+            class="w-full block"
+          />
+        </div>
+        <a
+          class="absolute top-1/2 -mt-[30px] w-12 h-12 flex items-center justify-center text-white bg-black/20 hover:bg-ac backdrop-blur-md transition-all cursor-pointer select-none z-10 rounded-full left-6"
+          onclick="changeSlide(-1)"
+          ><i data-lucide="chevron-left" class="w-6 h-6"></i></a
+        >
+        <a
+          class="absolute top-1/2 -mt-[30px] w-12 h-12 flex items-center justify-center text-white bg-black/20 hover:bg-ac backdrop-blur-md transition-all cursor-pointer select-none z-10 rounded-full right-6"
+          onclick="changeSlide(1)"
+          ><i data-lucide="chevron-right" class="w-6 h-6"></i></a
+        >
+      </div>
+      <div class="flex justify-center gap-3 mt-10">
+        <span
+          class="dot w-2 h-2 rounded-full bg-t1/10 cursor-pointer transition-all hover:bg-ac active:w-6 active:bg-ac active:rounded-full"
+          onclick="currentSlide(1)"></span>
+        <span
+          class="dot w-2 h-2 rounded-full bg-t1/10 cursor-pointer transition-all hover:bg-ac active:w-6 active:bg-ac active:rounded-full"
+          onclick="currentSlide(2)"></span>
+        <span
+          class="dot w-2 h-2 rounded-full bg-t1/10 cursor-pointer transition-all hover:bg-ac active:w-6 active:bg-ac active:rounded-full"
+          onclick="currentSlide(3)"></span>
+        <span
+          class="dot w-2 h-2 rounded-full bg-t1/10 cursor-pointer transition-all hover:bg-ac active:w-6 active:bg-ac active:rounded-full"
+          onclick="currentSlide(4)"></span>
+        <span
+          class="dot w-2 h-2 rounded-full bg-t1/10 cursor-pointer transition-all hover:bg-ac active:w-6 active:bg-ac active:rounded-full"
+          onclick="currentSlide(5)"></span>
+      </div>
+    </div>
+  </section>
+
+<section id="features" class="relative z-10 py-32 px-6 scroll-mt-20">
     <div class="max-w-[1200px] mx-auto">
       <div class="text-center mb-20 animate-fade-up">
         <h2
@@ -349,90 +434,7 @@ const base = import.meta.env.BASE_URL;
     </div>
   </section>
 
-  <section
-    id="screenshots"
-    class="relative z-10 py-32 px-6 bg-bg2/50 scroll-mt-20"
-  >
-    <div class="max-w-[1200px] mx-auto">
-      <div class="text-center mb-20 animate-fade-up">
-        <h2
-          class="text-4xl md:text-5xl font-black tracking-tight mb-4"
-          data-i18n="ss_h"
-        >
-          Visual Experience
-        </h2>
-        <p class="text-t2 text-lg font-medium" data-i18n="ss_p">
-          Crafted for focus, designed for perfection.
-        </p>
-      </div>
-      <div
-        class="relative max-w-4xl mx-auto rounded-[32px] overflow-hidden shadow-floating border-8 border-white/50"
-      >
-        <div class="hidden animate-[fade-in_0.5s] relative slide">
-          <img
-            src={base + "/images/screenshots/screenshot-en-summarize.png"}
-            alt="Summarize feature"
-            class="w-full block"
-          />
-        </div>
-        <div class="hidden animate-[fade-in_0.5s] relative slide">
-          <img
-            src={base + "/images/screenshots/screenshot-en-translate.png"}
-            alt="Translate feature"
-            class="w-full block"
-          />
-        </div>
-        <div class="hidden animate-[fade-in_0.5s] relative slide">
-          <img
-            src={base + "/images/screenshots/screenshot-zh-proofread.png"}
-            alt="Proofread feature"
-            class="w-full block"
-          />
-        </div>
-        <div class="hidden animate-[fade-in_0.5s] relative slide">
-          <img
-            src={base + "/images/screenshots/screenshot-zh-settings.png"}
-            alt="Settings"
-            class="w-full block"
-          />
-        </div>
-        <div class="hidden animate-[fade-in_0.5s] relative slide">
-          <img
-            src={base + "/images/screenshots/screenshot-zh-translate.png"}
-            alt="Translate feature"
-            class="w-full block"
-          />
-        </div>
-        <a
-          class="absolute top-1/2 -mt-[30px] w-12 h-12 flex items-center justify-center text-white bg-black/20 hover:bg-ac backdrop-blur-md transition-all cursor-pointer select-none z-10 rounded-full left-6"
-          onclick="changeSlide(-1)"
-          ><i data-lucide="chevron-left" class="w-6 h-6"></i></a
-        >
-        <a
-          class="absolute top-1/2 -mt-[30px] w-12 h-12 flex items-center justify-center text-white bg-black/20 hover:bg-ac backdrop-blur-md transition-all cursor-pointer select-none z-10 rounded-full right-6"
-          onclick="changeSlide(1)"
-          ><i data-lucide="chevron-right" class="w-6 h-6"></i></a
-        >
-      </div>
-      <div class="flex justify-center gap-3 mt-10">
-        <span
-          class="dot w-2 h-2 rounded-full bg-t1/10 cursor-pointer transition-all hover:bg-ac active:w-6 active:bg-ac active:rounded-full"
-          onclick="currentSlide(1)"></span>
-        <span
-          class="dot w-2 h-2 rounded-full bg-t1/10 cursor-pointer transition-all hover:bg-ac active:w-6 active:bg-ac active:rounded-full"
-          onclick="currentSlide(2)"></span>
-        <span
-          class="dot w-2 h-2 rounded-full bg-t1/10 cursor-pointer transition-all hover:bg-ac active:w-6 active:bg-ac active:rounded-full"
-          onclick="currentSlide(3)"></span>
-        <span
-          class="dot w-2 h-2 rounded-full bg-t1/10 cursor-pointer transition-all hover:bg-ac active:w-6 active:bg-ac active:rounded-full"
-          onclick="currentSlide(4)"></span>
-        <span
-          class="dot w-2 h-2 rounded-full bg-t1/10 cursor-pointer transition-all hover:bg-ac active:w-6 active:bg-ac active:rounded-full"
-          onclick="currentSlide(5)"></span>
-      </div>
-    </div>
-  </section>
+  
 
   <section id="changelog" class="relative z-10 py-24 px-6 scroll-mt-20">
     <div class="max-w-[1100px] mx-auto">
