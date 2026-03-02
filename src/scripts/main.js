@@ -3,7 +3,7 @@ let currentLang = localStorage.getItem("preferredLang") || "en";
 let translations = {};
 const CHANGELOG_RAW_URL = 'https://raw.githubusercontent.com/gandli/ai-proofduck-extension/main/CHANGELOG.md';
 const LANG_SWITCH_SCROLL_KEY = 'langSwitchScrollState';
-const CHANGELOG_POLL_MS = 3 * 60 * 1000;
+const CHANGELOG_POLL_MS = 30 * 60 * 1000;
 let changelogPollTimer = null;
 let lastChangelogDigest = '';
 let changelogTemplateHtml = '';
@@ -412,6 +412,12 @@ function init() {
 document.addEventListener('DOMContentLoaded', init);
 document.addEventListener('astro:page-load', init);
 window.addEventListener('scroll', toggleBackToTopButton, { passive: true });
+window.addEventListener('focus', () => {
+  if (currentLang === 'en') hydrateChangelogFromMain();
+});
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && currentLang === 'en') hydrateChangelogFromMain();
+});
 
 // Smooth scrolling for specific links
 document.addEventListener('click', (e) => {
