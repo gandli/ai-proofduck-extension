@@ -60,6 +60,14 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
+function renderInlineMarkdown(text) {
+  const safe = escapeHtml(text);
+  return safe
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 rounded bg-black/5 text-[0.9em]">$1</code>')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-ac no-underline hover:underline">$1</a>');
+}
+
 function renderChangelog(versions) {
   const mount = document.getElementById('changelog-content');
   if (!mount || !versions?.length) return;
@@ -71,7 +79,7 @@ function renderChangelog(versions) {
   const renderList = (items, accent = 'before:text-t3') => {
     if (!items.length) return '';
     return `<ul class="space-y-2.5">${items
-      .map((it) => `<li class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 ${accent} before:font-bold">${escapeHtml(it)}</li>`)
+      .map((it) => `<li class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 ${accent} before:font-bold">${renderInlineMarkdown(it)}</li>`)
       .join('')}</ul>`;
   };
 
