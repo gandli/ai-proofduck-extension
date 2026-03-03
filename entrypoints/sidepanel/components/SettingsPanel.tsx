@@ -73,7 +73,7 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
           </div>
           {(settings.engine === 'local-gpu' || settings.engine === 'local-wasm') && (
             <div className="flex flex-col gap-1.5 overflow-visible">
-              <label className={labelClass}>{t.model_label}</label>
+              <label className={labelClass} htmlFor="local-model-select">{t.model_label}</label>
               <LocalModelSelector settings={settings} updateSettings={updateSettings} postMessage={postMessage} status={status} t={t} />
             </div>
           )}
