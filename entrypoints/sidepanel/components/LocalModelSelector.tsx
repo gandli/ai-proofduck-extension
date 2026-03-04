@@ -65,12 +65,12 @@ export function LocalModelSelector({ settings, updateSettings, postMessage, stat
     <div className="relative w-full" ref={dropdownRef}>
       <button 
         id="local-model-select"
+        className="w-full flex items-center justify-between p-3 border border-slate-200 rounded-xl bg-slate-50 text-sm transition-all hover:bg-white hover:border-brand-orange focus:outline-none dark:bg-brand-dark-bg dark:border-[#4a4a6a] dark:text-slate-200"
+        onClick={() => setIsOpen(!isOpen)}
         role="combobox"
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-controls="local-model-listbox"
-        className="w-full flex items-center justify-between p-3 border border-slate-200 rounded-xl bg-slate-50 text-sm transition-all hover:bg-white hover:border-brand-orange focus:outline-none dark:bg-brand-dark-bg dark:border-[#4a4a6a] dark:text-slate-200"
-        onClick={() => setIsOpen(!isOpen)}
       >
         <span className="truncate font-medium">
           {currentModel ? currentModel.name : t.model_label}
@@ -111,7 +111,7 @@ export function LocalModelSelector({ settings, updateSettings, postMessage, stat
             </div>
 
             {/* Models */}
-            <div className="flex-1 overflow-y-auto p-2" role="listbox" id="local-model-listbox">
+            <div id="local-model-listbox" role="listbox" className="flex-1 overflow-y-auto p-2">
               {filteredCategories.find(c => c.label === selectedCategory)?.models.map(m => {
                 const warmed = isWarmed(m.value);
                 return (
