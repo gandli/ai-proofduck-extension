@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 <!-- AUTO-UNRELEASED-START -->
+- 🎨 Palette: Add ARIA accessibility to custom LocalModelSelector dropdown (b9a4ce0)
+- docs(changelog): refresh unreleased section (bee567d)
 - feat: 优化浮动图标样式并添加SVG解析测试 (bf51b2a)
 - docs(changelog): refresh unreleased section (60885f1)
 - docs(changelog): fill missing v0.1.5 release notes (6839c8c)
