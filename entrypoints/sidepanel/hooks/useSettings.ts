@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Settings, DEFAULT_SETTINGS } from '../types';
+import { Settings, DEFAULT_SETTINGS, ModeKey } from '../types';
 
 export function useSettings() {
   const [settings, setSettings] = useState<Settings>({ ...DEFAULT_SETTINGS });
@@ -26,24 +26,26 @@ export function useSettings() {
         const failedConfigs = (s.failedConfigs || []).filter(k => k !== configKey);
         
         if (!readyConfigs.includes(configKey)) {
-          updateSettings({ 
+          setSettings({ 
+            ...s,
             readyConfigs: [...readyConfigs, configKey],
             failedConfigs 
           });
         } else if (s.failedConfigs?.includes(configKey)) {
-          updateSettings({ failedConfigs });
+          setSettings({ ...s, failedConfigs });
         }
       } else if (status === 'error') {
         const failedConfigs = s.failedConfigs || [];
         const readyConfigs = (s.readyConfigs || []).filter(k => k !== configKey);
         
         if (!failedConfigs.includes(configKey)) {
-          updateSettings({ 
+          setSettings({ 
+            ...s,
             failedConfigs: [...failedConfigs, configKey],
             readyConfigs
           });
         } else if (s.readyConfigs?.includes(configKey)) {
-          updateSettings({ readyConfigs });
+          setSettings({ ...s, readyConfigs });
         }
       }
     }
@@ -51,21 +53,21 @@ export function useSettings() {
 
   // Sync with storage changes (from background/offscreen)
   useEffect(() => {
-    const listener = (changes: Record<string, any>, area: string) => {
+    const listener = (changes: Record<string, { newValue?: unknown }>, area: string) => {
       if (area !== 'local') return;
       
       if (changes.engineStatus) {
-        const newValue = changes.engineStatus.newValue;
+        const newValue = changes.engineStatus.newValue as 'idle' | 'loading' | 'ready' | 'error' | undefined;
         // Only update if status actually changed to prevent loops
         if (newValue && newValue !== statusRef.current) {
           setStatus(newValue);
         }
       }
       if (changes.lastProgress) {
-        setProgress(changes.lastProgress.newValue || { progress: 0, text: '' });
+        setProgress(changes.lastProgress.newValue as { progress: number; text: string } || { progress: 0, text: '' });
       }
       if (changes.engineError) {
-        setError(changes.engineError.newValue || '');
+        setError(changes.engineError.newValue as string || '');
       }
     };
     browser.storage.onChanged.addListener(listener);
@@ -73,7 +75,7 @@ export function useSettings() {
   }, []);
 
   // Load persisted settings on mount; returns initial data if found
-  const loadPersistedSettings = useCallback(async (): Promise<{ text: string; mode?: any; fetchPage?: boolean; autoTrigger?: boolean }> => {
+  const loadPersistedSettings = useCallback(async (): Promise<{ text: string; mode?: ModeKey; fetchPage?: boolean; autoTrigger?: boolean }> => {
     try {
       const res = await browser.storage.local.get(['selectedText', 'settings', 'activeTab', 'engineStatus', 'menuIntentMode', 'fetchPageIntent', 'lastProgress', 'autoTriggerAt']) as Record<string, unknown>;
       let initialText = (res.selectedText as string) || '';
@@ -129,7 +131,7 @@ export function useSettings() {
 
       return { 
         text: initialText, 
-        mode: menuIntentMode as any, 
+        mode: menuIntentMode as ModeKey | undefined, 
         fetchPage: !!fetchPageIntent,
         autoTrigger
       };

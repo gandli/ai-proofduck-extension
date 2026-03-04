@@ -30,7 +30,7 @@ export default defineBackground(() => {
     });
   }
 
-  async function handleEngineCommand(message: any) {
+  async function handleEngineCommand(message: unknown) {
     await setupOffscreenDocument();
     chrome.runtime.sendMessage({
       ...message,
