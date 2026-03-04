@@ -5,9 +5,15 @@
 /** The five processing modes */
 export type ModeKey = 'summarize' | 'correct' | 'proofread' | 'translate' | 'expand';
 
+/** Translation fallback provider options */
+export type TranslateFallbackProvider = 'none' | 'google-free' | 'mymemory';
+
+/** Engine type options */
+export type EngineType = 'local-gpu' | 'local-wasm' | 'online' | 'chrome-ai';
+
 /** Persisted user settings */
 export interface Settings {
-  engine: string;
+  engine: EngineType;
   extensionLanguage: string;
   tone: string;
   detailLevel: string;
@@ -16,7 +22,7 @@ export interface Settings {
   apiKey: string;
   apiModel: string;
   autoSpeak: boolean;
-  translateFallback?: 'none' | 'google-free' | 'mymemory';
+  translateFallback?: TranslateFallbackProvider;
   readyConfigs?: string[]; // track "ready" local model keys, e.g. ["local-gpu:Qwen2.5-0.5B"]
   failedConfigs?: string[]; // track "failed" local model keys
 }
@@ -119,3 +125,81 @@ export const MODES: ModeDefinition[] = [
   { key: 'proofread', labelKey: 'mode_proofread', resultLabelKey: 'result_proofread' },
   { key: 'expand', labelKey: 'mode_expand', resultLabelKey: 'result_expand' },
 ];
+
+// ---- Chrome AI Types ----
+
+export interface ChromeAIModelCapabilities {
+  available: 'no' | 'after-download' | 'readily';
+  defaultTemperature?: number;
+  defaultTopK?: number;
+  maxTopK?: number;
+}
+
+export interface ChromeAISession {
+  promptStreaming(input: string): Promise<ReadableStream<string> | AsyncIterable<string>>;
+  destroy(): Promise<void>;
+}
+
+export interface ChromeAIModelAPI {
+  capabilities(): Promise<ChromeAIModelCapabilities>;
+  create(options: { systemPrompt: string }): Promise<ChromeAISession>;
+}
+
+export interface ChromeAI {
+  languageModel?: ChromeAIModelAPI;
+  capabilities?(): Promise<ChromeAIModelCapabilities>;
+}
+
+// ---- Progress and Status Types ----
+
+export type EngineStatus = 'idle' | 'loading' | 'ready' | 'error';
+
+export interface ProgressInfo {
+  progress: number;
+  text: string;
+}
+
+// ---- Message Types for Browser Communication ----
+
+export interface PageContentMessage {
+  type: 'GET_PAGE_CONTENT';
+}
+
+export interface PageContentResponse {
+  content?: string;
+}
+
+export interface QuickTranslateMessage {
+  type: 'QUICK_TRANSLATE';
+  text?: string;
+}
+
+export interface QuickTranslateResponse {
+  translatedText?: string;
+  error?: string;
+}
+
+export interface OpenSidePanelMessage {
+  type: 'OPEN_SIDE_PANEL';
+}
+
+export interface InitEngineMessage {
+  type: 'INIT_ENGINE';
+  settings: Settings;
+}
+
+export interface GenerateMessage {
+  type: 'GENERATE';
+  text: string;
+  mode: ModeKey;
+  settings: Settings;
+}
+
+export interface ResetEngineMessage {
+  type: 'RESET_ENGINE';
+}
+
+export interface WorkerUpdateBridgeMessage {
+  type: 'WORKER_UPDATE';
+  data: WorkerOutboundMessage;
+}

@@ -64,7 +64,7 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
           </div>
           <div className="flex flex-col gap-1.5">
             <label className={labelClass}>{t.engine_label}</label>
-            <select className={selectClass} value={settings.engine} onChange={e => updateSettings({ engine: e.target.value }, postMessage)}>
+            <select className={selectClass} value={settings.engine} onChange={e => updateSettings({ engine: e.target.value as Settings['engine'] }, postMessage)}>
               <option value="chrome-ai">{t.engine_chrome_ai}</option>
               <option value="local-gpu">{t.engine_webgpu}</option>
               <option value="local-wasm">{t.engine_wasm}</option>
