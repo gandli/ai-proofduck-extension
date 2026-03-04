@@ -6,8 +6,8 @@ const models = JSON.parse(fs.readFileSync(modelsPath, 'utf8'));
 
 let removedCount = 0;
 
-models.categories.forEach(category => {
-    category.models = category.models.filter(model => {
+models.categories.forEach((category: any) => {
+    category.models = category.models.filter((model: any) => {
         // 剔除已知容易崩溃或已淘汰的旧型号
         const isOutdated = 
             model.value.includes('Llama-2') || // Llama 2 已普遍被 3 替代且兼容性较差

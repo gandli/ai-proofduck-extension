@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { translations } from './i18n';
 import { ModeKey, emptyModeResults, emptyGeneratingModes, MODES } from './types';
@@ -7,26 +7,16 @@ import { useWorker } from './hooks/useWorker';
 import { ModeSelector } from './components/ModeSelector';
 import { ResultPanel } from './components/ResultPanel';
 import { SettingsPanel } from './components/SettingsPanel';
-import { FetchIcon, ClearIcon, CloseIcon, SearchIcon, ChevronDownIcon } from './components/Icons';
-import modelConfig from './models.json';
-
-interface WorkerMessage {
-  type: 'progress' | 'ready' | 'update' | 'complete' | 'error';
-  progress?: { progress: number; text: string };
-  text?: string;
-  error?: string;
-  mode?: ModeKey;
-}
+import { FetchIcon, ClearIcon } from './components/Icons';
 
 function App() {
   const [selectedText, setSelectedText] = useState('');
   const [modeResults, setModeResults] = useState(emptyModeResults());
   const [mode, setMode] = useState<ModeKey>('translate');
   const [generatingModes, setGeneratingModes] = useState(emptyGeneratingModes());
-  const [copied, setCopied] = useState(false);
 
   const {
-    settings, setSettings, settingsRef, status, setStatus, statusRef,
+    settings, settingsRef, status, setStatus, statusRef,
     isInitializing,
     progress, setProgress, error, setError,
     showSettings, setShowSettings, loadPersistedSettings, updateSettings,
@@ -78,11 +68,11 @@ function App() {
     setGeneratingModes(prev => ({ ...prev, [activeMode]: true }));
     setModeResults(prev => ({ ...prev, [activeMode]: '' }));
     postMessage({ type: 'generate', text: activeText, mode: activeMode, settings: settingsRef.current });
-  }, [selectedText, mode, generatingModes, postMessage, settingsRef]);
+  }, [selectedText, mode, generatingModes, postMessage, settingsRef, setError]);
 
   useEffect(() => {
     loadPersistedSettings().then(res => {
-      let currentText = res.text;
+      const currentText = res.text;
       if (res.text) setSelectedText(res.text);
       if (res.mode) setMode(res.mode);
       
@@ -108,7 +98,7 @@ function App() {
         postMessage({ type: 'load', settings: settingsRef.current });
       }
     });
-  }, []);
+  }, [handleAction, handleFetchContent, loadPersistedSettings, postMessage, settingsRef, statusRef]);
 
   const modeDef = MODES.find(m => m.key === mode)!;
 
@@ -123,16 +113,7 @@ function App() {
     setShowSettings(true);
   }, [postMessage, setError, setShowSettings, t, updateSettings]);
 
-  const handleCopyResult = useCallback(() => {
-    const text = modeResults[mode];
-    if (!text) return;
-    navigator.clipboard.writeText(text).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  }, [modeResults, mode]);
 
-  const handleOpenSettings = useCallback(() => setShowSettings(true), [setShowSettings]);
 
   if (isInitializing) {
     return (

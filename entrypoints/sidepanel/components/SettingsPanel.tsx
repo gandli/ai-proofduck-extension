@@ -99,7 +99,7 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
                 className="px-2.5 py-1.5 text-[12px] rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
                 onClick={() => updateSettings({
                   apiBaseUrl: 'https://api.cloudflare.com/client/v4/accounts/<ACCOUNT_ID>/ai/v1',
-                  apiModel: 'cloudflare-ai/@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+                  apiModel: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
                 })}
               >
                 {t.preset_cloudflare || 'Use Cloudflare AI preset'}
