@@ -175,7 +175,7 @@ export default defineContentScript({
         actionSection.classList.remove('hidden');
         if (copyBtn) (copyBtn as HTMLElement).style.visibility = 'hidden';
         
-        actionContentEl.innerHTML = ''; // Clear previous content
+        while (actionContentEl.firstChild) { actionContentEl.removeChild(actionContentEl.firstChild); } // Clear previous content safely
         const container = createElementWithClass('div', 'flex flex-col gap-3');
         const msgSpan = createElementWithClass('span', 'text-[13px] leading-relaxed text-slate-600 dark:text-slate-400', msg);
         const actionBtn = createElementWithClass('button', 'w-full py-2 bg-brand-orange text-white text-[12px] font-bold rounded-lg shadow-sm transition-all hover:bg-brand-orange-dark hover:shadow-md active:scale-[0.98]', btnText);
