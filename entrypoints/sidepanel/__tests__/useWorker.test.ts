@@ -3,12 +3,14 @@ import type { ModeKey, WorkerOutboundMessage } from '../types';
 
 // Test the useWorker message dispatch logic (extracted, not hook itself)
 
+type MockFn = (...args: any[]) => any;
+
 type SetterFns = {
-  setStatus: ReturnType<typeof vi.fn>;
-  setProgress: ReturnType<typeof vi.fn>;
-  setError: ReturnType<typeof vi.fn>;
-  setModeResults: ReturnType<typeof vi.fn>;
-  setGeneratingModes: ReturnType<typeof vi.fn>;
+  setStatus: MockFn;
+  setProgress: MockFn;
+  setError: MockFn;
+  setModeResults: MockFn;
+  setGeneratingModes: MockFn;
 };
 
 function createSetters(): SetterFns {

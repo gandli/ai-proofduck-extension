@@ -3,6 +3,8 @@
  * 使用 Bun 运行: bun scripts/update-models.ts
  */
 
+declare const Bun: any;
+
 const HF_API = "https://huggingface.co/api/models?author=mlc-ai&search=-MLC";
 const OUTPUT_PATH = "entrypoints/sidepanel/models.json";
 
