@@ -39,11 +39,13 @@ export function LocalModelSelector({ settings, updateSettings, postMessage, stat
     )
   })).filter(cat => cat.models.length > 0);
 
+  // Initialize selectedCategory when opening dropdown - using lazy initialization in useState instead
   useEffect(() => {
     if (isOpen && !selectedCategory && filteredCategories.length > 0) {
-      setSelectedCategory(filteredCategories[0].label);
+      // Use functional update to avoid cascading renders
+      setSelectedCategory(prev => prev || filteredCategories[0].label);
     }
-  }, [isOpen, filteredCategories, selectedCategory]);
+  }, [isOpen, filteredCategories.length]); // Remove selectedCategory from deps to avoid loop
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

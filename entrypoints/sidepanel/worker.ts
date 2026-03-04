@@ -32,7 +32,7 @@ self.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Respo
         const res = await originalFetch(url, { ...init, signal: controller.signal });
         clearTimeout(timeoutId);
         if (isValidDataResponse(res)) return res;
-    } catch (e) {
+    } catch (e: unknown) {
         console.warn(`[Worker Fetch] Original failed/hijacked for ${url}, trying mirror fallback...`);
     }
 
@@ -42,7 +42,7 @@ self.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Respo
         try {
             const res = await originalFetch(mirrorUrl, init);
             if (isValidDataResponse(res)) return res;
-        } catch (e) {
+        } catch (e: unknown) {
             console.error(`[Worker Fetch] Mirror also failed for ${url}`);
         }
     }
@@ -130,7 +130,7 @@ class WebLLMWorker {
                     console.log(`[Worker] Found valid WASM: ${wasmName}`);
                     return url;
                 }
-            } catch (e) {
+            } catch (e: unknown) {
                 console.warn(`[Worker] Probe failed for ${wasmName}:`, e);
             }
         }
@@ -191,15 +191,15 @@ class WebLLMWorker {
                 try {
                     await engine!.reload(model, {
                         context_window_size: 8192,
-                        appConfig: appConfig as any,
-                    } as any);
+                        appConfig: appConfig as unknown,
+                    } as unknown);
                     this.engineReadyStatus.set(cacheKey, true);
                     this.updateLRU(cacheKey);
                     console.log(`[Worker] MLCEngine Ready: ${model}`);
-                } catch (error: any) {
+                } catch (error: unknown) {
                     console.error(`[Worker] MLCEngine Load Error:`, error);
                     this.engineReadyStatus.set(cacheKey, false);
-                    throw error;
+                    throw error instanceof Error ? error : new Error(String(error));
                 } finally {
                     this.loadLocks.delete(cacheKey);
                 }
@@ -257,9 +257,9 @@ async function processLocalQueue() {
                 }
             }
             self.postMessage({ type: "complete", text: fullText, mode, requestId });
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("[Worker] Local Generate Error:", error);
-            const errMsg = error instanceof Error ? error.message : String(error);
+            const errMsg = (error instanceof Error ? error.message : String(error));
             self.postMessage({ type: "error", error: errMsg, mode, requestId });
         }
     }
@@ -324,23 +324,23 @@ async function handleGenerateOnline(text: string, mode: ModeKey, settings: Setti
                             self.postMessage({ type: "update", text: fullText, mode, requestId });
                             lastUpdateTime = now;
                         }
-                    } catch (e) {
+                    } catch (e: unknown) {
                         buffer = line + '\n' + buffer;
                     }
                 }
             }
         }
         self.postMessage({ type: "complete", text: fullText, mode, requestId });
-    } catch (error: any) {
-        const errMsg = error instanceof Error ? error.message : String(error);
+    } catch (error: unknown) {
+        const errMsg = (error instanceof Error ? error.message : String(error));
         self.postMessage({ type: "error", error: errMsg, mode, requestId });
     }
 }
 
-async function streamPromptApi(stream: any, mode: ModeKey, requestId: string | undefined): Promise<string> {
+async function streamPromptApi(stream: unknown, mode: ModeKey, requestId: string | undefined): Promise<string> {
   let fullText = '';
   let lastUpdateTime = 0;
-  if (stream && typeof (stream as any).getReader === 'function') {
+  if (stream && typeof (stream as unknown).getReader === 'function') {
     const reader = (stream as ReadableStream<string>).getReader();
     while (true) {
       const { done, value } = await reader.read();
@@ -359,7 +359,7 @@ async function streamPromptApi(stream: any, mode: ModeKey, requestId: string | u
     return fullText;
   }
   for await (const chunk of stream) {
-    const newText = typeof chunk === 'string' ? chunk : (chunk as any).content || JSON.stringify(chunk);
+    const newText = typeof chunk === 'string' ? chunk : (chunk as unknown).content || JSON.stringify(chunk);
     if (newText) {
       fullText += newText;
       const now = Date.now();
@@ -374,8 +374,8 @@ async function streamPromptApi(stream: any, mode: ModeKey, requestId: string | u
 
 async function handleGenerateChromeAI(text: string, mode: ModeKey, settings: Settings, requestId?: string) {
   try {
-    const ai = (globalThis as any).ai;
-    const modelApi = ai?.languageModel || (globalThis as any).LanguageModel;
+    const ai = (globalThis as unknown).ai;
+    const modelApi = ai?.languageModel || (globalThis as unknown).LanguageModel;
     if (!modelApi) throw new Error("Chrome Built-in AI not available.");
 
     const systemPrompt = getSystemPrompt(mode, settings);
@@ -387,7 +387,7 @@ async function handleGenerateChromeAI(text: string, mode: ModeKey, settings: Set
     session.destroy();
     self.postMessage({ type: 'complete', text: fullText, mode, requestId });
   } catch (error: unknown) {
-    const errMsg = error instanceof Error ? error.message : String(error);
+    const errMsg = (error instanceof Error ? error.message : String(error));
     self.postMessage({ type: 'error', error: errMsg, mode, requestId });
   }
 }
@@ -397,8 +397,8 @@ self.onmessage = async (event: MessageEvent<WorkerInboundMessage>) => {
   if (msg.type === 'load') {
     if (msg.settings.engine === 'chrome-ai') {
       try {
-        const ai = (globalThis as any).ai;
-        const modelApi = ai?.languageModel || (globalThis as any).LanguageModel;
+        const ai = (globalThis as unknown).ai;
+        const modelApi = ai?.languageModel || (globalThis as unknown).LanguageModel;
         if (!modelApi) throw new Error("Chrome Built-in AI not available.");
         
         let available = 'no';
@@ -412,7 +412,7 @@ self.onmessage = async (event: MessageEvent<WorkerInboundMessage>) => {
 
         if (available === 'no') throw new Error('Chrome Built-in AI model not downloaded');
         self.postMessage({ type: 'ready' });
-      } catch (error: any) {
+      } catch (error: unknown) {
         self.postMessage({ type: 'error', error: error.message });
       }
     } else {
@@ -424,7 +424,7 @@ self.onmessage = async (event: MessageEvent<WorkerInboundMessage>) => {
           });
         });
         self.postMessage({ type: 'ready' });
-      } catch (error: any) {
+      } catch (error: unknown) {
         self.postMessage({ type: 'error', error: error.message });
       }
     }

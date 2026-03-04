@@ -4,6 +4,7 @@ import {
   Settings,
   emptyModeResults,
   emptyGeneratingModes,
+  MODES,
 } from '../types';
 import { getSystemPrompt, formatUserPrompt, LANG_MAP } from '../worker-utils';
 
@@ -39,7 +40,7 @@ async function runTranslateFallback(text: string, targetLanguage: string, provid
     const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=auto|${encodeURIComponent(target)}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`MyMemory fallback failed: ${res.status}`);
-    const data = await res.json();
+    const data = await res.json() as { responseData?: { translatedText?: string } };
     const out = data?.responseData?.translatedText;
     if (!out) throw new Error('MyMemory fallback returned empty result');
     return out;
@@ -48,9 +49,9 @@ async function runTranslateFallback(text: string, targetLanguage: string, provid
   const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${encodeURIComponent(target)}&dt=t&q=${encodeURIComponent(text)}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Google fallback failed: ${res.status}`);
-  const data = await res.json();
+  const data = await res.json() as unknown[][][];
   if (!Array.isArray(data) || !Array.isArray(data[0])) throw new Error('Google fallback parse failed');
-  return data[0].map((chunk: any[]) => chunk?.[0] || '').join('');
+  return data[0].map((chunk: unknown[]) => (chunk[0] as string) || '').join('');
 }
 
 async function checkChromeAiAvailability() {
@@ -170,7 +171,7 @@ export function useWorker(opts: UseWorkerOptions) {
     };
 
     // Listen for updates from background/offscreen worker
-    const backgroundMessageListener = (message: any) => {
+    const backgroundMessageListener = (message: { type: string; data?: { type: string; progress?: { progress: number; text: string }; mode?: ModeKey; text?: string; error?: string; requestId?: string } }) => {
       if (message.type === 'WORKER_UPDATE') {
         const msg = message.data;
         if (!msg) return;
@@ -181,11 +182,11 @@ export function useWorker(opts: UseWorkerOptions) {
           setStatus('ready');
           setError('');
         } else if (msg.type === 'update') {
-          setModeResults(prev => ({ ...prev, [msg.mode]: msg.text }));
-          setGeneratingModes(prev => ({ ...prev, [msg.mode]: true }));
+          setModeResults(prev => ({ ...prev, [msg.mode!]: msg.text }));
+          setGeneratingModes(prev => ({ ...prev, [msg.mode!]: true }));
         } else if (msg.type === 'complete') {
-          setModeResults(prev => ({ ...prev, [msg.mode]: msg.text }));
-          setGeneratingModes(prev => ({ ...prev, [msg.mode]: false }));
+          setModeResults(prev => ({ ...prev, [msg.mode!]: msg.text }));
+          setGeneratingModes(prev => ({ ...prev, [msg.mode!]: false }));
           // Auto-speak
           const s = settingsRef.current;
           if (s.autoSpeak && typeof chrome !== 'undefined' && chrome.tts) {
@@ -202,7 +203,7 @@ export function useWorker(opts: UseWorkerOptions) {
             setGeneratingModes(emptyGeneratingModes());
           } else {
             setError(`${msg.mode}: ${errorContent}`);
-            setGeneratingModes(prev => ({ ...prev, [msg.mode!]: false }));
+            setGeneratingModes(prev => ({ ...prev, [msg.mode as ModeKey]: false }));
           }
         }
       }
@@ -235,15 +236,15 @@ export function useWorker(opts: UseWorkerOptions) {
         }
       }, 15000);
 
-      const handler = (msg: any) => {
+      const handler = (msg: { type: string; data?: { type: string; requestId?: string; text?: string } }) => {
         if (msg.type === 'WORKER_UPDATE') {
           const d = msg.data;
-          if ((d.type === 'complete' || d.type === 'error') && d.requestId === requestId) {
+          if ((d?.type === 'complete' || d?.type === 'error') && d?.requestId === requestId) {
             clearTimeout(timeoutId);
             if (pendingQuickTranslateId.current === requestId) {
               pendingQuickTranslateId.current = null;
             }
-            if (d.type === 'complete') {
+            if (d?.type === 'complete') {
               sendResponse({ translatedText: d.text || 'Translation failed.' });
             } else {
               sendResponse({ translatedText: 'Translation failed.' });
@@ -272,7 +273,7 @@ export function useWorker(opts: UseWorkerOptions) {
       browser.runtime.onMessage.removeListener(runtimeListener);
       browser.storage.onChanged.removeListener(storageListener);
     };
-  }, []);
+  }, [setError, setGeneratingModes, setModeResults, setProgress, setSelectedText, setShowSettings, setStatus, settingsRef, statusRef]);
 
   const postMessage = useCallback((msg: any) => {
     // Chrome built-in AI runs in sidepanel context for better API availability.
