@@ -1,31 +1,72 @@
 import { SVG_STRING } from './assets/floatingIcon';
 import tailwindStyles from './content-styles.css?inline';
 
+// ============================================================
+// Content Script - AI Proofduck Floating Icon & Translation Popup
+// ============================================================
+
+interface Settings {
+  engine?: string;
+  apiKey?: string;
+  localModel?: string;
+}
+
+interface WorkerUpdateMessage {
+  type: 'WORKER_UPDATE';
+  data: {
+    type: 'update' | 'complete' | 'error';
+    text?: string;
+    mode?: string;
+    error?: string;
+  };
+}
+
+interface GetPageContentMessage {
+  type: 'GET_PAGE_CONTENT';
+}
+
 export default defineContentScript({
   matches: ['<all_urls>'],
   main() {
+    // State management with weak references where possible
     let floatingIcon: HTMLElement | null = null;
     let translationPopup: HTMLElement | null = null;
     let selectedText = '';
     let lastRect: DOMRect | null = null;
     let hoverTimer: ReturnType<typeof setTimeout> | null = null;
+    let isProcessing = false;
 
     console.log('[AI Proofduck] Content script initialized.');
-    
-    interface Settings {
-      engine?: string;
-      apiKey?: string;
-      localModel?: string;
-    }
 
-    const createElementWithClass = (tag: string, className: string, textContent?: string) => {
+    // Reusable DOMParser instance
+    const svgParser = new DOMParser();
+
+    // ============================================================
+    // Utility Functions
+    // ============================================================
+
+    const createElementWithClass = (
+      tag: string, 
+      className: string, 
+      textContent?: string
+    ): HTMLElement => {
       const el = document.createElement(tag);
       el.className = className;
       if (textContent) el.textContent = textContent;
       return el;
     };
 
-    const createTranslationPopup = () => {
+    const clearElement = (el: HTMLElement): void => {
+      while (el.firstChild) {
+        el.removeChild(el.firstChild);
+      }
+    };
+
+    // ============================================================
+    // Translation Popup
+    // ============================================================
+
+    const createTranslationPopup = (): HTMLElement => {
       const container = document.createElement('div');
       container.id = 'ai-proofduck-translation-popup';
       const shadowRootNode = container.attachShadow({ mode: 'open' });
@@ -48,9 +89,13 @@ export default defineContentScript({
 
       const closeBtn = createElementWithClass('button', 'flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 hover:text-brand-orange dark:bg-[#2d2d44] dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:text-[#ff7a3d]');
       closeBtn.id = 'close-popup-btn';
+      closeBtn.setAttribute('aria-label', 'Close translation popup');
+      
       // Safe SVG creation via DOMParser
-      const parser = new DOMParser();
-      const closeIcon = parser.parseFromString('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>', 'image/svg+xml').documentElement;
+      const closeIcon = svgParser.parseFromString(
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
+        'image/svg+xml'
+      ).documentElement;
       closeBtn.appendChild(closeIcon);
 
       header.appendChild(statusContainer);
@@ -89,56 +134,38 @@ export default defineContentScript({
 
       const copyBtn = createElementWithClass('button', 'flex items-center gap-1 px-2.5 py-1 bg-white border border-slate-200 rounded-md text-[11px] font-semibold text-slate-500 transition-colors hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange dark:bg-[#2d2d44] dark:border-[#4a4a6a] dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]');
       copyBtn.id = 'copy-translation-btn';
-      const copyIcon = parser.parseFromString('<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>', 'image/svg+xml').documentElement;
+      copyBtn.setAttribute('aria-label', 'Copy translation');
+      
+      const copyIcon = svgParser.parseFromString(
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>',
+        'image/svg+xml'
+      ).documentElement;
       copyBtn.appendChild(copyIcon);
+      
       const copySpan = document.createElement('span');
       copySpan.textContent = 'Copy';
+      copySpan.id = 'copy-btn-text';
       copyBtn.appendChild(copySpan);
 
       footer.appendChild(copyBtn);
       popup.appendChild(footer);
 
       shadowRootNode.appendChild(popup);
-      
-      // Events
+
+      // Event handlers
       closeBtn.addEventListener('click', (e: MouseEvent) => {
         e.stopPropagation();
         hideTranslation();
       });
-      
+
       copyBtn.addEventListener('click', async (e: MouseEvent) => {
         e.stopPropagation();
         const text = translationText.textContent;
         if (text && text !== 'Translating...') {
           try {
             await navigator.clipboard.writeText(text);
-            
-            // Copied state (DOM manipulation without innerHTML)
-            while (copyBtn.firstChild) {
-              copyBtn.removeChild(copyBtn.firstChild);
-            }
-            const copiedSpan = document.createElement('span');
-            copiedSpan.textContent = 'Copied!';
-            copyBtn.appendChild(copiedSpan);
-
-            copyBtn.classList.add('bg-brand-orange', 'text-white', 'border-brand-orange');
-            copyBtn.classList.remove('bg-white', 'text-slate-500', 'hover:bg-brand-orange-light', 'hover:text-brand-orange');
-            
-            setTimeout(() => {
-              // Restore original state
-              while (copyBtn.firstChild) {
-                copyBtn.removeChild(copyBtn.firstChild);
-              }
-              // Re-parse icon to ensure fresh node
-              const freshIcon = parser.parseFromString('<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>', 'image/svg+xml').documentElement;
-              copyBtn.appendChild(freshIcon);
-              const freshSpan = document.createElement('span');
-              freshSpan.textContent = 'Copy';
-              copyBtn.appendChild(freshSpan);
-
-              copyBtn.classList.remove('bg-brand-orange', 'text-white', 'border-brand-orange');
-              copyBtn.classList.add('bg-white', 'text-slate-500', 'hover:bg-brand-orange-light', 'hover:text-brand-orange');
-            }, 2000);
+            updateCopyButtonState(copyBtn, copySpan, true);
+            setTimeout(() => updateCopyButtonState(copyBtn, copySpan, false), 2000);
           } catch (err) {
             console.error('[AI Proofduck] Copy failed:', err);
           }
@@ -149,11 +176,45 @@ export default defineContentScript({
       return container;
     };
 
-    const showTranslation = async (text: string, rect: DOMRect) => {
-      console.log('[AI Proofduck] Showing translation for:', text.substring(0, 20) + '...');
+    const updateCopyButtonState = (btn: HTMLElement, textSpan: HTMLElement, copied: boolean): void => {
+      clearElement(btn);
       
+      if (copied) {
+        textSpan.textContent = 'Copied!';
+        btn.appendChild(textSpan);
+        btn.classList.add('bg-brand-orange', 'text-white', 'border-brand-orange');
+        btn.classList.remove('bg-white', 'text-slate-500', 'hover:bg-brand-orange-light', 'hover:text-brand-orange');
+      } else {
+        const freshIcon = svgParser.parseFromString(
+          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>',
+          'image/svg+xml'
+        ).documentElement;
+        btn.appendChild(freshIcon);
+        
+        textSpan.textContent = 'Copy';
+        btn.appendChild(textSpan);
+        
+        btn.classList.remove('bg-brand-orange', 'text-white', 'border-brand-orange');
+        btn.classList.add('bg-white', 'text-slate-500', 'hover:bg-brand-orange-light', 'hover:text-brand-orange');
+      }
+    };
+
+    // ============================================================
+    // Translation Logic
+    // ============================================================
+
+    const showTranslation = async (text: string, rect: DOMRect): Promise<void> => {
+      if (isProcessing) return;
+      isProcessing = true;
+
+      console.log('[AI Proofduck] Showing translation for:', text.substring(0, 20) + '...');
+
       // Update storage so sidepanel stays in sync
-      await browser.storage.local.set({ selectedText: text });
+      try {
+        await browser.storage.local.set({ selectedText: text });
+      } catch (e) {
+        console.warn('[AI Proofduck] Failed to update storage:', e);
+      }
 
       if (!translationPopup) {
         translationPopup = createTranslationPopup();
@@ -167,15 +228,46 @@ export default defineContentScript({
       const translateSection = shadowRootNode.getElementById('translation-section')!;
       const actionSection = shadowRootNode.getElementById('action-section')!;
       const copyBtn = shadowRootNode.getElementById('copy-translation-btn')!;
-      
-      sourceEl.textContent = text;
 
-      const showActionUI = (msg: string, btnText: string, onAction: () => void | Promise<void>) => {
+      sourceEl.textContent = text;
+      contentEl.textContent = 'Translating...';
+      statusLabel.textContent = 'TRANSLATING';
+      showTranslateUI();
+
+      positionPopup(translationPopup, rect);
+      translationPopup.style.display = 'block';
+
+      // Request translation from background
+      try {
+        const response = await browser.runtime.sendMessage({
+          type: 'QUICK_TRANSLATE',
+          text,
+        }) as { translatedText?: string; error?: string };
+
+        if (response?.error) {
+          handleError(response.error, text, rect);
+        } else if (response?.translatedText) {
+          contentEl.textContent = response.translatedText;
+          statusLabel.textContent = 'COMPLETED';
+        }
+      } catch (e) {
+        handleError('CONNECTION_FAILED', text, rect);
+      } finally {
+        isProcessing = false;
+      }
+
+      function showTranslateUI(): void {
+        translateSection.classList.remove('hidden');
+        actionSection.classList.add('hidden');
+        if (copyBtn) copyBtn.style.visibility = 'visible';
+      }
+
+      function showActionUI(msg: string, btnText: string, onAction: () => void | Promise<void>): void {
         translateSection.classList.add('hidden');
         actionSection.classList.remove('hidden');
         if (copyBtn) (copyBtn as HTMLElement).style.visibility = 'hidden';
-        
-        while (actionContentEl.firstChild) { actionContentEl.removeChild(actionContentEl.firstChild); } // Clear previous content safely
+
+        clearElement(actionContentEl);
         const container = createElementWithClass('div', 'flex flex-col gap-3');
         const msgSpan = createElementWithClass('span', 'text-[13px] leading-relaxed text-slate-600 dark:text-slate-400', msg);
         const actionBtn = createElementWithClass('button', 'w-full py-2 bg-brand-orange text-white text-[12px] font-bold rounded-lg shadow-sm transition-all hover:bg-brand-orange-dark hover:shadow-md active:scale-[0.98]', btnText);
@@ -189,220 +281,160 @@ export default defineContentScript({
           e.stopPropagation();
           onAction();
         });
-      };
+      }
 
-      const showTranslateUI = () => {
-        translateSection.classList.remove('hidden');
-        actionSection.classList.add('hidden');
-        if (copyBtn) (copyBtn as HTMLElement).style.visibility = 'visible';
-      };
-
-      const handleError = (errorCode: string) => {
+      function handleError(errorCode: string, text: string, rect: DOMRect): void {
         statusLabel.textContent = 'ACTION REQUIRED';
-        
-        let errorMsg = 'Unknown error.';
-        let btnLabel = 'Check Settings';
-        let onAction: () => void | Promise<void> = async () => {
-          await browser.storage.local.set({ activeTab: 'settings' });
-          browser.runtime.sendMessage({ type: 'OPEN_SIDE_PANEL' });
-          hideTranslation();
+
+        const errorHandlers: Record<string, { msg: string; btn: string; action: () => void | Promise<void> }> = {
+          NO_API_KEY: {
+            msg: 'API Key is missing. Please configure it in settings.',
+            btn: 'Set API Key',
+            action: openSettings,
+          },
+          NO_MODEL: {
+            msg: 'Local model is not selected. Please choose a model.',
+            btn: 'Select Model',
+            action: openSettings,
+          },
+          ENGINE_NOT_READY: {
+            msg: 'Engine is not ready. Open sidepanel to initialize.',
+            btn: 'Open Sidepanel',
+            action: openSidePanel,
+          },
+          UNAVAILABLE: {
+            msg: 'Translation unavailable. Ensure sidepanel is active.',
+            btn: 'Open Sidepanel',
+            action: openSidePanel,
+          },
+          ENGINE_LOADING: {
+            msg: 'Initializing the model may take a few minutes, please do not close the sidebar.',
+            btn: 'View Progress',
+            action: openSidePanel,
+          },
+          TIMEOUT: {
+            msg: 'Translation timed out. Please try again.',
+            btn: 'Retry',
+            action: () => showTranslation(text, rect),
+          },
+          CONNECTION_FAILED: {
+            msg: 'Connection failed. Is the sidepanel open?',
+            btn: 'Try Opening Sidepanel',
+            action: openSidePanel,
+          },
         };
 
-        if (errorCode === 'NO_API_KEY') {
-          errorMsg = 'API Key is missing. Please configure it in settings.';
-          btnLabel = 'Set API Key';
-        } else if (errorCode === 'NO_MODEL') {
-          errorMsg = 'Local model is not selected. Please choose a model.';
-          btnLabel = 'Select Model';
-        } else if (errorCode === 'ENGINE_NOT_READY' || errorCode === 'UNAVAILABLE') {
-          errorMsg = errorCode === 'UNAVAILABLE' 
-            ? 'Translation unavailable. Ensure sidepanel is active.' 
-            : 'Engine is not ready. Open sidepanel to initialize.';
-          btnLabel = 'Open Sidepanel';
-          onAction = async () => {
-            browser.runtime.sendMessage({ type: 'OPEN_SIDE_PANEL' });
-            hideTranslation();
-          };
-        } else if (errorCode === 'ENGINE_LOADING') {
-          errorMsg = 'Initializing the model may take a few minutes, please do not close the sidebar.';
-          btnLabel = 'View Progress';
-          onAction = async () => {
-            browser.runtime.sendMessage({ type: 'OPEN_SIDE_PANEL' });
-            hideTranslation();
-          };
-        } else if (errorCode === 'TIMEOUT') {
-          errorMsg = 'Translation timed out. Please try again.';
-          btnLabel = 'Retry';
-          onAction = async () => {
-            showTranslation(text, rect);
-          };
-        } else if (errorCode === 'CONNECTION_FAILED') {
-          errorMsg = 'Connection failed. Is the sidepanel open?';
-          btnLabel = 'Try Opening Sidepanel';
-          onAction = async () => {
-            browser.runtime.sendMessage({ type: 'OPEN_SIDE_PANEL' });
-            hideTranslation();
-          };
-        }
-
-        showActionUI(errorMsg, btnLabel, onAction);
-      };
-      
-      // Proactive check: check both settings and engine status
-      const storage = await browser.storage.local.get(['settings', 'engineStatus']);
-      let settings = storage.settings as Settings | undefined;
-      const engineStatus = storage.engineStatus as string | undefined;
-      
-      // If settings don't exist in storage yet, use defaults similar to App.tsx
-      if (!settings) {
-        settings = {
-          engine: 'local-gpu',
-          localModel: 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC'
+        const handler = errorHandlers[errorCode] || {
+          msg: `Error: ${errorCode}`,
+          btn: 'Check Settings',
+          action: openSettings,
         };
+
+        showActionUI(handler.msg, handler.btn, handler.action);
       }
 
-      // Handle loading status proactively
-      if (engineStatus === 'loading') {
-        handleError('ENGINE_LOADING');
-        updatePopupPosition(rect);
-        translationPopup.style.display = 'block';
-        return;
+      function openSettings(): void {
+        browser.storage.local.set({ activeTab: 'settings' });
+        browser.runtime.sendMessage({ type: 'OPEN_SIDE_PANEL' });
+        hideTranslation();
       }
 
-      if (settings.engine === 'online' && !settings.apiKey) {
-        const session = await browser.storage.session.get('apiKey').catch(() => ({ apiKey: undefined }));
-        if (!session.apiKey) {
-          handleError('NO_API_KEY');
-          updatePopupPosition(rect);
-          translationPopup.style.display = 'block';
-          return;
-        }
-      } else if ((settings.engine === 'local-gpu' || settings.engine === 'local-wasm') && !settings.localModel) {
-        handleError('NO_MODEL');
-        updatePopupPosition(rect);
-        translationPopup.style.display = 'block';
-        return;
-      } else if ((settings.engine === 'local-gpu' || settings.engine === 'local-wasm') && engineStatus !== 'ready') {
-        handleError('ENGINE_NOT_READY');
-        updatePopupPosition(rect);
-        translationPopup.style.display = 'block';
-        return;
-      }
-
-      // Default translation UI
-      showTranslateUI();
-      contentEl.textContent = 'Translating...';
-      statusLabel.textContent = 'TRANSLATING';
-
-      updatePopupPosition(rect);
-      translationPopup.style.display = 'block';
-
-      try {
-        const response = await browser.runtime.sendMessage({
-          type: 'QUICK_TRANSLATE',
-          text: text
-        });
-
-        if (response && response.translatedText) {
-          contentEl.textContent = response.translatedText;
-          statusLabel.textContent = 'COMPLETED';
-        } else if (response && response.error) {
-          handleError(response.error);
-        } else if (response && response.status === 'translation_started') {
-          // Successfully started, now wait for WORKER_UPDATE broadcasts
-          console.log('[AI Proofduck] Translation intent accepted by background.');
-        } else {
-          handleError('UNAVAILABLE');
-        }
-      } catch (err) {
-        console.error('[AI Proofduck] Translation message error:', err);
-        handleError('CONNECTION_FAILED');
+      function openSidePanel(): void {
+        browser.runtime.sendMessage({ type: 'OPEN_SIDE_PANEL' });
+        hideTranslation();
       }
     };
 
-    const updatePopupPosition = (rect: DOMRect) => {
-      if (!translationPopup) return;
-      
-      // Smart Positioning with Collision Detection
-      const popupWidth = 300;
-      const popupMaxHeight = 280; // Adjusted for error states
-      const offset = 8;
-      const margin = 15;
-      
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-      const scrollY = window.scrollY;
-      const scrollX = window.scrollX;
-
-      let left = rect.left + scrollX;
-      let top = rect.bottom + scrollY + offset;
-
-      // Vertical Check: Try Below first, then Above if no space
-      const spaceBelow = viewportHeight - (rect.bottom - scrollY);
-      const spaceAbove = rect.top - margin;
-      
-      if (spaceBelow < popupMaxHeight + margin && spaceAbove > spaceBelow) {
-        // Show ABOVE
-        top = rect.top + scrollY - popupMaxHeight - offset;
-        // Adjust if it still goes off top
-        if (top < scrollY + margin) top = scrollY + margin;
-      } else {
-        // Show BELOW (default)
-        // Adjust if it goes off bottom
-        if (top + popupMaxHeight > scrollY + viewportHeight - margin) {
-            top = scrollY + viewportHeight - popupMaxHeight - margin;
-        }
-      }
-
-      // Horizontal Check: Center if possible, or snap to edges
-      if (left + popupWidth > scrollX + viewportWidth - margin) {
-        left = scrollX + viewportWidth - popupWidth - margin;
-      }
-      if (left < scrollX + margin) left = scrollX + margin;
-
-      translationPopup.style.left = `${left}px`;
-      translationPopup.style.top = `${top}px`;
-    };
-
-    const hideTranslation = () => {
+    const hideTranslation = (): void => {
       if (translationPopup) {
         translationPopup.style.display = 'none';
       }
+      isProcessing = false;
     };
 
-    const createFloatingIcon = () => {
+    const positionPopup = (popup: HTMLElement, rect: DOMRect): void => {
+      const popupWidth = 300;
+      const popupHeight = 250;
+      const offset = 10;
+
+      let left = rect.left + window.scrollX;
+      let top = rect.bottom + window.scrollY + offset;
+
+      // Boundary checks
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const scrollX = window.scrollX;
+      const scrollY = window.scrollY;
+
+      if (left + popupWidth > scrollX + viewportWidth) {
+        left = scrollX + viewportWidth - popupWidth - 10;
+      }
+      if (left < scrollX) {
+        left = scrollX + 10;
+      }
+      if (top + popupHeight > scrollY + viewportHeight) {
+        top = rect.top + window.scrollY - popupHeight - offset;
+      }
+      if (top < scrollY) {
+        top = scrollY + 10;
+      }
+
+      popup.style.left = `${left}px`;
+      popup.style.top = `${top}px`;
+    };
+
+    // ============================================================
+    // Floating Icon
+    // ============================================================
+
+    const createFloatingIcon = (): HTMLElement => {
       const container = document.createElement('div');
       container.id = 'ai-proofduck-icon-container';
-      // Force absolute positioning and high z-index to avoid page interference
-      container.style.position = 'absolute';
-      container.style.zIndex = '2147483647';
-      container.style.display = 'none';
-      container.style.pointerEvents = 'auto';
-      container.style.cursor = 'pointer';
-      
+      container.style.cssText = 'position:absolute;z-index:2147483646;display:none;';
+
       const shadowRootNode = container.attachShadow({ mode: 'open' });
 
-      // Tailwind styles
-      const twStyle = document.createElement('style');
-      twStyle.textContent = tailwindStyles;
-      shadowRootNode.appendChild(twStyle);
+      // Styles
+      const style = document.createElement('style');
+      style.textContent = `
+        .icon-wrapper {
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%);
+          box-shadow: 0 2px 8px rgba(255, 107, 53, 0.4);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .icon-wrapper:hover {
+          transform: scale(1.1);
+          box-shadow: 0 4px 12px rgba(255, 107, 53, 0.5);
+        }
+        .icon-wrapper svg {
+          width: 16px;
+          height: 16px;
+          color: white;
+        }
+      `;
+      shadowRootNode.appendChild(style);
 
-      const icon = document.createElement('div');
-      // Using Tailwind for basic styling and layout
-      icon.className = 'w-6 h-6 flex drop-shadow-md transition-transform duration-200 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] hover:scale-[1.15]';
+      const icon = createElementWithClass('div', 'icon-wrapper');
+      icon.setAttribute('role', 'button');
+      icon.setAttribute('aria-label', 'Open AI Proofduck');
 
-      // Robust SVG parsing: remove any leading/trailing whitespace
-      const parser = new DOMParser();
-      const svgDoc = parser.parseFromString(SVG_STRING.trim(), 'image/svg+xml');
+      // Parse SVG safely
+      const svgDoc = svgParser.parseFromString(SVG_STRING, 'image/svg+xml');
+      const parserError = svgDoc.querySelector('parsererror');
       
-      const parserError = svgDoc.getElementsByTagName('parsererror');
-      if (parserError.length > 0) {
-        console.error('[AI Proofduck] SVG parse error:', parserError[0].textContent);
-        // Fallback or debug info
+      if (parserError) {
+        console.error('[AI Proofduck] SVG parse error:', parserError.textContent);
         const errorMsg = document.createElement('div');
         errorMsg.textContent = '🐣';
         icon.appendChild(errorMsg);
-      } else if (svgDoc.documentElement && svgDoc.documentElement.nodeName === 'svg') {
+      } else if (svgDoc.documentElement?.nodeName === 'svg') {
         icon.appendChild(svgDoc.documentElement);
       } else {
         console.error('[AI Proofduck] SVG document root not found or invalid.');
@@ -410,10 +442,11 @@ export default defineContentScript({
 
       shadowRootNode.appendChild(icon);
 
+      // Event handlers
       container.addEventListener('mouseenter', () => {
         if (hoverTimer) clearTimeout(hoverTimer);
         hoverTimer = setTimeout(() => {
-          if (selectedText && lastRect) {
+          if (selectedText && lastRect && !isProcessing) {
             showTranslation(selectedText, lastRect);
           }
         }, 800);
@@ -431,9 +464,16 @@ export default defineContentScript({
       icon.addEventListener('click', async (e: MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
+        
         // Send message first to preserve user gesture context
         browser.runtime.sendMessage({ type: 'OPEN_SIDE_PANEL' });
-        await browser.storage.local.set({ selectedText });
+        
+        try {
+          await browser.storage.local.set({ selectedText });
+        } catch (err) {
+          console.warn('[AI Proofduck] Failed to save selection:', err);
+        }
+        
         hideIcon();
         hideTranslation();
       });
@@ -442,13 +482,13 @@ export default defineContentScript({
       return container;
     };
 
-    const showIcon = (rect: DOMRect) => {
+    const showIcon = (rect: DOMRect): void => {
       if (!floatingIcon) {
         floatingIcon = createFloatingIcon();
       }
 
-      const iconWidth = 24;
-      const iconHeight = 24;
+      const iconWidth = 28;
+      const iconHeight = 28;
       const offset = 5;
 
       let left = rect.right + window.scrollX - iconWidth / 2;
@@ -459,35 +499,50 @@ export default defineContentScript({
       const scrollX = window.scrollX;
       const scrollY = window.scrollY;
 
-      if (left + iconWidth > scrollX + viewportWidth - 10) left = scrollX + viewportWidth - iconWidth - 10;
-      if (left < scrollX + 10) left = scrollX + 10;
-      if (top < scrollY + 10) top = rect.bottom + window.scrollY + offset;
-      if (top + iconHeight > scrollY + viewportHeight - 10) top = scrollY + viewportHeight - iconHeight - 10;
+      // Boundary checks
+      if (left + iconWidth > scrollX + viewportWidth - 10) {
+        left = scrollX + viewportWidth - iconWidth - 10;
+      }
+      if (left < scrollX + 10) {
+        left = scrollX + 10;
+      }
+      if (top < scrollY + 10) {
+        top = rect.bottom + window.scrollY + offset;
+      }
+      if (top + iconHeight > scrollY + viewportHeight - 10) {
+        top = scrollY + viewportHeight - iconHeight - 10;
+      }
 
       floatingIcon.style.left = `${left}px`;
       floatingIcon.style.top = `${top}px`;
       floatingIcon.style.display = 'block';
     };
 
-    const hideIcon = () => {
+    const hideIcon = (): void => {
       if (floatingIcon) {
         floatingIcon.style.display = 'none';
       }
     };
 
-    document.addEventListener('mouseup', (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
+    // ============================================================
+    // Document Event Listeners
+    // ============================================================
+
+    const isInsideUI = (target: HTMLElement): boolean => {
       const iconContainer = document.getElementById('ai-proofduck-icon-container');
       const popupContainer = document.getElementById('ai-proofduck-translation-popup');
-      
-      const isInsideUI = (iconContainer && iconContainer.contains(target)) || 
-                        (popupContainer && popupContainer.contains(target));
+      return !!(iconContainer?.contains(target) || popupContainer?.contains(target));
+    };
 
-      if (isInsideUI) {
-        return; 
+    document.addEventListener('mouseup', (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+
+      if (isInsideUI(target)) {
+        return;
       }
 
-      setTimeout(() => {
+      // Use requestAnimationFrame for better performance
+      requestAnimationFrame(() => {
         const selection = window.getSelection();
         const text = selection?.toString().trim();
 
@@ -501,64 +556,104 @@ export default defineContentScript({
         } else {
           hideIcon();
         }
-      }, 10);
+      });
     });
 
     document.addEventListener('mousedown', (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      const iconContainer = document.getElementById('ai-proofduck-icon-container');
-      const popupContainer = document.getElementById('ai-proofduck-translation-popup');
-      
-      const isInsideUI = (iconContainer && iconContainer.contains(target)) || 
-                        (popupContainer && popupContainer.contains(target));
 
-      if (!isInsideUI) {
+      if (!isInsideUI(target)) {
         hideIcon();
         hideTranslation();
-        if (hoverTimer) clearTimeout(hoverTimer);
-      }
-    });
-
-    browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.type === 'GET_PAGE_CONTENT') {
-        const selection = window.getSelection();
-        const text = selection?.toString().trim();
-        sendResponse({ content: text || document.body.innerText });
-      } else if (message.type === 'WORKER_UPDATE') {
-        // Handle incoming translation results for the floating popup
-        const { type, text, mode: msgMode } = message.data;
-        if (translationPopup && translationPopup.style.display === 'block' && msgMode === 'translate') {
-          const shadowRootNode = translationPopup.shadowRoot!;
-          const contentEl = shadowRootNode.getElementById('translation-text')!;
-          const statusLabel = shadowRootNode.getElementById('status-label')!;
-          
-          if (type === 'update' || type === 'complete') {
-            contentEl.textContent = text || 'Translating...';
-            if (type === 'complete') statusLabel.textContent = 'COMPLETED';
-          } else if (type === 'error') {
-            statusLabel.textContent = 'ERROR';
-            contentEl.textContent = `Error: ${message.data.error}`;
-          }
+        if (hoverTimer) {
+          clearTimeout(hoverTimer);
+          hoverTimer = null;
         }
       }
     });
 
-    // Listen for storage changes to update popup status (e.g. when engine becomes ready)
-    browser.storage.onChanged.addListener((changes, areaName) => {
-      if (areaName === 'local' && changes.engineStatus && translationPopup && translationPopup.style.display === 'block') {
-        const newStatus = changes.engineStatus.newValue as string;
-        const oldStatus = changes.engineStatus.oldValue as string;
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      hideIcon();
+      hideTranslation();
+    });
+
+    // Handle scroll (throttled)
+    let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
+    window.addEventListener('scroll', () => {
+      if (scrollTimeout) return;
+      scrollTimeout = setTimeout(() => {
+        hideIcon();
+        hideTranslation();
+        scrollTimeout = null;
+      }, 100);
+    }, { passive: true });
+
+    // ============================================================
+    // Runtime Message Handlers
+    // ============================================================
+
+    browser.runtime.onMessage.addListener((message: GetPageContentMessage | WorkerUpdateMessage, _sender, sendResponse) => {
+      if (message.type === 'GET_PAGE_CONTENT') {
+        const selection = window.getSelection();
+        const text = selection?.toString().trim();
         
-        console.log(`[AI Proofduck] Engine status changed: ${oldStatus} -> ${newStatus}`);
+        // Get main content without scripts and styles
+        let pageContent = '';
+        if (!text) {
+          const bodyClone = document.body.cloneNode(true) as HTMLElement;
+          const scripts = bodyClone.querySelectorAll('script, style, nav, header, footer, aside');
+          scripts.forEach(el => el.remove());
+          pageContent = bodyClone.innerText.slice(0, 10000); // Limit content length
+        }
         
-        // If it becomes ready and we were showing an "Action Required" UI, retry translation
-        if (newStatus === 'ready' && selectedText) {
+        sendResponse({ content: text || pageContent });
+        return true;
+      }
+
+      if (message.type === 'WORKER_UPDATE') {
+        const { type, text, mode: msgMode, error } = message.data;
+        
+        if (translationPopup?.style.display === 'block' && msgMode === 'translate') {
           const shadowRootNode = translationPopup.shadowRoot!;
+          const contentEl = shadowRootNode.getElementById('translation-text');
           const statusLabel = shadowRootNode.getElementById('status-label');
-          if (statusLabel && statusLabel.textContent === 'ACTION_REQUIRED') {
-            console.log('[AI Proofduck] Engine ready, retrying translation automatically...');
-            showTranslation(selectedText, lastRect || new DOMRect());
+
+          if (contentEl && statusLabel) {
+            if (type === 'update' || type === 'complete') {
+              contentEl.textContent = text || 'Translating...';
+              if (type === 'complete') statusLabel.textContent = 'COMPLETED';
+            } else if (type === 'error') {
+              statusLabel.textContent = 'ERROR';
+              contentEl.textContent = `Error: ${error}`;
+            }
           }
+        }
+        return true;
+      }
+
+      return false;
+    });
+
+    // Listen for storage changes
+    browser.storage.onChanged.addListener((changes, areaName) => {
+      if (areaName !== 'local' || !changes.engineStatus || !translationPopup) {
+        return;
+      }
+
+      const newStatus = changes.engineStatus.newValue as string;
+      const oldStatus = changes.engineStatus.oldValue as string;
+
+      console.log(`[AI Proofduck] Engine status changed: ${oldStatus} -> ${newStatus}`);
+
+      // Auto-retry if engine becomes ready
+      if (newStatus === 'ready' && selectedText && translationPopup.style.display === 'block') {
+        const shadowRootNode = translationPopup.shadowRoot!;
+        const statusLabel = shadowRootNode.getElementById('status-label');
+        
+        if (statusLabel?.textContent === 'ACTION REQUIRED') {
+          console.log('[AI Proofduck] Engine ready, retrying translation...');
+          showTranslation(selectedText, lastRect || new DOMRect());
         }
       }
     });

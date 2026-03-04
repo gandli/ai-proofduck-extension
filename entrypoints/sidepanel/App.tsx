@@ -84,13 +84,13 @@ function App() {
     loadPersistedSettings().then(res => {
       let currentText = res.text;
       if (res.text) setSelectedText(res.text);
-      if (res.mode) setMode(res.mode);
+      if (res.mode) setMode(res.mode as ModeKey);
       
       const triggerAction = (textToUse: string) => {
         if (res.autoTrigger) {
           // Wrap in a timeout to ensure state has settled
           setTimeout(() => {
-            handleAction(textToUse, res.mode);
+            handleAction(textToUse, res.mode as ModeKey);
           }, 100);
         }
       };
