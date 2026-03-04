@@ -66,6 +66,10 @@ export function LocalModelSelector({ settings, updateSettings, postMessage, stat
       <button 
         className="w-full flex items-center justify-between p-3 border border-slate-200 rounded-xl bg-slate-50 text-sm transition-all hover:bg-white hover:border-brand-orange focus:outline-none dark:bg-brand-dark-bg dark:border-[#4a4a6a] dark:text-slate-200"
         onClick={() => setIsOpen(!isOpen)}
+        role="combobox"
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        aria-controls="local-model-listbox"
       >
         <span className="truncate font-medium">
           {currentModel ? currentModel.name : t.model_label}
@@ -106,12 +110,14 @@ export function LocalModelSelector({ settings, updateSettings, postMessage, stat
             </div>
 
             {/* Models */}
-            <div className="flex-1 overflow-y-auto p-2">
+            <div id="local-model-listbox" role="listbox" className="flex-1 overflow-y-auto p-2">
               {filteredCategories.find(c => c.label === selectedCategory)?.models.map(m => {
                 const warmed = isWarmed(m.value);
                 return (
                   <button
                     key={m.value}
+                    role="option"
+                    aria-selected={settings.localModel === m.value}
                     className={`w-full text-left p-3 rounded-lg mb-1 transition-all flex flex-col gap-1 ${settings.localModel === m.value ? 'bg-brand-orange/5 border border-brand-orange/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                     onClick={() => {
                       updateSettings({ localModel: m.value }, postMessage);

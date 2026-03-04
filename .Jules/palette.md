@@ -1,0 +1,3 @@
+## 2025-03-04 - WAI-ARIA Combobox Attributes for Custom Dropdowns
+**Learning:** Custom dropdown components, such as `LocalModelSelector`, need explicit WAI-ARIA attributes to ensure screen readers can understand and navigate their state. Without these, screen reader users might not know the control expands, what it controls, or which option is currently selected.
+**Action:** When building custom `select` or `dropdown` components, implement the combobox pattern: `role="combobox"`, `aria-expanded`, `aria-haspopup`, `aria-controls` on the trigger, `role="listbox"` on the list container, and `role="option"` with `aria-selected` on individual items.

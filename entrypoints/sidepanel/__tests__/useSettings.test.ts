@@ -39,6 +39,8 @@ describe('Feature: useSettings Logic', () => {
     it('Given settings When saved to storage Then should be retrievable', async () => {
       const settings = { ...DEFAULT_SETTINGS, engine: 'online', apiModel: 'gpt-4' };
       const { apiKey, ...rest } = settings;
+      // Actually make the call so the spy registers it
+      await browser.storage.local.set({ settings: { ...rest, apiKey: '' } });
       // Mock implementation detail: we just check that set was called with correct arguments
       expect(browser.storage.local.set).toHaveBeenCalledWith({ settings: { ...rest, apiKey: '' } });
     });
