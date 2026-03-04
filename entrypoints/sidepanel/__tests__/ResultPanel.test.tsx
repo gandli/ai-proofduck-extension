@@ -36,20 +36,23 @@ describe('Feature: Result Panel', () => {
     });
 
     it('Given local-gpu engine When checking Then should NOT show warning', () => {
-      const engine = 'local-gpu';
-      const showWarning = engine === 'local-wasm';
+      const engine = 'local-gpu' as const;
+      const targetEngine = 'local-wasm' as const;
+      const showWarning = engine === targetEngine;
       expect(showWarning).toBe(false);
     });
 
     it('Given online engine When checking Then should NOT show warning', () => {
-      const engine = 'online';
-      const showWarning = engine === 'local-wasm';
+      const engine = 'online' as const;
+      const targetEngine = 'local-wasm' as const;
+      const showWarning = engine === targetEngine;
       expect(showWarning).toBe(false);
     });
 
     it('Given chrome-ai engine When checking Then should NOT show warning', () => {
-      const engine = 'chrome-ai';
-      const showWarning = engine === 'local-wasm';
+      const engine = 'chrome-ai' as const;
+      const targetEngine = 'local-wasm' as const;
+      const showWarning = engine === targetEngine;
       expect(showWarning).toBe(false);
     });
   });

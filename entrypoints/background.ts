@@ -24,7 +24,7 @@ export default defineBackground(() => {
 
     console.log('[Background] Creating Offscreen Document...');
     await chrome.offscreen.createDocument({
-      url: browser.runtime.getURL('offscreen.html'),
+      url: browser.runtime.getURL('/offscreen.html'),
       reasons: [chrome.offscreen.Reason.LOCAL_STORAGE], // Accessing WebGPU/Worker context
       justification: 'Hosting WebLLM engine for background AI processing'
     });

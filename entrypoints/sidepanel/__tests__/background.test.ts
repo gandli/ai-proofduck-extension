@@ -63,7 +63,7 @@ describe('Feature: Background Script', () => {
   describe('Scenario: OPEN_SIDE_PANEL message routing', () => {
     it('Given message with tab info When received Then should have valid tab data', () => {
       const message = { type: 'OPEN_SIDE_PANEL' };
-      const sender = { tab: { id: 5, windowId: 2 } };
+      const sender = { tab: { id: 5, windowId: 2 } as { id: number; windowId: number } };
       const shouldOpen = message.type === 'OPEN_SIDE_PANEL' && !!sender.tab?.id && !!sender.tab?.windowId;
       expect(shouldOpen).toBe(true);
     });

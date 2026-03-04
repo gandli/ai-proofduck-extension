@@ -6,7 +6,7 @@ import { ResultPanel } from '../components/ResultPanel';
 import { memo } from 'react';
 
 // Mock chrome/browser API for App rendering
-global.browser = {
+(globalThis as any).browser = {
   runtime: {
     getURL: vi.fn(),
     onMessage: { addListener: vi.fn(), removeListener: vi.fn() },
@@ -30,7 +30,7 @@ global.browser = {
   i18n: {
     getMessage: vi.fn((key) => key),
   },
-} as any;
+} as unknown as typeof chrome;
 
 global.chrome = global.browser;
 

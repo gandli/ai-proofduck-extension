@@ -69,11 +69,11 @@ function createSSEStream(chunks: string[]) {
   let index = 0;
   return {
     getReader: () => ({
-      read: vi.fn().mockImplementation(async () => {
+      read: async () => {
         if (index >= chunks.length) return { done: true, value: undefined };
         const encoder = new TextEncoder();
         return { done: false, value: encoder.encode(chunks[index++]) };
-      }),
+      },
     }),
   };
 }
