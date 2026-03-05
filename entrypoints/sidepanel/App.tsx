@@ -165,7 +165,7 @@ function App() {
 
         <section className="flex flex-col flex-1 min-h-0">
           <div className="flex items-center justify-between mb-2.5">
-            <h3 className="m-0 text-[13px] font-semibold text-slate-500 dark:text-slate-400">{t.original_text}</h3>
+            <h3 id="original-text-heading" className="m-0 text-[13px] font-semibold text-slate-500 dark:text-slate-400">{t.original_text}</h3>
             <div className="flex gap-1.5">
               <button className="flex items-center justify-center p-1.5 text-slate-500 transition-all bg-white border border-slate-200 rounded-md cursor-pointer shadow-sm hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange hover:shadow-md hover:-translate-y-px dark:bg-brand-dark-surface dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]" onClick={() => { setSelectedText(''); setModeResults(emptyModeResults()); }} title={t.clear_btn || 'Clear'} aria-label={t.clear_btn || 'Clear'}><ClearIcon /></button>
               <button className="flex items-center justify-center p-1.5 transition-all border rounded-md cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-px bg-brand-orange-light border-brand-orange/20 text-brand-orange hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange dark:bg-brand-dark-surface dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]" onClick={() => handleFetchContent()} title={t.fetch_page_content || 'Fetch Page Content'} aria-label={t.fetch_page_content || 'Fetch Page Content'}><FetchIcon /></button>
@@ -173,7 +173,7 @@ function App() {
             </div>
           </div>
           <div className="relative flex flex-col flex-1 min-h-0">
-            <textarea className="flex-1 w-full min-h-[80px] p-3.5 text-sm leading-relaxed bg-white border-[1.5px] border-slate-200 rounded-xl outline-none resize-y shadow-sm transition-all whitespace-pre-wrap break-words text-slate-700 hover:border-slate-300 focus:bg-white focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10 dark:bg-[#23233a] dark:border-[#3f3f5a] dark:text-slate-200 dark:focus:border-[#ff7a3d] dark:focus:ring-[#ff7a3d]/10 dark:bg-brand-dark-bg" value={selectedText} onChange={e => setSelectedText(e.target.value)} placeholder={t.placeholder} />
+            <textarea aria-labelledby="original-text-heading" className="flex-1 w-full min-h-[80px] p-3.5 text-sm leading-relaxed bg-white border-[1.5px] border-slate-200 rounded-xl outline-none resize-y shadow-sm transition-all whitespace-pre-wrap break-words text-slate-700 hover:border-slate-300 focus:bg-white focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10 dark:bg-[#23233a] dark:border-[#3f3f5a] dark:text-slate-200 dark:focus:border-[#ff7a3d] dark:focus:ring-[#ff7a3d]/10 dark:bg-brand-dark-bg" value={selectedText} onChange={e => setSelectedText(e.target.value)} placeholder={t.placeholder} />
             {selectedText && <div className="absolute bottom-2 right-3 text-[11px] text-slate-400 pointer-events-none bg-white/80 px-1.5 py-0.5 rounded dark:bg-[#1a1a2e]/80 dark:text-slate-500">{selectedText.length} {t.char_count}</div>}
           </div>
         </section>
