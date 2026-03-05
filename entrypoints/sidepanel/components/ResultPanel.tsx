@@ -33,7 +33,7 @@ export const ResultPanel = memo(function ResultPanel({
   return (
     <section className={`flex flex-col flex-1 min-h-0 transition-opacity ${status === 'loading' ? 'opacity-30' : 'opacity-100'}`}>
       <div className="flex items-center justify-between mb-2.5">
-        <h3 className="m-0 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
+        <h3 id={`result-heading-${mode}`} className="m-0 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
           {t[modeDef.resultLabelKey]}
         </h3>
         {result && (
@@ -57,6 +57,7 @@ export const ResultPanel = memo(function ResultPanel({
       )}
       <div className="relative flex flex-col flex-1 min-h-0">
         <textarea
+          aria-labelledby={`result-heading-${mode}`}
           className="flex-1 w-full min-h-[80px] p-3.5 text-sm leading-relaxed border rounded-xl outline-none resize-y shadow-sm transition-all whitespace-pre-wrap break-words bg-brand-orange-light border-brand-orange/30 animate-fadeIn focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10 dark:bg-brand-orange/10 dark:border-brand-orange/50 dark:text-slate-200 dark:focus:bg-brand-dark-bg dark:focus:border-[#ff7a3d] dark:focus:ring-[#ff7a3d]/10"
           value={result}
           onChange={(e) => setModeResults(prev => ({ ...prev, [mode]: e.target.value }))}
