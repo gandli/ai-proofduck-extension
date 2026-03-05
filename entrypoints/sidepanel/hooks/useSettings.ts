@@ -10,8 +10,30 @@ export function useSettings() {
   const [showSettings, setShowSettings] = useState(false);
   const settingsRef = useRef(settings);
   const statusRef = useRef(status);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => { settingsRef.current = settings; }, [settings]);
+
+  // Flush any pending settings save when the component unmounts (e.g., panel closed)
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+        // On unmount, make a best-effort immediate save without awaiting
+        const s = settingsRef.current;
+        if (typeof browser !== 'undefined' && browser.storage) {
+          const { apiKey, ...rest } = s;
+          browser.storage.local.set({ settings: { ...rest, apiKey: '' } });
+          if (apiKey) {
+             browser.storage.session.set({ apiKey }).catch(() => {
+                browser.storage.local.set({ settings: s });
+             });
+          }
+        }
+      }
+    };
+  }, []);
+
   useEffect(() => {
     statusRef.current = status;
     browser.storage.local.set({ engineStatus: status });
@@ -150,13 +172,21 @@ export function useSettings() {
     const modelChanged = newSettings.localModel && newSettings.localModel !== prevSettings.localModel;
 
     if (typeof browser !== 'undefined' && browser.storage) {
-      const { apiKey, ...rest } = updated;
-      await browser.storage.local.set({ settings: { ...rest, apiKey: '' } });
-      if (apiKey) {
-        await browser.storage.session.set({ apiKey }).catch(() => {
-          browser.storage.local.set({ settings: updated });
-        });
-      }
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      // Use a promise to maintain the async contract of updateSettings
+      await new Promise<void>((resolve) => {
+        saveTimeoutRef.current = setTimeout(async () => {
+          const { apiKey, ...rest } = updated;
+          await browser.storage.local.set({ settings: { ...rest, apiKey: '' } });
+          if (apiKey) {
+            await browser.storage.session.set({ apiKey }).catch(() => {
+              browser.storage.local.set({ settings: updated });
+            });
+          }
+          saveTimeoutRef.current = null;
+          resolve();
+        }, 500);
+      });
     }
 
     if (updated.engine === 'online' || updated.engine === 'chrome-ai') {
