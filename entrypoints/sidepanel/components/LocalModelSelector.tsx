@@ -65,7 +65,7 @@ export function LocalModelSelector({ settings, updateSettings, postMessage, stat
     <div className="relative w-full" ref={dropdownRef}>
       <button 
         id="local-model-select"
-        className="w-full flex items-center justify-between p-3 border border-slate-200 rounded-xl bg-slate-50 text-sm transition-all hover:bg-white hover:border-brand-orange focus:outline-none dark:bg-brand-dark-bg dark:border-[#4a4a6a] dark:text-slate-200"
+        className="w-full flex items-center justify-between p-3 border border-slate-200 rounded-xl bg-slate-50 text-sm transition-all hover:bg-white hover:border-brand-orange focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 dark:bg-brand-dark-bg dark:border-[#4a4a6a] dark:text-slate-200 dark:focus-visible:ring-brand-orange/50"
         onClick={() => setIsOpen(!isOpen)}
         role="combobox"
         aria-expanded={isOpen}
