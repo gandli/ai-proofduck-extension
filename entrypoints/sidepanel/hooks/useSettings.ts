@@ -153,8 +153,8 @@ export function useSettings() {
       const { apiKey, ...rest } = updated;
       await browser.storage.local.set({ settings: { ...rest, apiKey: '' } });
       if (apiKey) {
-        await browser.storage.session.set({ apiKey }).catch(() => {
-          browser.storage.local.set({ settings: updated });
+        await browser.storage.session.set({ apiKey }).catch((error) => {
+          console.error('[Security] Failed to save apiKey to session storage. Not falling back to local storage to prevent secret leakage.', error);
         });
       }
     }
