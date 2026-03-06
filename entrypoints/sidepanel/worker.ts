@@ -2,9 +2,11 @@ import { MLCEngine, InitProgressReport, ChatCompletionMessageParam, prebuiltAppC
 
 // --- Global Fetch Mirror Fallback ---
 const originalFetch = self.fetch;
+const IS_BINARY_OR_JSON_REGEX = /\.(json|wasm|bin|txt|model|msgpack)$/i;
+
 self.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     const url = input instanceof Request ? input.url : input.toString();
-    const isBinaryOrJson = /\.(json|wasm|bin|txt|model|msgpack)$/i.test(url.split('?')[0]);
+    const isBinaryOrJson = IS_BINARY_OR_JSON_REGEX.test(url.split('?')[0]);
     
     const getMirror = (targetUrl: string) => {
         if (targetUrl.startsWith("https://huggingface.co")) {
