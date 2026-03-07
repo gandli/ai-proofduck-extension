@@ -16,7 +16,7 @@ interface SettingsPanelProps {
   t: Record<string, string>;
 }
 
-const selectClass = "p-2.5 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:border-brand-orange focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-orange/10 dark:bg-brand-dark-bg dark:border-[#4a4a6a] dark:text-slate-200 dark:focus:bg-brand-dark-surface";
+const selectClass = "p-2.5 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:border-brand-orange focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 focus:ring-4 focus:ring-brand-orange/10 dark:bg-brand-dark-bg dark:border-[#4a4a6a] dark:text-slate-200 dark:focus:bg-brand-dark-surface";
 const inputClass = selectClass;
 const labelClass = "text-[11px] text-slate-500 font-semibold uppercase dark:text-slate-400";
 
