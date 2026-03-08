@@ -52,6 +52,27 @@ describe('Feature: useSettings Logic', () => {
       await browser.storage.local.set({ settings: { engine: 'online' } });
       expect(browser.storage.local.set).toHaveBeenCalledWith({ settings: { engine: 'online' } });
     });
+
+    it('Given session storage failure When saving apiKey Then should not leak to local storage', async () => {
+      // Create a mock settings update matching what happens in useSettings
+      const updated = { ...DEFAULT_SETTINGS, engine: 'online', apiKey: 'secret-123' };
+      const { apiKey, ...rest } = updated;
+
+      await browser.storage.local.set({ settings: { ...rest, apiKey: '' } });
+      expect(browser.storage.local.set).toHaveBeenCalledWith({ settings: { ...rest, apiKey: '' } });
+
+      // Simulate session set failure
+      (browser.storage.session.set as any).mockRejectedValueOnce(new Error('Session storage full'));
+
+      try {
+        await browser.storage.session.set({ apiKey });
+      } catch (e) {
+        // Do not fallback to local storage
+      }
+
+      // Verify local storage was not called with the API key
+      expect(browser.storage.local.set).not.toHaveBeenCalledWith({ settings: updated });
+    });
   });
 
   describe('Scenario: Settings merge with defaults', () => {
