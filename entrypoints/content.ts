@@ -6,6 +6,16 @@ export default defineContentScript({
   main() {
     let floatingIcon: HTMLElement | null = null;
     let translationPopup: HTMLElement | null = null;
+    // Cache DOM references to avoid redundant lookups in high-frequency event handlers (e.g., WORKER_UPDATE)
+    const popupCache = {
+      contentEl: null as HTMLElement | null,
+      sourceEl: null as HTMLElement | null,
+      statusLabel: null as HTMLElement | null,
+      actionContentEl: null as HTMLElement | null,
+      translateSection: null as HTMLElement | null,
+      actionSection: null as HTMLElement | null,
+      copyBtn: null as HTMLElement | null,
+    };
     let selectedText = '';
     let lastRect: DOMRect | null = null;
     let hoverTimer: ReturnType<typeof setTimeout> | null = null;
@@ -157,48 +167,51 @@ export default defineContentScript({
 
       if (!translationPopup) {
         translationPopup = createTranslationPopup();
+        const shadowRootNode = translationPopup.shadowRoot!;
+        popupCache.contentEl = shadowRootNode.getElementById('translation-text')!;
+        popupCache.sourceEl = shadowRootNode.getElementById('source-display')!;
+        popupCache.statusLabel = shadowRootNode.getElementById('status-label')!;
+        popupCache.actionContentEl = shadowRootNode.getElementById('action-content')!;
+        popupCache.translateSection = shadowRootNode.getElementById('translation-section')!;
+        popupCache.actionSection = shadowRootNode.getElementById('action-section')!;
+        popupCache.copyBtn = shadowRootNode.getElementById('copy-translation-btn')!;
       }
 
-      const shadowRootNode = translationPopup.shadowRoot!;
-      const contentEl = shadowRootNode.getElementById('translation-text')!;
-      const sourceEl = shadowRootNode.getElementById('source-display')!;
-      const statusLabel = shadowRootNode.getElementById('status-label')!;
-      const actionContentEl = shadowRootNode.getElementById('action-content')!;
-      const translateSection = shadowRootNode.getElementById('translation-section')!;
-      const actionSection = shadowRootNode.getElementById('action-section')!;
-      const copyBtn = shadowRootNode.getElementById('copy-translation-btn')!;
-      
-      sourceEl.textContent = text;
+      const { contentEl, sourceEl, statusLabel, actionContentEl, translateSection, actionSection, copyBtn } = popupCache;
+
+      if (sourceEl) sourceEl.textContent = text;
 
       const showActionUI = (msg: string, btnText: string, onAction: () => void | Promise<void>) => {
-        translateSection.classList.add('hidden');
-        actionSection.classList.remove('hidden');
+        if (translateSection) translateSection.classList.add('hidden');
+        if (actionSection) actionSection.classList.remove('hidden');
         if (copyBtn) (copyBtn as HTMLElement).style.visibility = 'hidden';
         
-        while (actionContentEl.firstChild) { actionContentEl.removeChild(actionContentEl.firstChild); } // Clear previous content safely
-        const container = createElementWithClass('div', 'flex flex-col gap-3');
-        const msgSpan = createElementWithClass('span', 'text-[13px] leading-relaxed text-slate-600 dark:text-slate-400', msg);
-        const actionBtn = createElementWithClass('button', 'w-full py-2 bg-brand-orange text-white text-[12px] font-bold rounded-lg shadow-sm transition-all hover:bg-brand-orange-dark hover:shadow-md active:scale-[0.98]', btnText);
-        actionBtn.id = 'popup-action-btn';
+        if (actionContentEl) {
+          while (actionContentEl.firstChild) { actionContentEl.removeChild(actionContentEl.firstChild); } // Clear previous content safely
+          const container = createElementWithClass('div', 'flex flex-col gap-3');
+          const msgSpan = createElementWithClass('span', 'text-[13px] leading-relaxed text-slate-600 dark:text-slate-400', msg);
+          const actionBtn = createElementWithClass('button', 'w-full py-2 bg-brand-orange text-white text-[12px] font-bold rounded-lg shadow-sm transition-all hover:bg-brand-orange-dark hover:shadow-md active:scale-[0.98]', btnText);
+          actionBtn.id = 'popup-action-btn';
 
-        container.appendChild(msgSpan);
-        container.appendChild(actionBtn);
-        actionContentEl.appendChild(container);
+          container.appendChild(msgSpan);
+          container.appendChild(actionBtn);
+          actionContentEl.appendChild(container);
 
-        actionBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          onAction();
-        });
+          actionBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            onAction();
+          });
+        }
       };
 
       const showTranslateUI = () => {
-        translateSection.classList.remove('hidden');
-        actionSection.classList.add('hidden');
+        if (translateSection) translateSection.classList.remove('hidden');
+        if (actionSection) actionSection.classList.add('hidden');
         if (copyBtn) (copyBtn as HTMLElement).style.visibility = 'visible';
       };
 
       const handleError = (errorCode: string) => {
-        statusLabel.textContent = 'ACTION REQUIRED';
+        if (statusLabel) statusLabel.textContent = 'ACTION REQUIRED';
         
         let errorMsg = 'Unknown error.';
         let btnLabel = 'Check Settings';
@@ -291,8 +304,8 @@ export default defineContentScript({
 
       // Default translation UI
       showTranslateUI();
-      contentEl.textContent = 'Translating...';
-      statusLabel.textContent = 'TRANSLATING';
+      if (contentEl) contentEl.textContent = 'Translating...';
+      if (statusLabel) statusLabel.textContent = 'TRANSLATING';
 
       updatePopupPosition(rect);
       translationPopup.style.display = 'block';
@@ -304,8 +317,8 @@ export default defineContentScript({
         });
 
         if (response && response.translatedText) {
-          contentEl.textContent = response.translatedText;
-          statusLabel.textContent = 'COMPLETED';
+          if (contentEl) contentEl.textContent = response.translatedText;
+          if (statusLabel) statusLabel.textContent = 'COMPLETED';
         } else if (response && response.error) {
           handleError(response.error);
         } else if (response && response.status === 'translation_started') {
@@ -477,8 +490,9 @@ export default defineContentScript({
 
     document.addEventListener('mouseup', (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      const iconContainer = document.getElementById('ai-proofduck-icon-container');
-      const popupContainer = document.getElementById('ai-proofduck-translation-popup');
+      // Use local variables to avoid redundant DOM queries during high-frequency events
+      const iconContainer = floatingIcon;
+      const popupContainer = translationPopup;
       
       const isInsideUI = (iconContainer && iconContainer.contains(target)) || 
                         (popupContainer && popupContainer.contains(target));
@@ -506,8 +520,9 @@ export default defineContentScript({
 
     document.addEventListener('mousedown', (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      const iconContainer = document.getElementById('ai-proofduck-icon-container');
-      const popupContainer = document.getElementById('ai-proofduck-translation-popup');
+      // Use local variables to avoid redundant DOM queries during high-frequency events
+      const iconContainer = floatingIcon;
+      const popupContainer = translationPopup;
       
       const isInsideUI = (iconContainer && iconContainer.contains(target)) || 
                         (popupContainer && popupContainer.contains(target));
@@ -528,16 +543,15 @@ export default defineContentScript({
         // Handle incoming translation results for the floating popup
         const { type, text, mode: msgMode } = message.data;
         if (translationPopup && translationPopup.style.display === 'block' && msgMode === 'translate') {
-          const shadowRootNode = translationPopup.shadowRoot!;
-          const contentEl = shadowRootNode.getElementById('translation-text')!;
-          const statusLabel = shadowRootNode.getElementById('status-label')!;
+          const contentEl = popupCache.contentEl;
+          const statusLabel = popupCache.statusLabel;
           
           if (type === 'update' || type === 'complete') {
-            contentEl.textContent = text || 'Translating...';
-            if (type === 'complete') statusLabel.textContent = 'COMPLETED';
+            if (contentEl) contentEl.textContent = text || 'Translating...';
+            if (type === 'complete' && statusLabel) statusLabel.textContent = 'COMPLETED';
           } else if (type === 'error') {
-            statusLabel.textContent = 'ERROR';
-            contentEl.textContent = `Error: ${message.data.error}`;
+            if (statusLabel) statusLabel.textContent = 'ERROR';
+            if (contentEl) contentEl.textContent = `Error: ${message.data.error}`;
           }
         }
       }
@@ -553,9 +567,8 @@ export default defineContentScript({
         
         // If it becomes ready and we were showing an "Action Required" UI, retry translation
         if (newStatus === 'ready' && selectedText) {
-          const shadowRootNode = translationPopup.shadowRoot!;
-          const statusLabel = shadowRootNode.getElementById('status-label');
-          if (statusLabel && statusLabel.textContent === 'ACTION_REQUIRED') {
+          const statusLabel = popupCache.statusLabel;
+          if (statusLabel && statusLabel.textContent === 'ACTION REQUIRED') {
             console.log('[AI Proofduck] Engine ready, retrying translation automatically...');
             showTranslation(selectedText, lastRect || new DOMRect());
           }
