@@ -51,8 +51,8 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
         <div className="flex flex-col gap-3 p-4 bg-white border border-slate-200 rounded-xl dark:bg-brand-dark-surface dark:border-slate-700">
           <h3 className="m-0 text-sm font-bold text-slate-800 dark:text-slate-200">{t.core_settings}</h3>
           <div className="flex flex-col gap-1.5">
-            <label className={labelClass}>{t.lang_label}</label>
-            <select className={selectClass} value={settings.extensionLanguage} onChange={e => updateSettings({ extensionLanguage: e.target.value })}>
+            <label htmlFor="lang-select" className={labelClass}>{t.lang_label}</label>
+            <select id="lang-select" className={selectClass} value={settings.extensionLanguage} onChange={e => updateSettings({ extensionLanguage: e.target.value })}>
               <option value="中文">中文 (简体)</option>
               <option value="English">English</option>
               <option value="日本語">日本語</option>
@@ -63,8 +63,8 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className={labelClass}>{t.engine_label}</label>
-            <select className={selectClass} value={settings.engine} onChange={e => updateSettings({ engine: e.target.value }, postMessage)}>
+            <label htmlFor="engine-select" className={labelClass}>{t.engine_label}</label>
+            <select id="engine-select" className={selectClass} value={settings.engine} onChange={e => updateSettings({ engine: e.target.value }, postMessage)}>
               <option value="chrome-ai">{t.engine_chrome_ai}</option>
               <option value="local-gpu">{t.engine_webgpu}</option>
               <option value="local-wasm">{t.engine_wasm}</option>
@@ -107,17 +107,17 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
             </div>
             <small className="text-[11px] text-slate-400">{t.preset_cloudflare_hint || 'For Cloudflare, replace <ACCOUNT_ID> in Base URL with your account id.'}</small>
             <div className="flex flex-col gap-1.5">
-              <label className={labelClass}>API Base URL</label>
-              <input className={inputClass} type="text" value={settings.apiBaseUrl} onChange={e => updateSettings({ apiBaseUrl: e.target.value })} />
+              <label htmlFor="api-base-url" className={labelClass}>API Base URL</label>
+              <input id="api-base-url" className={inputClass} type="text" value={settings.apiBaseUrl} onChange={e => updateSettings({ apiBaseUrl: e.target.value })} />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className={labelClass}>API Key</label>
-              <input ref={apiKeyInputRef} className={inputClass} type="password" value={settings.apiKey} onChange={e => updateSettings({ apiKey: e.target.value })} />
+              <label htmlFor="api-key" className={labelClass}>API Key</label>
+              <input id="api-key" ref={apiKeyInputRef} className={inputClass} type="password" value={settings.apiKey} onChange={e => updateSettings({ apiKey: e.target.value })} />
               <small className="text-[11px] text-slate-400">{t.api_key_hint || 'Get a free key from OpenRouter or your preferred OpenAI-compatible provider.'}</small>
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className={labelClass}>Model ID</label>
-              <input className={inputClass} type="text" value={settings.apiModel} onChange={e => updateSettings({ apiModel: e.target.value })} />
+              <label htmlFor="api-model" className={labelClass}>Model ID</label>
+              <input id="api-model" className={inputClass} type="text" value={settings.apiModel} onChange={e => updateSettings({ apiModel: e.target.value })} />
             </div>
           </div>
         )}
@@ -126,8 +126,8 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
         <div className="flex flex-col gap-3 p-4 bg-white border border-slate-200 rounded-xl dark:bg-brand-dark-surface dark:border-slate-700">
           <h3 className="m-0 text-sm font-bold text-slate-800 dark:text-slate-200">{t.func_pref}</h3>
           <div className="flex flex-col gap-1.5">
-            <label className={labelClass}>{t.tone_label}</label>
-            <select className={selectClass} value={settings.tone} onChange={e => updateSettings({ tone: e.target.value })}>
+            <label htmlFor="tone-select" className={labelClass}>{t.tone_label}</label>
+            <select id="tone-select" className={selectClass} value={settings.tone} onChange={e => updateSettings({ tone: e.target.value })}>
               <option value="professional">{t.tone_professional}</option>
               <option value="casual">{t.tone_casual}</option>
               <option value="academic">{t.tone_academic}</option>
@@ -135,16 +135,16 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className={labelClass}>{t.detail_label}</label>
-            <select className={selectClass} value={settings.detailLevel} onChange={e => updateSettings({ detailLevel: e.target.value })}>
+            <label htmlFor="detail-level-select" className={labelClass}>{t.detail_label}</label>
+            <select id="detail-level-select" className={selectClass} value={settings.detailLevel} onChange={e => updateSettings({ detailLevel: e.target.value })}>
               <option value="standard">{t.detail_standard}</option>
               <option value="detailed">{t.detail_detailed}</option>
               <option value="creative">{t.detail_creative}</option>
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className={labelClass}>{t.translate_fallback_label || 'Translation Fallback'}</label>
-            <select className={selectClass} value={settings.translateFallback || 'google-free'} onChange={e => updateSettings({ translateFallback: e.target.value as any })}>
+            <label htmlFor="translate-fallback-select" className={labelClass}>{t.translate_fallback_label || 'Translation Fallback'}</label>
+            <select id="translate-fallback-select" className={selectClass} value={settings.translateFallback || 'google-free'} onChange={e => updateSettings({ translateFallback: e.target.value as any })}>
               <option value="none">{t.translate_fallback_none || 'Disabled (AI only)'}</option>
               <option value="google-free">{t.translate_fallback_google || 'Google free translate endpoint'}</option>
               <option value="mymemory">{t.translate_fallback_mymemory || 'MyMemory free translate API'}</option>
