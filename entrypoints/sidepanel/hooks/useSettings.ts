@@ -153,8 +153,9 @@ export function useSettings() {
       const { apiKey, ...rest } = updated;
       await browser.storage.local.set({ settings: { ...rest, apiKey: '' } });
       if (apiKey) {
-        await browser.storage.session.set({ apiKey }).catch(() => {
-          browser.storage.local.set({ settings: updated });
+        // Sentinel: Prevent fallback to local storage to avoid apiKey leakage to disk
+        await browser.storage.session.set({ apiKey }).catch((error) => {
+          console.error('[Settings] Failed to save API key securely to session storage:', error);
         });
       }
     }
