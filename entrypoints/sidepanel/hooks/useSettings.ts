@@ -10,8 +10,28 @@ export function useSettings() {
   const [showSettings, setShowSettings] = useState(false);
   const settingsRef = useRef(settings);
   const statusRef = useRef(status);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingSaveRef = useRef<Settings | null>(null);
 
   useEffect(() => { settingsRef.current = settings; }, [settings]);
+
+  // Flush pending settings on unmount to prevent data loss
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current && pendingSaveRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+        const { apiKey, ...rest } = pendingSaveRef.current;
+        if (typeof browser !== 'undefined' && browser.storage) {
+          browser.storage.local.set({ settings: { ...rest, apiKey: '' } });
+          if (apiKey) {
+            browser.storage.session.set({ apiKey }).catch(() => {
+              browser.storage.local.set({ settings: pendingSaveRef.current });
+            });
+          }
+        }
+      }
+    };
+  }, []);
   useEffect(() => {
     statusRef.current = status;
     browser.storage.local.set({ engineStatus: status });
@@ -145,18 +165,24 @@ export function useSettings() {
     const prevSettings = settingsRef.current;
     const updated = { ...prevSettings, ...newSettings };
     setSettings(updated);
+    pendingSaveRef.current = updated;
 
     const engineChanged = newSettings.engine && newSettings.engine !== prevSettings.engine;
     const modelChanged = newSettings.localModel && newSettings.localModel !== prevSettings.localModel;
 
+    // Debounce persistence by 500ms to prevent excessive IPC/disk writes during continuous input (e.g. typing apiKey)
     if (typeof browser !== 'undefined' && browser.storage) {
-      const { apiKey, ...rest } = updated;
-      await browser.storage.local.set({ settings: { ...rest, apiKey: '' } });
-      if (apiKey) {
-        await browser.storage.session.set({ apiKey }).catch(() => {
-          browser.storage.local.set({ settings: updated });
-        });
-      }
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = setTimeout(() => {
+        const { apiKey, ...rest } = updated;
+        browser.storage.local.set({ settings: { ...rest, apiKey: '' } });
+        if (apiKey) {
+          browser.storage.session.set({ apiKey }).catch(() => {
+            browser.storage.local.set({ settings: updated });
+          });
+        }
+        pendingSaveRef.current = null;
+      }, 500);
     }
 
     if (updated.engine === 'online' || updated.engine === 'chrome-ai') {
