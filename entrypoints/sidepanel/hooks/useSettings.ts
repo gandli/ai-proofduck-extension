@@ -10,8 +10,31 @@ export function useSettings() {
   const [showSettings, setShowSettings] = useState(false);
   const settingsRef = useRef(settings);
   const statusRef = useRef(status);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingSaveRef = useRef<Settings | null>(null);
 
   useEffect(() => { settingsRef.current = settings; }, [settings]);
+
+  // Flush pending settings on unmount to prevent data loss
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current && pendingSaveRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+        const s = pendingSaveRef.current;
+        if (typeof browser !== 'undefined' && browser.storage) {
+          const { apiKey, ...rest } = s;
+          browser.storage.local.set({ settings: { ...rest, apiKey: '' } });
+          if (apiKey) {
+            // Sentinel: Prevent fallback to local storage to avoid apiKey leakage to disk
+            browser.storage.session.set({ apiKey }).catch((error) => {
+              console.error('[Settings] Failed to save API key securely to session storage:', error);
+            });
+          }
+        }
+      }
+    };
+  }, []);
+
   useEffect(() => {
     statusRef.current = status;
     browser.storage.local.set({ engineStatus: status });
@@ -147,19 +170,25 @@ export function useSettings() {
     const prevSettings = settingsRef.current;
     const updated = { ...prevSettings, ...newSettings };
     setSettings(updated);
+    pendingSaveRef.current = updated;
 
     const engineChanged = newSettings.engine && newSettings.engine !== prevSettings.engine;
     const modelChanged = newSettings.localModel && newSettings.localModel !== prevSettings.localModel;
 
+    // Debounce persistence by 500ms to prevent excessive IPC/disk writes during continuous input
     if (typeof browser !== 'undefined' && browser.storage) {
-      const { apiKey, ...rest } = updated;
-      await browser.storage.local.set({ settings: { ...rest, apiKey: '' } });
-      if (apiKey) {
-        // Sentinel: Prevent fallback to local storage to avoid apiKey leakage to disk
-        await browser.storage.session.set({ apiKey }).catch((error) => {
-          console.error('[Settings] Failed to save API key securely to session storage:', error);
-        });
-      }
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = setTimeout(() => {
+        const { apiKey, ...rest } = updated;
+        browser.storage.local.set({ settings: { ...rest, apiKey: '' } });
+        if (apiKey) {
+          // Sentinel: Prevent fallback to local storage to avoid apiKey leakage to disk
+          browser.storage.session.set({ apiKey }).catch((error) => {
+            console.error('[Settings] Failed to save API key securely to session storage:', error);
+          });
+        }
+        pendingSaveRef.current = null;
+      }, 500);
     }
 
     if (updated.engine === 'online' || updated.engine === 'chrome-ai') {
