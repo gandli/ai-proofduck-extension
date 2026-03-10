@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 <!-- AUTO-UNRELEASED-START -->
+- 🎨 Palette: Add focus ring to LocalModelSelector for keyboard accessibility (bef1b9a)
+- 🛡️ Sentinel: [CRITICAL] Fix API Key Leakage to Local Storage (54b704e)
+- perf(content): Cache DOM queries in high-frequency event handlers (ad1068b)
+- docs(changelog): refresh unreleased section (6ff7641)
 - 🎨 Palette: Add WAI-ARIA combobox attributes to LocalModelSelector (35e5c59)
 - 🛡️ Sentinel: [HIGH] Fix XSS vulnerabilities via innerHTML replacement (3b3fd74)
 - docs(changelog): refresh unreleased section (57e6431)
