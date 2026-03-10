@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 <!-- AUTO-UNRELEASED-START -->
+- ⚡ Bolt: Debounce settings persistence with security fix (6a0e9bb)
+- docs(changelog): refresh unreleased section (6378f19)
 - refactor: improve code quality and type safety (8e003f9)
 - fix: resolve TypeScript compilation errors (e102206)
 - docs(changelog): refresh unreleased section (51f841b)
@@ -22,7 +24,6 @@ All notable changes to this project will be documented in this file.
 - docs(changelog): refresh unreleased section (169350e)
 - ci(changelog): auto-refresh Unreleased section on main pushes (0b55aa5)
 - chore(docs): move multilingual READMEs into docs/readme (0bc0ea0)
-- docs(changelog): update for v0.1.5 (cd95888)
 <!-- AUTO-UNRELEASED-END -->
 
 ## [v0.1.5] - 2026-03-02
