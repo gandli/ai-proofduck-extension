@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 <!-- AUTO-UNRELEASED-START -->
+- refactor: improve code quality and type safety (8e003f9)
+- fix: resolve TypeScript compilation errors (e102206)
+- docs(changelog): refresh unreleased section (51f841b)
 - 🎨 Palette: Add focus ring to LocalModelSelector for keyboard accessibility (bef1b9a)
 - 🛡️ Sentinel: [CRITICAL] Fix API Key Leakage to Local Storage (54b704e)
 - perf(content): Cache DOM queries in high-frequency event handlers (ad1068b)
