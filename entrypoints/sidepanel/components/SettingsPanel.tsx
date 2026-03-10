@@ -39,9 +39,10 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
         <div className="flex items-center justify-between mb-2">
           <h2 className="m-0 text-xl font-extrabold">{t.settings}</h2>
           <button
-            className="flex items-center justify-center w-8 h-8 text-slate-500 border-none rounded-full cursor-pointer bg-slate-100 dark:bg-brand-dark-surface dark:text-slate-400"
+            className="flex items-center justify-center w-8 h-8 text-slate-500 border-none rounded-full cursor-pointer bg-slate-100 transition-all hover:bg-slate-200 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 dark:bg-brand-dark-surface dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             onClick={onClose}
             aria-label={t.close_btn || 'Close'}
+            title={t.close_btn || 'Close'}
           >
             <CloseIcon />
           </button>
