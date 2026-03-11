@@ -141,7 +141,7 @@ export function ModelImportExport({ settings, status, setStatus, setProgress, se
         <p className="text-xs text-slate-500 mb-2">{t.offline_import_tip}</p>
         <div className="flex flex-col gap-2 relative">
           <button
-            className="flex items-center justify-center gap-1.5 py-2 px-3 text-[13px] font-medium text-slate-600 bg-white border border-slate-200 rounded-lg cursor-pointer transition-all w-full hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed dark:bg-brand-dark-bg dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]"
+            className="flex items-center justify-center gap-1.5 py-2 px-3 text-[13px] font-medium text-slate-600 bg-white border border-slate-200 rounded-lg cursor-pointer transition-all w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed dark:bg-brand-dark-bg dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]"
             onClick={() => document.getElementById('folder-input')?.click()}
           >
             {t.offline_import_btn}
@@ -149,14 +149,14 @@ export function ModelImportExport({ settings, status, setStatus, setProgress, se
           <input id="folder-input" type="file" webkitdirectory="true" className="hidden" onChange={handleFileImport} />
           <div className="flex gap-2">
             <button
-              className="flex items-center justify-center gap-1.5 py-2 px-3 text-[13px] font-medium text-slate-600 bg-white border border-slate-200 rounded-lg cursor-pointer transition-all flex-1 text-xs hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed dark:bg-brand-dark-bg dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]"
+              className="flex items-center justify-center gap-1.5 py-2 px-3 text-[13px] font-medium text-slate-600 bg-white border border-slate-200 rounded-lg cursor-pointer transition-all flex-1 text-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed dark:bg-brand-dark-bg dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]"
               onClick={handleExportModel}
               disabled={status === 'loading'}
             >
               <ExportIcon /> {t.export_btn}
             </button>
             <button
-              className="flex items-center justify-center gap-1.5 py-2 px-3 text-[13px] font-medium text-slate-600 bg-white border border-slate-200 rounded-lg cursor-pointer transition-all flex-1 text-xs hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed dark:bg-brand-dark-bg dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]"
+              className="flex items-center justify-center gap-1.5 py-2 px-3 text-[13px] font-medium text-slate-600 bg-white border border-slate-200 rounded-lg cursor-pointer transition-all flex-1 text-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed dark:bg-brand-dark-bg dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]"
               onClick={() => document.getElementById('pkg-input')?.click()}
               disabled={status === 'loading'}
             >
