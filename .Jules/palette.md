@@ -15,3 +15,7 @@
 ## 2026-03-08 - Explicit Form Controls & Custom Focus Outline
 **Learning:** For accessibility, form labels must explicitly use `htmlFor` connected to corresponding control `id`s. Also, any element (like a combobox) that strips the browser's default outline using `focus:outline-none` must substitute it with a visible custom focus state (e.g., `focus-visible:ring-2`) so keyboard navigability is preserved.
 **Action:** Always pair `<label htmlFor="control-id">` with `<input id="control-id">`, and when removing default outlines, add custom focus-visible styles.
+
+## 2026-03-11 - focus-visible styles for icon buttons
+**Learning:** Icon buttons with `focus:outline-none` lack visual feedback when navigating via keyboard. This was seen across `App.tsx`, `ModeSelector.tsx`, `SettingsPanel.tsx`, and others.
+**Action:** Consistently added `focus-visible:ring-2 focus-visible:ring-brand-orange/50` to elements using `focus:outline-none` to restore keyboard accessibility while keeping mouse interaction smooth.

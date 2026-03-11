@@ -135,7 +135,7 @@ function App() {
             <small className="mt-3 text-slate-400">{t.loading_tip}</small>
             <button
               onClick={() => postMessage({ type: 'reset' })}
-              className="mt-6 px-4 py-2 border border-slate-200 bg-white text-slate-500 rounded-full text-[12px] cursor-pointer shadow-sm hover:bg-slate-50 hover:text-brand-orange transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400"
+                className="mt-6 px-4 py-2 border border-slate-200 bg-white text-slate-500 rounded-full text-[12px] cursor-pointer shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 hover:bg-slate-50 hover:text-brand-orange transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400"
             >
               暂停并清除 (Cancel & Reset)
             </button>
@@ -148,9 +148,9 @@ function App() {
           <div className="flex items-center justify-between mb-2.5">
             <h3 className="m-0 text-[13px] font-semibold text-slate-500 dark:text-slate-400">{t.original_text}</h3>
             <div className="flex gap-1.5">
-              <button className="flex items-center justify-center p-1.5 text-slate-500 transition-all bg-white border border-slate-200 rounded-md cursor-pointer shadow-sm hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange hover:shadow-md hover:-translate-y-px dark:bg-brand-dark-surface dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]" onClick={() => { setSelectedText(''); setModeResults(emptyModeResults()); }} title={t.clear_btn || 'Clear'} aria-label={t.clear_btn || 'Clear'}><ClearIcon /></button>
-              <button className="flex items-center justify-center p-1.5 transition-all border rounded-md cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-px bg-brand-orange-light border-brand-orange/20 text-brand-orange hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange dark:bg-brand-dark-surface dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]" onClick={() => handleFetchContent()} title={t.fetch_page_content || 'Fetch Page Content'} aria-label={t.fetch_page_content || 'Fetch Page Content'}><FetchIcon /></button>
-              <button className="px-2 py-1 text-[11px] font-semibold transition-all border rounded-md cursor-pointer shadow-sm bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-brand-dark-surface dark:border-slate-700 dark:text-slate-300" onClick={handleTranslateFullPage} title={t.translate_full_page || 'Translate Full Page'} aria-label={t.translate_full_page || 'Translate Full Page'}>{t.translate_full_page_short || '全文翻译'}</button>
+              <button className="flex items-center justify-center p-1.5 text-slate-500 transition-all bg-white border border-slate-200 rounded-md cursor-pointer shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange hover:shadow-md hover:-translate-y-px dark:bg-brand-dark-surface dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]" onClick={() => { setSelectedText(''); setModeResults(emptyModeResults()); }} title={t.clear_btn || 'Clear'} aria-label={t.clear_btn || 'Clear'}><ClearIcon /></button>
+              <button className="flex items-center justify-center p-1.5 transition-all border rounded-md cursor-pointer shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 hover:shadow-md hover:-translate-y-px bg-brand-orange-light border-brand-orange/20 text-brand-orange hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange dark:bg-brand-dark-surface dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]" onClick={() => handleFetchContent()} title={t.fetch_page_content || 'Fetch Page Content'} aria-label={t.fetch_page_content || 'Fetch Page Content'}><FetchIcon /></button>
+              <button className="px-2 py-1 text-[11px] font-semibold transition-all border rounded-md cursor-pointer shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-brand-dark-surface dark:border-slate-700 dark:text-slate-300" onClick={handleTranslateFullPage} title={t.translate_full_page || 'Translate Full Page'} aria-label={t.translate_full_page || 'Translate Full Page'}>{t.translate_full_page_short || '全文翻译'}</button>
             </div>
           </div>
           <div className="relative flex flex-col flex-1 min-h-0">
@@ -180,7 +180,7 @@ function App() {
                 </ol>
                 <button
                   onClick={handleUseFreeApiFallback}
-                  className="mt-3 w-full py-2 px-3 text-[12px] font-semibold rounded-lg bg-brand-orange text-white hover:bg-brand-orange-dark transition-all"
+                  className="mt-3 w-full py-2 px-3 text-[12px] font-semibold rounded-lg bg-brand-orange text-white hover:bg-brand-orange-dark transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50"
                 >
                   {t.fallback_free_api_btn || 'Switch to free API fallback'}
                 </button>
@@ -206,15 +206,15 @@ function App() {
 
       <footer className="sticky bottom-0 left-0 right-0 p-3 bg-[#fbfbfb] border-t border-slate-100 dark:bg-brand-dark-bg dark:border-slate-800">
         {status === 'loading' ? (
-          <button className="w-full py-2.5 px-4 text-sm font-semibold text-white bg-brand-orange border-none rounded-xl cursor-pointer shadow-md shadow-brand-orange/20 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed disabled:shadow-none dark:disabled:bg-slate-700 dark:disabled:text-slate-500" disabled>{progress.text || `${t.status_loading} ${Math.round(progress.progress)}%`}</button>
+          <button className="w-full py-2.5 px-4 text-sm font-semibold text-white bg-brand-orange border-none rounded-xl cursor-pointer shadow-md shadow-brand-orange/20 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed disabled:shadow-none dark:disabled:bg-slate-700 dark:disabled:text-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50" disabled>{progress.text || `${t.status_loading} ${Math.round(progress.progress)}%`}</button>
         ) : status === 'error' ? (
-          <button className="w-full py-2.5 px-4 text-sm font-semibold text-white bg-[#e53e3e] border-none rounded-xl cursor-pointer" onClick={() => setStatus('idle')}>{t.status_error} (Click to Reset)</button>
+          <button className="w-full py-2.5 px-4 text-sm font-semibold text-white bg-[#e53e3e] border-none rounded-xl cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50" onClick={() => setStatus('idle')}>{t.status_error} (Click to Reset)</button>
         ) : status === 'idle' && settings.engine === 'chrome-ai' ? (
-          <button className="w-full py-2.5 px-4 text-sm font-semibold text-white bg-brand-orange border-none rounded-xl cursor-pointer shadow-md shadow-brand-orange/20 transition-all hover:bg-brand-orange-dark hover:shadow-lg active:scale-[0.98]" onClick={() => { setStatus('loading'); setError(''); postMessage({ type: 'load', settings }); }}>{t.action_btn_load} (Chrome AI)</button>
+          <button className="w-full py-2.5 px-4 text-sm font-semibold text-white bg-brand-orange border-none rounded-xl cursor-pointer shadow-md shadow-brand-orange/20 transition-all hover:bg-brand-orange-dark hover:shadow-lg active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50" onClick={() => { setStatus('loading'); setError(''); postMessage({ type: 'load', settings }); }}>{t.action_btn_load} (Chrome AI)</button>
         ) : status === 'idle' && (settings.engine === 'local-gpu' || settings.engine === 'local-wasm') ? (
-          <button className="w-full py-2.5 px-4 text-sm font-semibold text-white bg-brand-orange border-none rounded-xl cursor-pointer shadow-md shadow-brand-orange/20 transition-all hover:bg-brand-orange-dark hover:shadow-lg active:scale-[0.98]" onClick={() => { setStatus('loading'); setError(''); postMessage({ type: 'load', settings }); }}>{t.action_btn_load} ({settings.engine === 'local-gpu' ? 'WebGPU' : 'WASM'})</button>
+          <button className="w-full py-2.5 px-4 text-sm font-semibold text-white bg-brand-orange border-none rounded-xl cursor-pointer shadow-md shadow-brand-orange/20 transition-all hover:bg-brand-orange-dark hover:shadow-lg active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50" onClick={() => { setStatus('loading'); setError(''); postMessage({ type: 'load', settings }); }}>{t.action_btn_load} ({settings.engine === 'local-gpu' ? 'WebGPU' : 'WASM'})</button>
         ) : (
-          <button className="w-full py-2.5 px-4 text-sm font-semibold text-white bg-brand-orange border-none rounded-xl cursor-pointer shadow-md shadow-brand-orange/20 transition-all hover:bg-brand-orange-dark hover:shadow-lg active:scale-[0.98] disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed disabled:shadow-none dark:disabled:bg-slate-700 dark:disabled:text-slate-500" onClick={() => handleAction()} disabled={!selectedText || generatingModes[mode]}>
+          <button className="w-full py-2.5 px-4 text-sm font-semibold text-white bg-brand-orange border-none rounded-xl cursor-pointer shadow-md shadow-brand-orange/20 transition-all hover:bg-brand-orange-dark hover:shadow-lg active:scale-[0.98] disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed disabled:shadow-none dark:disabled:bg-slate-700 dark:disabled:text-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50" onClick={() => handleAction()} disabled={!selectedText || generatingModes[mode]}>
             {generatingModes[mode] ? t.action_generating : `${t.action_btn_execute}${t[modeDef.labelKey]}`}
           </button>
         )}

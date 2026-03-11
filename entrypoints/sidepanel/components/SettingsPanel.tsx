@@ -39,7 +39,7 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
         <div className="flex items-center justify-between mb-2">
           <h2 className="m-0 text-xl font-extrabold">{t.settings}</h2>
           <button
-            className="flex items-center justify-center w-8 h-8 text-slate-500 border-none rounded-full cursor-pointer bg-slate-100 dark:bg-brand-dark-surface dark:text-slate-400"
+            className="flex items-center justify-center w-8 h-8 text-slate-500 border-none rounded-full cursor-pointer bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 dark:bg-brand-dark-surface dark:text-slate-400"
             onClick={onClose}
             aria-label={t.close_btn || 'Close'}
           >
@@ -86,7 +86,7 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
             <div className="flex gap-2 flex-wrap">
               <button
                 type="button"
-                className="px-2.5 py-1.5 text-[12px] rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
+                className="px-2.5 py-1.5 text-[12px] rounded-md bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
                 onClick={() => updateSettings({
                   apiBaseUrl: 'https://openrouter.ai/api/v1',
                   apiModel: 'openrouter/openrouter/free',
@@ -96,7 +96,7 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
               </button>
               <button
                 type="button"
-                className="px-2.5 py-1.5 text-[12px] rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
+                className="px-2.5 py-1.5 text-[12px] rounded-md bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
                 onClick={() => updateSettings({
                   apiBaseUrl: 'https://api.cloudflare.com/client/v4/accounts/<ACCOUNT_ID>/ai/v1',
                   apiModel: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
