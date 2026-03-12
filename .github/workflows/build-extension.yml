@@ -79,7 +79,7 @@ jobs:
           openssl genrsa -out key.pem 2048
 
           # Install crx3 tool
-          pnpm add -g crx3
+          npm install -g crx3
 
           # Pack the extension (dist folder) into a CRX
           # The dist folder is created by 'pnpm run build', which is run implicitly by 'pnpm run zip'
