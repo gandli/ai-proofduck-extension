@@ -57,18 +57,24 @@ jobs:
           git tag -a "$TAG" -m "$TAG"
           git push origin "$TAG"
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
-          bun-version: latest
+          version: latest
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: bun install
+        run: pnpm install
 
       - name: Build and Zip Extension
         run: |
-          bun run zip
-          bun run zip:firefox
+          pnpm run zip
+          pnpm run zip:firefox
 
       - name: Build CRX
         run: |
@@ -76,12 +82,12 @@ jobs:
           openssl genrsa -out key.pem 2048
 
           # Install crx3 tool
-          bun add -g crx3
+          pnpm add -g crx3
 
           # Pack the extension (dist folder) into a CRX
-          # The dist folder is created by 'bun run build', which is run implicitly by 'bun run zip' 
+          # The dist folder is created by 'pnpm run build', which is run implicitly by 'pnpm run zip'
           # but let's be explicit and ensure we have the unpacked build first.
-          bun wxt build
+          pnpm wxt build
 
           # Use crx3 to pack the output directory
           # wxt outputs to 'dist' (unpacked) based on our config.
