@@ -15,3 +15,7 @@
 ## 2026-03-08 - Explicit Form Controls & Custom Focus Outline
 **Learning:** For accessibility, form labels must explicitly use `htmlFor` connected to corresponding control `id`s. Also, any element (like a combobox) that strips the browser's default outline using `focus:outline-none` must substitute it with a visible custom focus state (e.g., `focus-visible:ring-2`) so keyboard navigability is preserved.
 **Action:** Always pair `<label htmlFor="control-id">` with `<input id="control-id">`, and when removing default outlines, add custom focus-visible styles.
+
+## 2026-03-09 - Scrollable Regions Accessibility
+**Learning:** Scrollable regions that contain long text content (e.g., translation results) but do not contain focusable children are completely inaccessible to keyboard users because they cannot be focused to scroll using the keyboard.
+**Action:** Always add `tabindex="0"`, `role="region"`, and an appropriate `aria-label` to scrollable containers without focusable children to ensure keyboard users can scroll and screen readers can identify the region's purpose.

@@ -56,8 +56,10 @@ export default defineContentScript({
       statusContainer.appendChild(statusDot);
       statusContainer.appendChild(statusLabel);
 
-      const closeBtn = createElementWithClass('button', 'flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 hover:text-brand-orange dark:bg-[#2d2d44] dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:text-[#ff7a3d]');
+      const closeBtn = createElementWithClass('button', 'flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 hover:text-brand-orange focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 dark:bg-[#2d2d44] dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:text-[#ff7a3d]');
       closeBtn.id = 'close-popup-btn';
+      closeBtn.setAttribute('aria-label', 'Close popup');
+      closeBtn.setAttribute('title', 'Close popup');
       // Safe SVG creation via DOMParser
       const parser = new DOMParser();
       const closeIcon = parser.parseFromString('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>', 'image/svg+xml').documentElement;
@@ -70,8 +72,11 @@ export default defineContentScript({
       // Original Text Section
       const originalSection = createElementWithClass('div', 'flex flex-col gap-1');
       originalSection.appendChild(createElementWithClass('div', 'px-0.5 text-[9px] font-bold text-slate-400 uppercase tracking-wide', 'ORIGINAL'));
-      const sourceDisplay = createElementWithClass('div', 'w-full max-h-[100px] overflow-y-auto p-2.5 bg-white border border-slate-200 rounded-lg text-[12.5px] leading-relaxed text-slate-500 whitespace-pre-wrap break-words dark:bg-[#23233a] dark:border-[#3f3f5a] dark:text-slate-400');
+      const sourceDisplay = createElementWithClass('div', 'w-full max-h-[100px] overflow-y-auto p-2.5 bg-white border border-slate-200 rounded-lg text-[12.5px] leading-relaxed text-slate-500 whitespace-pre-wrap break-words focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 dark:bg-[#23233a] dark:border-[#3f3f5a] dark:text-slate-400');
       sourceDisplay.id = 'source-display';
+      sourceDisplay.setAttribute('tabindex', '0');
+      sourceDisplay.setAttribute('role', 'region');
+      sourceDisplay.setAttribute('aria-label', 'Original text');
       originalSection.appendChild(sourceDisplay);
       popup.appendChild(originalSection);
 
@@ -79,8 +84,11 @@ export default defineContentScript({
       const translationSection = createElementWithClass('div', 'flex flex-col gap-1');
       translationSection.id = 'translation-section';
       translationSection.appendChild(createElementWithClass('div', 'px-0.5 text-[9px] font-bold text-slate-400 uppercase tracking-wide', 'TRANSLATION'));
-      const translationText = createElementWithClass('div', 'w-full max-h-[120px] overflow-y-auto p-2.5 bg-[#fff5eb] border border-brand-orange/20 rounded-lg text-[12.5px] leading-relaxed text-[#1a1a1a] font-medium whitespace-pre-wrap break-words dark:bg-[#2d1f10] dark:border-brand-orange/30 dark:text-slate-200', 'Translating...');
+      const translationText = createElementWithClass('div', 'w-full max-h-[120px] overflow-y-auto p-2.5 bg-[#fff5eb] border border-brand-orange/20 rounded-lg text-[12.5px] leading-relaxed text-[#1a1a1a] font-medium whitespace-pre-wrap break-words focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 dark:bg-[#2d1f10] dark:border-brand-orange/30 dark:text-slate-200', 'Translating...');
       translationText.id = 'translation-text';
+      translationText.setAttribute('tabindex', '0');
+      translationText.setAttribute('role', 'region');
+      translationText.setAttribute('aria-label', 'Translated text');
       translationSection.appendChild(translationText);
       popup.appendChild(translationSection);
 
@@ -97,8 +105,10 @@ export default defineContentScript({
       const footer = createElementWithClass('div', 'flex items-center justify-between pt-2 mt-0.5 border-t border-slate-100 dark:border-[#2d2d44]');
       footer.appendChild(createElementWithClass('div', 'flex items-center gap-1 text-[11px] font-extrabold text-brand-orange', 'AI Proofduck 🐣'));
 
-      const copyBtn = createElementWithClass('button', 'flex items-center gap-1 px-2.5 py-1 bg-white border border-slate-200 rounded-md text-[11px] font-semibold text-slate-500 transition-colors hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange dark:bg-[#2d2d44] dark:border-[#4a4a6a] dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]');
+      const copyBtn = createElementWithClass('button', 'flex items-center gap-1 px-2.5 py-1 bg-white border border-slate-200 rounded-md text-[11px] font-semibold text-slate-500 transition-colors hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 dark:bg-[#2d2d44] dark:border-[#4a4a6a] dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]');
       copyBtn.id = 'copy-translation-btn';
+      copyBtn.setAttribute('aria-label', 'Copy translation');
+      copyBtn.setAttribute('title', 'Copy translation');
       const copyIcon = parser.parseFromString('<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>', 'image/svg+xml').documentElement;
       copyBtn.appendChild(copyIcon);
       const copySpan = document.createElement('span');
@@ -190,7 +200,7 @@ export default defineContentScript({
           while (actionContentEl.firstChild) { actionContentEl.removeChild(actionContentEl.firstChild); } // Clear previous content safely
           const container = createElementWithClass('div', 'flex flex-col gap-3');
           const msgSpan = createElementWithClass('span', 'text-[13px] leading-relaxed text-slate-600 dark:text-slate-400', msg);
-          const actionBtn = createElementWithClass('button', 'w-full py-2 bg-brand-orange text-white text-[12px] font-bold rounded-lg shadow-sm transition-all hover:bg-brand-orange-dark hover:shadow-md active:scale-[0.98]', btnText);
+          const actionBtn = createElementWithClass('button', 'w-full py-2 bg-brand-orange text-white text-[12px] font-bold rounded-lg shadow-sm transition-all hover:bg-brand-orange-dark hover:shadow-md active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50', btnText);
           actionBtn.id = 'popup-action-btn';
 
           container.appendChild(msgSpan);
