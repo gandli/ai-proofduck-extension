@@ -11,6 +11,8 @@ export const LANG_MAP: Record<string, string> = {
     'Español': 'Spanish'
 };
 
+const LANG_REPLACE_REGEX = /{lang}/g;
+
 export function getSystemPrompt(mode: ModeKey, settings: Partial<Settings>) {
     const extensionLang = settings?.extensionLanguage || "中文";
     const targetLang = LANG_MAP[extensionLang] || extensionLang;
@@ -35,12 +37,16 @@ export function getSystemPrompt(mode: ModeKey, settings: Partial<Settings>) {
 
     // Standard instruction-based template
     let promptTemplate = PROMPTS[mode] || PROMPTS.proofread;
-    promptTemplate = promptTemplate.replace(/{lang}/g, targetLang);
+    promptTemplate = promptTemplate.replace(LANG_REPLACE_REGEX, targetLang);
     promptTemplate = promptTemplate.replace("{tone}", selectedTone);
     promptTemplate = promptTemplate.replace("{detail}", selectedDetail);
     
     return `[System Directive]\n${promptTemplate}\n${BASE_CONSTRAINT}`;
 }
+
+const TEXT_TO_PROCESS_START_REGEX = /<TEXT_TO_PROCESS>/gi;
+const TEXT_TO_PROCESS_END_REGEX = /<\/TEXT_TO_PROCESS>/gi;
+const FINAL_RESULT_REGEX = /\[FINAL RESULT\]:/gi;
 
 /**
  * Formats the user prompt, sanitizing input to prevent prompt injection.
@@ -49,9 +55,9 @@ export function getSystemPrompt(mode: ModeKey, settings: Partial<Settings>) {
 export function formatUserPrompt(text: string, mode: string, targetLang: string): string {
     // Sanitize input by removing structural tags used in the prompt
     const sanitizedText = text
-        .replace(/<TEXT_TO_PROCESS>/gi, '')
-        .replace(/<\/TEXT_TO_PROCESS>/gi, '')
-        .replace(/\[FINAL RESULT\]:/gi, '');
+        .replace(TEXT_TO_PROCESS_START_REGEX, '')
+        .replace(TEXT_TO_PROCESS_END_REGEX, '')
+        .replace(FINAL_RESULT_REGEX, '');
 
     return `[MODE: ${mode.toUpperCase()}]\n[ACTION: PROCESS THE TEXT BELOW INTO ${targetLang}]\n<TEXT_TO_PROCESS>\n${sanitizedText}\n</TEXT_TO_PROCESS>\n[FINAL RESULT]:`;
 }

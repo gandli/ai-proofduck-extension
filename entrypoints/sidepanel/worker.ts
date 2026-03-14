@@ -85,27 +85,32 @@ class WebLLMWorker {
         }
     }
 
+    static MLC_REGEX = /-MLC$/;
+    static SIZE_REGEX = /(\d+(\.\d+)?B)/;
+    static QWEN_REGEX = /Qwen1\.5|Qwen2\.5/;
+    static QUANT_REGEX = /q\df\d+(_\d)?/;
+
     /**
      * Probes for valid WASM URL due to changing WebLLM prebuilt library naming rules.
      */
     static async probeWasmUrl(model: string, modelLibBase: string, modelVersion: string): Promise<string> {
         const candidates: string[] = [];
-        let baseName = model.replace(/-MLC$/, "");
+        let baseName = model.replace(WebLLMWorker.MLC_REGEX, "");
         
         if (baseName.includes("DeepSeek-R1-Distill-Qwen")) {
-            const size = baseName.match(/(\d+(\.\d+)?B)/)?.[1] || "1.5B";
+            const size = baseName.match(WebLLMWorker.SIZE_REGEX)?.[1] || "1.5B";
             baseName = `Qwen2-${size}-Instruct`;
         } else if (baseName.includes("DeepSeek-R1-Distill-Llama")) {
-            const size = baseName.match(/(\d+(\.\d+)?B)/)?.[1] || "8B";
+            const size = baseName.match(WebLLMWorker.SIZE_REGEX)?.[1] || "8B";
             baseName = `Llama-3-${size}-Instruct`;
         }
 
         if (baseName.includes("Qwen1.5") || baseName.includes("Qwen2.5")) {
-            baseName = baseName.replace(/Qwen1\.5|Qwen2\.5/, "Qwen2");
+            baseName = baseName.replace(WebLLMWorker.QWEN_REGEX, "Qwen2");
         }
         if (baseName.includes("-Chat")) baseName = baseName.replace("-Chat", "-Instruct");
         
-        const quantMatch = model.match(/q\df\d+(_\d)?/);
+        const quantMatch = model.match(WebLLMWorker.QUANT_REGEX);
         let quant = quantMatch ? quantMatch[0] : "q4f16_1";
         if (quant === "q4f16_0") quant = "q4f16_1";
 
