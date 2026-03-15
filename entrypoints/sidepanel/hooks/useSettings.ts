@@ -120,7 +120,18 @@ export function useSettings() {
 
       if (res.settings) {
         const saved = res.settings as Record<string, unknown>;
-        const initial: Settings = { ...DEFAULT_SETTINGS, ...(saved as Partial<Settings>) };
+        // Filter out null or undefined values from saved settings
+        const validSaved = Object.fromEntries(
+          Object.entries(saved).filter(([_, v]) => v != null)
+        ) as Partial<Settings>;
+
+        const initial: Settings = { ...DEFAULT_SETTINGS, ...validSaved };
+
+        // Ensure autoSpeak falls back to default if wrong type
+        if (typeof initial.autoSpeak !== 'boolean') {
+          initial.autoSpeak = DEFAULT_SETTINGS.autoSpeak;
+        }
+
         if (saved.targetLanguage && !saved.extensionLanguage) {
           initial.extensionLanguage = saved.targetLanguage as string;
         }
