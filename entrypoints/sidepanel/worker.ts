@@ -310,10 +310,12 @@ async function handleGenerateOnline(text: string, mode: ModeKey, settings: Setti
 
                 const chunk = decoder.decode(value, { stream: true });
                 buffer += chunk;
-                const lines = buffer.split('\n');
-                buffer = lines.pop() || "";
 
-                for (const line of lines) {
+                let newlineIndex;
+                while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
+                    const line = buffer.slice(0, newlineIndex);
+                    buffer = buffer.slice(newlineIndex + 1);
+
                     const trimmed = line.trim();
                     if (!trimmed || !trimmed.startsWith('data: ')) continue;
                     const dataStr = trimmed.slice(6).trim();
@@ -326,8 +328,9 @@ async function handleGenerateOnline(text: string, mode: ModeKey, settings: Setti
                             self.postMessage({ type: "update", text: fullText, mode, requestId });
                             lastUpdateTime = now;
                         }
-                    } catch (e: unknown) {
+                    } catch (_e: unknown) {
                         buffer = line + '\n' + buffer;
+                        break; // wait for more chunks to complete the json
                     }
                 }
             }
