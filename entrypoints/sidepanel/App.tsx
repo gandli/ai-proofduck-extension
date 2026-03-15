@@ -154,7 +154,7 @@ function App() {
             </div>
           </div>
           <div className="relative flex flex-col flex-1 min-h-0">
-            <textarea className="flex-1 w-full min-h-[80px] p-3.5 text-sm leading-relaxed bg-white border-[1.5px] border-slate-200 rounded-xl outline-none resize-y shadow-sm transition-all whitespace-pre-wrap break-words text-slate-700 hover:border-slate-300 focus:bg-white focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10 dark:bg-[#23233a] dark:border-[#3f3f5a] dark:text-slate-200 dark:focus:border-[#ff7a3d] dark:focus:ring-[#ff7a3d]/10 dark:bg-brand-dark-bg" value={selectedText} onChange={e => setSelectedText(e.target.value)} placeholder={t.placeholder} />
+            <textarea aria-label={t.original_text || 'Original Text'} className="flex-1 w-full min-h-[80px] p-3.5 text-sm leading-relaxed bg-white border-[1.5px] border-slate-200 rounded-xl outline-none resize-y shadow-sm transition-all whitespace-pre-wrap break-words text-slate-700 hover:border-slate-300 focus:bg-white focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10 dark:bg-[#23233a] dark:border-[#3f3f5a] dark:text-slate-200 dark:focus:border-[#ff7a3d] dark:focus:ring-[#ff7a3d]/10 dark:bg-brand-dark-bg" value={selectedText} onChange={e => setSelectedText(e.target.value)} placeholder={t.placeholder} />
             {selectedText && <div className="absolute bottom-2 right-3 text-[11px] text-slate-400 pointer-events-none bg-white/80 px-1.5 py-0.5 rounded dark:bg-[#1a1a2e]/80 dark:text-slate-500">{selectedText.length} {t.char_count}</div>}
           </div>
         </section>
