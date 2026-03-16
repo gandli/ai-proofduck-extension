@@ -90,6 +90,7 @@ export function LocalModelSelector({ settings, updateSettings, postMessage, stat
               <input 
                 autoFocus
                 type="text" 
+                aria-label={t.search_placeholder || "Search models..."}
                 placeholder={t.search_placeholder || "Search models..."} 
                 className="w-full pl-9 pr-4 py-2 bg-slate-100 border-none rounded-lg text-sm focus:ring-2 focus:ring-brand-orange/20 outline-none dark:bg-slate-800 dark:text-slate-200"
                 value={search}
