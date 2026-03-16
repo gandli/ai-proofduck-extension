@@ -192,30 +192,40 @@ describe('Performance Tests', () => {
 
   describe('Storage Operations Performance', () => {
     it('should persist settings correctly', async () => {
-      const { result } = renderHook(() => useSettings());
+      vi.useFakeTimers();
+      try {
+        const { result } = renderHook(() => useSettings());
 
-      await act(async () => {
-        await result.current.loadPersistedSettings();
-      });
-
-      // Reset mock to count only updateSettings calls
-      mockBrowser.storage.local.set.mockClear();
-
-      // Perform multiple updates
-      const updates = [
-        { tone: 'casual' },
-        { detailLevel: 'brief' },
-        { autoSpeak: true },
-      ];
-
-      for (const update of updates) {
         await act(async () => {
-          await result.current.updateSettings(update);
+          await result.current.loadPersistedSettings();
         });
-      }
 
-      // Storage should be called for each update (plus one for engineStatus)
-      expect(mockBrowser.storage.local.set.mock.calls.length).toBeGreaterThanOrEqual(updates.length);
+        // Reset mock to count only updateSettings calls
+        mockBrowser.storage.local.set.mockClear();
+
+        // Perform multiple updates
+        const updates = [
+          { tone: 'casual' },
+          { detailLevel: 'brief' },
+          { autoSpeak: true },
+        ];
+
+        for (const update of updates) {
+          await act(async () => {
+            await result.current.updateSettings(update);
+          });
+
+          // Advance timers by the debounce timeout (500ms) to trigger storage writes
+          act(() => {
+            vi.advanceTimersByTime(500);
+          });
+        }
+
+        // Storage should be called for each update (plus one for engineStatus)
+        expect(mockBrowser.storage.local.set.mock.calls.length).toBeGreaterThanOrEqual(updates.length);
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     it('should track config states correctly', async () => {

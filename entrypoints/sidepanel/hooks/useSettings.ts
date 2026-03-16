@@ -121,6 +121,15 @@ export function useSettings() {
       if (res.settings) {
         const saved = res.settings as Record<string, unknown>;
         const initial: Settings = { ...DEFAULT_SETTINGS, ...(saved as Partial<Settings>) };
+
+        // Handle corrupted settings: fallback to defaults if critical values are null or invalid type
+        if (saved.engine === null || typeof saved.engine !== 'string') {
+          initial.engine = DEFAULT_SETTINGS.engine;
+        }
+        if (saved.autoSpeak === null || typeof saved.autoSpeak !== 'boolean') {
+          initial.autoSpeak = DEFAULT_SETTINGS.autoSpeak;
+        }
+
         if (saved.targetLanguage && !saved.extensionLanguage) {
           initial.extensionLanguage = saved.targetLanguage as string;
         }
