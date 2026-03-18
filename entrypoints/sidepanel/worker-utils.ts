@@ -43,15 +43,18 @@ export function getSystemPrompt(mode: ModeKey, settings: Partial<Settings>) {
 }
 
 /**
+ * Regex for sanitizing user prompt input to prevent prompt injection.
+ * Hoisted to avoid recompilation on every call and uses alternation for single-pass replacement.
+ */
+const SANITIZE_PROMPT_REGEX = /<\/?TEXT_TO_PROCESS>|\[FINAL RESULT\]:/gi;
+
+/**
  * Formats the user prompt, sanitizing input to prevent prompt injection.
  * Removes structural tags that could confuse the model.
  */
 export function formatUserPrompt(text: string, mode: string, targetLang: string): string {
     // Sanitize input by removing structural tags used in the prompt
-    const sanitizedText = text
-        .replace(/<TEXT_TO_PROCESS>/gi, '')
-        .replace(/<\/TEXT_TO_PROCESS>/gi, '')
-        .replace(/\[FINAL RESULT\]:/gi, '');
+    const sanitizedText = text.replace(SANITIZE_PROMPT_REGEX, '');
 
     return `[MODE: ${mode.toUpperCase()}]\n[ACTION: PROCESS THE TEXT BELOW INTO ${targetLang}]\n<TEXT_TO_PROCESS>\n${sanitizedText}\n</TEXT_TO_PROCESS>\n[FINAL RESULT]:`;
 }

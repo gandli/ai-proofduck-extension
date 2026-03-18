@@ -5,3 +5,6 @@
 ## 2026-03-06 - [Hoist Regex Compilation in Web Worker]
 **Learning:** In highly trafficked interceptors like the global fetch proxy used in `worker.ts`, instantiating regular expressions inline within the handler function causes them to be recompiled on every single execution. For processes that stream data with potentially thousands of requests or checks, this introduces measurable latency and CPU overhead.
 **Action:** Always hoist static regex definitions outside of frequently called functions (e.g. event handlers or interceptors) into module scope or outer closures to compile them once during initialization.
+## 2026-03-06 - [Hoist Regex Compilation for Prompt Processing]
+**Learning:** In text processing applications, formatting user prompts involves sanitizing input. Recompiling multiple regexes and traversing strings sequentially introduces unnecessary CPU overhead and allocation, especially with chained `.replace()` calls. Alternation combined with hoisting provides significant performance gains for repetitive processing steps.
+**Action:** When applying string sanitization or multiple substitutions, use single-pass regular expressions with alternation (`|`) instead of multiple chained `.replace()` calls. Additionally, ensure regex compilation is hoisted outside the function scope so it only runs once.
