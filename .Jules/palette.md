@@ -15,3 +15,7 @@
 ## 2026-03-08 - Explicit Form Controls & Custom Focus Outline
 **Learning:** For accessibility, form labels must explicitly use `htmlFor` connected to corresponding control `id`s. Also, any element (like a combobox) that strips the browser's default outline using `focus:outline-none` must substitute it with a visible custom focus state (e.g., `focus-visible:ring-2`) so keyboard navigability is preserved.
 **Action:** Always pair `<label htmlFor="control-id">` with `<input id="control-id">`, and when removing default outlines, add custom focus-visible styles.
+
+## 2026-03-19 - Accessibility for Visually Label-less Inputs and Icon-Only Buttons
+**Learning:** In the Sidepanel UI, standard `input` elements (like search) and `textarea` components are sometimes used without an explicit `<label>` due to UI density, and several icon-only buttons exist. While some icon buttons had `aria-label`, they were missing native HTML `title` attributes, denying mouse users hover context. Furthermore, visually empty inputs and textareas failed screen reader requirements because they lacked `aria-label`.
+**Action:** For inputs and textareas without a standard visible label, supply `aria-label` (typically sourced from translations). For all icon-only buttons, ensure both `aria-label` (for screen readers) and `title` (for native tooltips) are present and identical.
