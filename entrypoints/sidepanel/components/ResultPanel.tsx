@@ -62,6 +62,7 @@ export const ResultPanel = memo(function ResultPanel({
           onChange={(e) => setModeResults(prev => ({ ...prev, [mode]: e.target.value }))}
           placeholder={generating ? t.thinking : ''}
           readOnly={generating}
+          aria-label={t[modeDef.resultLabelKey]}
         />
         {result && (
           <div className="absolute bottom-2 right-3 text-[11px] text-slate-400 pointer-events-none bg-white/80 px-1.5 py-0.5 rounded dark:bg-[#1a1a2e]/80 dark:text-slate-500">
