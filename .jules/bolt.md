@@ -5,3 +5,7 @@
 ## 2026-03-06 - [Hoist Regex Compilation in Web Worker]
 **Learning:** In highly trafficked interceptors like the global fetch proxy used in `worker.ts`, instantiating regular expressions inline within the handler function causes them to be recompiled on every single execution. For processes that stream data with potentially thousands of requests or checks, this introduces measurable latency and CPU overhead.
 **Action:** Always hoist static regex definitions outside of frequently called functions (e.g. event handlers or interceptors) into module scope or outer closures to compile them once during initialization.
+
+## 2024-03-24 - [Avoid Infinite Loops when Optimizing Stream Parsing with `indexOf`]
+**Learning:** When refactoring stream parsers (like SSE handlers) from using `split('\n')` to an incremental `indexOf('\n')` approach for performance ($O(N)$ vs $O(N^2)$), error recovery must be handled carefully. If `JSON.parse` fails on a chunk, you cannot simply `break` and leave the unparseable string at the front of the buffer. The next chunk will append data, but `indexOf('\n')` will continually match the *same* malformed string, causing an infinite retry stall.
+**Action:** When implementing an incremental `indexOf` stream decoder, ensure the buffer is advanced (e.g., `buffer = buffer.slice(newlineIndex + 1)`) even when the current line fails parsing. This prevents stalling the entire stream due to a single piece of malformed data.

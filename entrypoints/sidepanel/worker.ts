@@ -310,24 +310,50 @@ async function handleGenerateOnline(text: string, mode: ModeKey, settings: Setti
 
                 const chunk = decoder.decode(value, { stream: true });
                 buffer += chunk;
-                const lines = buffer.split('\n');
-                buffer = lines.pop() || "";
 
-                for (const line of lines) {
+                let newlineIndex;
+                while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
+                    const line = buffer.slice(0, newlineIndex);
+
                     const trimmed = line.trim();
-                    if (!trimmed || !trimmed.startsWith('data: ')) continue;
+                    if (!trimmed || !trimmed.startsWith('data: ')) {
+                        buffer = buffer.slice(newlineIndex + 1);
+                        continue;
+                    }
+
                     const dataStr = trimmed.slice(6).trim();
-                    if (dataStr === '[DONE]') continue;
+                    if (dataStr === '[DONE]') {
+                        buffer = buffer.slice(newlineIndex + 1);
+                        continue;
+                    }
+
                     try {
                         const json = JSON.parse(dataStr);
                         fullText += json.choices[0]?.delta?.content || "";
+
                         const now = Date.now();
                         if (now - lastUpdateTime >= 50) {
                             self.postMessage({ type: "update", text: fullText, mode, requestId });
                             lastUpdateTime = now;
                         }
+                        // Advance the buffer past this line since we successfully processed it
+                        buffer = buffer.slice(newlineIndex + 1);
                     } catch (e: unknown) {
-                        buffer = line + '\n' + buffer;
+                        // If JSON parse fails, it might be an incomplete line that somehow had a newline,
+                        // or just malformed data. In original logic it restored the buffer.
+                        // However, we must ensure we don't stall. The original code did `buffer = line + '\n' + buffer;`
+                        // which essentially prepended the failed line to the *rest* of the remaining lines,
+                        // and then when the *next* chunk arrived, it would split again.
+                        // To accurately replicate the original behavior without infinite loops:
+                        // Restore the exact line and everything after it back into `buffer`
+                        // by NOT slicing it out, and then break out of the while loop to wait for the next chunk to append more data.
+                        // BUT because `indexOf('\n')` found a newline, it means the line is formally complete from a framing perspective!
+                        // If `JSON.parse` fails on a *complete* line, it's just invalid data.
+                        // We should skip it (slice it) to prevent an infinite loop, or wait for more chunks if we think the newline is *inside* a JSON string.
+                        // Actually, SSE `data: ` lines do not contain unescaped newlines. If a newline exists, the event line is complete.
+                        // So if JSON parse fails on a complete `data:` line, it's malformed JSON from the server.
+                        // The safest approach to prevent an infinite stall is to just discard the malformed line.
+                        buffer = buffer.slice(newlineIndex + 1);
                     }
                 }
             }
