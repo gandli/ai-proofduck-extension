@@ -41,6 +41,7 @@ export function SettingsPanel({ settings, updateSettings, onClose, status, setSt
           <button
             className="flex items-center justify-center w-8 h-8 text-slate-500 border-none rounded-full cursor-pointer bg-slate-100 dark:bg-brand-dark-surface dark:text-slate-400"
             onClick={onClose}
+            title={t.close_btn || 'Close'}
             aria-label={t.close_btn || 'Close'}
           >
             <CloseIcon />
