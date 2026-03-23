@@ -1,0 +1,65 @@
+# 校对鸭
+
+校对鸭是一个面向网页阅读与写作场景的 AI 侧边栏助手。用户可以在浏览网页时，对选中文本或整页内容进行翻译、摘要、校对、润色和扩写，并尽量在当前浏览流程里完成操作。
+
+## 当前引擎策略
+
+现在默认按这条顺序自动选择：
+
+1. Chrome 内置 AI（Gemini Nano）
+2. 本地模型
+   - 有 WebGPU 时走 `web-llm`
+   - 没有 WebGPU 时，可切到轻量 WASM 兼容模式
+3. 在线 API
+   - 支持 OpenAI 兼容格式，可接 OpenAI、DeepSeek、GLM 等
+4. 第三方免费翻译兜底
+   - 仅在翻译模式启用
+
+侧边栏会明确显示“首选策略”“实际使用引擎”“当前说明”和“加载进度”，方便判断这次到底走了哪条路。
+
+## 技术栈
+
+- WXT
+- React
+- TypeScript
+- Tailwind CSS
+- `@mlc-ai/web-llm`
+
+## 开发命令
+
+```bash
+bun install
+bun run dev
+bun run build
+bun run compile
+bun run test
+bun run smoke
+```
+
+如果你更习惯 `npm`，也可以直接替换成对应命令。
+
+## 当前能力
+
+- 页内选中文本后，可通过浮层入口直接发送到校对鸭
+- 侧边栏可导入当前选区或抓取整页正文
+- 五种处理模式已经接通统一入口
+- 设置面板可管理自动优先、本地模型、在线 API 和翻译兜底
+- 侧边栏主题已经统一为活力橙，并与 logo 配色对齐
+
+## 验证方式
+
+这套仓库现在至少需要跑这四条：
+
+```bash
+bun run test
+bun run compile
+bun run build
+bun run smoke
+```
+
+其中 `bun run smoke` 会真实验证这条链路：
+
+1. 在网页里选中文字
+2. 发送到扩展侧边栏
+3. 默认走本地兼容模式完成一次处理
+4. 切到在线 API 并确认返回真实结果

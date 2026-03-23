@@ -1,0 +1,13 @@
+{
+  "extends": "./.wxt/tsconfig.json",
+  "compilerOptions": {
+    "useDefineForClassFields": true,
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "allowJs": false,
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "types": ["chrome", "vitest/globals"]
+  },
+  "include": ["entrypoints", "wxt.config.ts", "vitest.config.ts", "types.d.ts", ".wxt/wxt.d.ts"]
+}
