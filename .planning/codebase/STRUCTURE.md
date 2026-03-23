@@ -1,0 +1,142 @@
+# Codebase Structure
+
+**Analysis Date:** 2026-03-23
+
+## Directory Layout
+
+```text
+ai-proofduck-extension/
+├── docs/                 # User-facing and store-facing documentation
+├── entrypoints/          # All extension runtime code
+│   ├── assets/           # Small runtime assets for injected UI
+│   ├── offscreen/        # Offscreen document and worker bootstrap
+│   └── sidepanel/        # React UI, hooks, worker, prompts, tests
+├── public/               # Icons and extension locale files
+├── scripts/              # Maintenance scripts
+├── tests/                # Separate unit and E2E tests
+├── .planning/            # Planning artifacts for refactor work
+├── package.json          # Scripts and dependencies
+├── wxt.config.ts         # Extension build and manifest config
+└── README.md             # Project overview and setup guide
+```
+
+## Directory Purposes
+
+**entrypoints/**
+- Purpose: Main application code for every browser extension context
+- Contains: background worker, content script, sidepanel UI, offscreen runtime
+- Key files: `background.ts`, `content.ts`, `sidepanel/App.tsx`, `offscreen/main.ts`
+- Subdirectories:
+  - `assets/` for inline assets
+  - `offscreen/` for worker host
+  - `sidepanel/` for most product logic
+
+**entrypoints/sidepanel/**
+- Purpose: Main product feature area
+- Contains: React components, hooks, shared types, prompt helpers, worker runtime, tests
+- Key files: `App.tsx`, `hooks/useSettings.ts`, `hooks/useWorker.ts`, `worker.ts`, `types/index.ts`
+- Subdirectories:
+  - `components/` for UI pieces
+  - `hooks/` for state and message logic
+  - `__tests__/` for unit/component behavior
+  - `types/` for shared contracts
+  - `utils/` for focused helpers
+
+**public/**
+- Purpose: Static extension assets copied into the bundle
+- Contains: icons and `_locales` translation files
+- Key files: `_locales/en/messages.json`, `_locales/zh_CN/messages.json`
+
+**tests/**
+- Purpose: Non-sidepanel-specific tests
+- Contains: `tests/e2e/*`, `tests/unit/*`
+- Key files: `tests/e2e/model-load.spec.ts`, `tests/unit/svg-parse.test.ts`
+
+**docs/**
+- Purpose: README translations and store/compliance notes
+- Contains: `docs/readme/*`, Chrome Web Store review notes
+
+## Key File Locations
+
+**Entry Points:**
+- `entrypoints/background.ts`: Extension-level orchestration
+- `entrypoints/content.ts`: In-page interaction and popup
+- `entrypoints/sidepanel/main.tsx`: React mount point
+- `entrypoints/offscreen/main.ts`: Offscreen host for worker execution
+- `entrypoints/sidepanel/worker.ts`: Local model runtime
+
+**Configuration:**
+- `package.json`: scripts and dependency manifest
+- `wxt.config.ts`: build output and manifest permissions
+- `vitest.config.ts`: unit test setup
+- `playwright.config.ts`: E2E test setup
+
+**Core Logic:**
+- `entrypoints/sidepanel/hooks/useSettings.ts`: persisted settings and status recovery
+- `entrypoints/sidepanel/hooks/useWorker.ts`: runtime bridge and Chrome AI path
+- `entrypoints/sidepanel/prompts.ts`: prompt text
+- `entrypoints/sidepanel/worker-utils.ts`: prompt formatting and shared worker helpers
+- `entrypoints/sidepanel/types/index.ts`: shared contracts
+
+**Testing:**
+- `entrypoints/sidepanel/__tests__/`: primary unit and component tests
+- `tests/e2e/`: extension flow tests
+- `tests/unit/`: focused low-level tests
+
+**Documentation:**
+- `README.md`: English overview
+- `docs/readme/README.zh-CN.md`: Chinese README
+- `.planning/`: refactor plan documents
+
+## Naming Conventions
+
+**Files:**
+- `PascalCase.tsx` for React components
+- `camelCase.ts` for helpers and hooks internals
+- `*.test.ts[x]` for tests
+- `index.ts` for grouped type exports only in limited cases
+
+**Directories:**
+- lower-case names
+- feature-based grouping inside `sidepanel/`
+
+**Special Patterns:**
+- `__tests__/` for colocated unit tests
+- `entrypoints/` is the runtime root instead of a traditional `src/`
+
+## Where to Add New Code
+
+**New sidepanel feature:**
+- Primary code: `entrypoints/sidepanel/`
+- Tests: `entrypoints/sidepanel/__tests__/`
+- Shared types: `entrypoints/sidepanel/types/`
+
+**New extension orchestration behavior:**
+- Background or offscreen flow: `entrypoints/background.ts` and `entrypoints/offscreen/`
+- Cross-context contracts: `entrypoints/sidepanel/types/index.ts`
+- Regression tests: sidepanel tests plus `tests/e2e/`
+
+**New content-script behavior:**
+- Implementation: `entrypoints/content.ts` or extracted helper beside it
+- Styling: `entrypoints/content-styles.css`
+- Tests: add unit tests where extraction makes logic testable, plus E2E coverage
+
+**Utilities:**
+- Shared helpers: `entrypoints/sidepanel/utils/` or `worker-utils.ts`
+- Avoid adding unrelated helpers directly into `App.tsx` or `content.ts`
+
+## Special Directories
+
+**.planning/**
+- Purpose: Planning state and design docs for this refactor effort
+- Source: Manual project planning artifacts
+- Committed: Yes
+
+**dist/**
+- Purpose: Build output generated by WXT
+- Source: `wxt build`
+- Committed: No
+
+---
+*Structure analysis: 2026-03-23*
+*Update when directory layout or code ownership changes*
