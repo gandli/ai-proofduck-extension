@@ -1,40 +1,17 @@
-# Refactor Research: Pitfalls
+# Pitfalls Research
 
-**Date:** 2026-03-23
-**Focus:** What is most likely to go wrong during this refactor
+## Common Risks
 
-## Pitfall 1: Breaking hidden cross-context contracts
+- 把所有能力都塞进一个巨大侧边栏组件，后续难拆。
+- 过早支持太多引擎细节，导致主路径不稳定。
+- 网页内选中文本、侧边栏输入、整页抓取三条输入链路没有统一语义。
+- 本地模型加载慢，但没有明确的进度、错误和回退体验。
+- 把项目做成泛 AI 聊天工具，丢失“网页阅读与写作助手”的定位。
 
-- Warning signs: selected text stops syncing, quick translate hangs, sidepanel no longer recovers state
-- Prevention: inventory storage keys and runtime message shapes before extraction; add regression checks around them
-- Phase: Phase 1 and Phase 3
+## Prevention
 
-## Pitfall 2: Duplicating engine-routing decisions in new places
-
-- Warning signs: one path uses Chrome AI directly while another still bypasses shared rules
-- Prevention: define one execution-routing layer and migrate callers onto it incrementally
-- Phase: Phase 3
-
-## Pitfall 3: Treating App.tsx cleanup as purely visual
-
-- Warning signs: component tree looks cleaner but hooks still hide sprawling side effects
-- Prevention: split by responsibility, not only by JSX
-- Phase: Phase 2
-
-## Pitfall 4: Leaving content-script behavior as an untestable monolith
-
-- Warning signs: `content.ts` keeps growing and only E2E tests can catch regressions
-- Prevention: extract popup state transitions and action mapping into focused helpers
-- Phase: Phase 4
-
-## Pitfall 5: Updating docs without proving behavior
-
-- Warning signs: planning docs say the system is cleaner, but compile/tests/manual checks were not rerun
-- Prevention: make verification part of each phase definition
-- Phase: All phases
-
-## Pitfall 6: Accidental storage regression
-
-- Warning signs: API key persistence changes, settings reset unexpectedly, ready/failed config tracking disappears
-- Prevention: centralize persistence logic and preserve current semantics unless a migration is explicitly designed
-- Phase: Phase 1 and Phase 2
+- 从一开始就把扩展调度、内容脚本、侧边栏、执行层分开。
+- 先做最小闭环，再扩多引擎细节。
+- 先定义统一的模式、消息和设置契约。
+- 把加载、失败、回退都纳入 v1 设计，不晚点补。
+- 所有需求都围绕“网页里的即时文本处理”收敛。

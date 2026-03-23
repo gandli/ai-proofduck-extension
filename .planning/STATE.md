@@ -4,15 +4,15 @@
 
 See: .planning/PROJECT.md (updated 2026-03-23)
 
-**Core value:** 在不破坏现有用户流程的前提下，把这个扩展重构成一个清晰、稳健、可持续演进的代码库。
-**Current focus:** Phase 1 - Baseline and Contracts
+**Core value:** 用户在网页里看到一段内容时，能立刻用低打断的方式完成理解、改写或翻译，而且优先走本地能力。
+**Current focus:** Phase 1 - Extension Foundation
 
 ## Current Position
 
-Phase: 1 of 4 (Baseline and Contracts)
-Plan: 0 of 3 in current phase
+Phase: 1 of 4 (Extension Foundation)
+Plan: 0 of 0 in current phase
 Status: Ready to plan
-Last activity: 2026-03-23 — Project initialized, brownfield map and roadmap created
+Last activity: 2026-03-23 — Project re-initialized from empty repository
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -40,8 +40,10 @@ Progress: [░░░░░░░░░░] 0%
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- Initialization: Treat this as a brownfield refactor, not a rewrite
-- Initialization: Use coarse four-phase roadmap with recommended workflow defaults
+- Greenfield restart from an empty repository
+- Browser extension only
+- WXT + React + TypeScript + Tailwind
+- Local-first multi-engine product strategy
 
 ### Pending Todos
 
@@ -49,11 +51,11 @@ None yet.
 
 ### Blockers/Concerns
 
-- Cross-context storage and runtime message contracts need to stay backward compatible during extraction
-- Content script and worker flows still carry monolithic logic that will need careful sequencing
+- 需要先建立最小扩展骨架，再决定各引擎细节的真实边界
+- 需要防止项目从“网页阅读与写作助手”漂移成泛聊天工具
 
 ## Session Continuity
 
 Last session: 2026-03-23 00:00
-Stopped at: Project initialization complete; next step is Phase 1 discussion/planning
+Stopped at: New project initialized; next step is Phase 1 planning
 Resume file: None

@@ -1,39 +1,25 @@
-# Refactor Research: Architecture
+# Architecture Research
 
-**Date:** 2026-03-23
-**Focus:** What target architecture shape would make this extension easier to evolve
+## Major Components
 
-## Recommended target shape
+- 扩展后台调度
+- 内容脚本
+- 侧边栏 UI
+- 本地/在线 AI 执行层
+- 设置与存储层
 
-### 1. Stable shared contracts
-- One source of truth for modes, settings, storage keys, and runtime message payloads
-- Explicit distinction between persisted settings, transient UI state, and transport messages
+## Suggested Boundaries
 
-### 2. Thin entrypoints
-- `background.ts`, `content.ts`, `offscreen/main.ts`, and `sidepanel/main.tsx` should mostly wire together dedicated modules
-- Large imperative flows should move into focused helpers or feature modules
+- 后台只负责扩展级调度、上下文连接和生命周期。
+- 内容脚本只负责网页内交互与页面内容获取。
+- 侧边栏负责主 UI、模式切换、用户输入与结果展示。
+- AI 执行层负责引擎选择、加载、推理与错误回传。
+- 存储层负责设置、短期状态和恢复逻辑。
 
-### 3. Sidepanel as composition root
-- `App.tsx` should orchestrate sections, not own all logic
-- Fetching page content, auto-trigger behavior, and action execution should be independently testable
+## Build Order
 
-### 4. Runtime adapters
-- Chrome AI path, offscreen local-model path, online API path, and translation fallback should look like interchangeable adapters
-- Status and progress events should converge through one shape
-
-### 5. Storage boundary
-- Browser storage reads and writes should be centralized so key names and migration rules do not leak everywhere
-
-## Suggested build order
-
-1. Map and freeze current contracts
-2. Extract sidepanel state and message boundaries
-3. Unify engine routing and worker lifecycle
-4. Break up content/background flows
-5. Refresh docs and regression coverage
-
-## Why this shape fits the repo
-
-- It respects the extension’s multi-context nature instead of fighting it.
-- It lowers regression risk because entrypoints can stay in place while internals are extracted.
-- It gives tests clearer targets than today’s large mixed-responsibility files.
+1. 先搭扩展骨架和侧边栏壳子
+2. 再补选中文本和整页抓取输入链路
+3. 再接最小可用的处理模式
+4. 再补多引擎与本地优先策略
+5. 最后补质量、性能和回归保护

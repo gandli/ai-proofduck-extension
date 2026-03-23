@@ -1,51 +1,29 @@
-# Refactor Research: Features
-
-**Date:** 2026-03-23
-**Focus:** Which capabilities are table stakes to preserve during refactor
+# Feature Research
 
 ## Table Stakes
 
-### Core writing modes
-- Translate
-- Summarize
-- Correct / polish
-- Proofread
-- Expand
+- 侧边栏打开与关闭
+- 选中文本处理
+- 整页内容抓取
+- 翻译
+- 摘要
+- 校对
+- 润色
+- 扩写
+- 引擎切换
+- 结果展示与复制
 
-### Input and trigger paths
-- Direct sidepanel text input
-- Fetch current page content
-- Context-menu initiated actions
-- In-page quick translation from content script
+## Differentiators
 
-### Runtime paths
-- Chrome Built-in AI when available
-- Local WebLLM path
-- Online API path
-- Translation fallback path
+- 浏览器内置 AI、本地模型、在线 API、翻译兜底四条路径并存
+- 本地优先
+- 网页内悬浮触发，不强迫复制粘贴
+- 尽量不离开当前浏览流程
 
-### Settings and persistence
-- Engine selection
-- Local model selection
-- API base URL / model configuration
-- Extension language
-- Recovery of selected text and engine status
+## Anti-Features
 
-## Differentiators worth preserving
-
-- Local-first privacy positioning
-- Ability to keep translation usable even without a full AI setup
-- Lightweight browser-side workflow without sending all text to a server by default
-
-## Anti-Features for this refactor
-
-- Expanding into a larger “all-in-one AI suite”
-- Adding brand-new modes before the current five are structurally protected
-- Reworking settings UX without a clear architecture win
-- Rewriting for novelty instead of maintainability
-
-## Refactor implications
-
-- Preserve behavior first, then simplify ownership and boundaries.
-- Treat every user trigger path as a required regression path.
-- Any requirement that does not help clarity, safety, testability, or docs accuracy should probably wait.
+- 泛聊天助手
+- 账号中心
+- 云同步
+- 团队协作后台
+- 多端应用同步开发

@@ -1,46 +1,23 @@
-# Refactor Research: Stack
+# Stack Research
 
-**Date:** 2026-03-23
-**Focus:** What stack realities matter for safely refactoring this browser extension
+## Recommended Stack
 
-## What the current stack is good at
+- **Framework**: WXT
+- **UI**: React
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Testing**: Vitest + Playwright
+- **Package manager**: Bun or npm
 
-- WXT already gives the project a clean extension build pipeline and entrypoint model.
-- React 19 is a good fit for decomposing the sidepanel into smaller units without changing product behavior.
-- TypeScript types are already rich enough to become the backbone for shared message and settings contracts.
-- Vitest plus Playwright provide a usable regression net for a staged refactor.
+## Why This Fits
 
-## What the stack implies for refactor strategy
+- WXT 适合现代浏览器扩展开发，天然支持多入口和多浏览器打包。
+- React 适合侧边栏这种状态较重的界面。
+- TypeScript 有利于跨上下文消息和状态边界管理。
+- Tailwind 适合快速构建侧边栏和弹层类界面。
+- Vitest 和 Playwright 可以分别覆盖逻辑验证与真实浏览器行为。
 
-- Keep the extension entrypoint model intact. Refactor around it rather than trying to hide it behind a fake web-app structure.
-- Move shared contracts and runtime adapters into explicit modules that each entrypoint can consume.
-- Treat browser storage as part of the public runtime contract, not as an internal detail.
-- Prefer extraction and composition over framework churn.
+## Non-Goals
 
-## Recommended stack posture for this refactor
-
-### Keep
-
-- WXT as the extension framework
-- React + TypeScript for sidepanel UI
-- Vitest + Playwright as the verification baseline
-- Tailwind-based styling approach
-
-### Strengthen
-
-- Shared contract modules for messages, settings, status, and storage keys
-- Sidepanel composition boundaries
-- Runtime adapter boundaries for Chrome AI, local models, and network fallbacks
-- Testing around cross-context behavior
-
-### Avoid
-
-- Switching frameworks mid-refactor
-- Introducing backend dependencies to solve local architecture problems
-- Replacing browser storage schema unless proven necessary
-
-## Confidence
-
-- High: Keep current stack, extract shared contracts, and refactor in-place
-- Medium: Deep runtime unification between `useWorker.ts` and `worker.ts` will need careful sequencing
-- High: No evidence that a framework migration would pay for itself here
+- 不在初始化阶段切换到别的扩展框架。
+- 不在 v1 阶段引入复杂后端或原生客户端栈。

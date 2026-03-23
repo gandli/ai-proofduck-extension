@@ -1,28 +1,19 @@
-# Refactor Research Summary
+# Research Summary
 
-**Date:** 2026-03-23
+## Stack
 
-## Key Findings
+项目继续采用 WXT + React + TypeScript + Tailwind，测试使用 Vitest + Playwright。
 
-**Stack:** The current WXT + React + TypeScript stack is already sufficient for a safe in-place refactor. The problem is not tooling; it is unclear boundaries between contexts, storage, UI orchestration, and runtime execution.
+## Table Stakes
 
-**Table Stakes:** The refactor must preserve all five writing modes, page-content fetching, in-page quick translation, engine selection, settings persistence, and local-first privacy behavior.
+v1 至少需要：侧边栏、选中文本处理、整页抓取、翻译、摘要、校对、润色、扩写、结果展示、设置与引擎切换。
 
-**Watch Out For:** The biggest risk is silently breaking hidden contracts between sidepanel, background, offscreen, content script, and browser storage.
+## Differentiators
 
-## Recommended Direction
+真正的差异化不在“模式数量”，而在“本地优先 + 多引擎 + 低打断网页流程”。
 
-1. Freeze and document existing contracts first.
-2. Decompose the sidepanel into clearer ownership boundaries.
-3. Unify engine execution paths behind shared runtime adapters.
-4. Split content/background orchestration into thinner entrypoints.
-5. Use docs and regression tests to prove the refactor did not change product behavior.
+## Watch Out For
 
-## Scope Guidance
-
-- **Do now:** clarity, contracts, decomposition, tests, docs alignment
-- **Do later:** feature expansion, redesign, platform expansion
-
-## Confidence
-
-- High confidence that a staged 4-phase refactor is the lowest-risk path.
+- 不要把它做成泛聊天产品。
+- 不要在 v1 引入账号和云平台。
+- 不要让本地模型加载体验失控。
