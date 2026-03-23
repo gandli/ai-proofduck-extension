@@ -38,10 +38,10 @@ export const ResultPanel = memo(function ResultPanel({
         </h3>
         {result && (
           <button
-            className="flex items-center justify-center p-1.5 text-slate-500 transition-all bg-white border border-slate-200 rounded-md cursor-pointer shadow-sm hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange hover:shadow-md hover:-translate-y-px dark:bg-brand-dark-surface dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]"
+            className="flex items-center justify-center p-1.5 text-slate-500 transition-all bg-white border border-slate-200 rounded-md cursor-pointer shadow-sm hover:bg-brand-orange-light hover:border-brand-orange hover:text-brand-orange hover:shadow-md hover:-translate-y-px focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 dark:bg-brand-dark-surface dark:border-slate-700 dark:text-slate-400 dark:hover:bg-[#2d1f10] dark:hover:border-brand-orange dark:hover:text-[#ff7a3d]"
             onClick={handleCopy}
-            title={t.copy_btn || 'Copy'}
-            aria-label={t.copy_btn || 'Copy'}
+            title={copied ? t.copied || 'Copied!' : t.copy_btn || 'Copy'}
+            aria-label={copied ? t.copied || 'Copied!' : t.copy_btn || 'Copy'}
           >
             {copied ? '✓' : (
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

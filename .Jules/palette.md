@@ -15,3 +15,7 @@
 ## 2026-03-08 - Explicit Form Controls & Custom Focus Outline
 **Learning:** For accessibility, form labels must explicitly use `htmlFor` connected to corresponding control `id`s. Also, any element (like a combobox) that strips the browser's default outline using `focus:outline-none` must substitute it with a visible custom focus state (e.g., `focus-visible:ring-2`) so keyboard navigability is preserved.
 **Action:** Always pair `<label htmlFor="control-id">` with `<input id="control-id">`, and when removing default outlines, add custom focus-visible styles.
+
+## 2026-03-11 - Accessible Interaction Model for Icon Buttons
+**Learning:** Icon-only buttons are prone to accessibility gaps. Using only `aria-label` supports screen readers, but leaves mouse and keyboard users guessing without visual tooltips or focus rings.
+**Action:** Always implement a complete interaction model for icon-only buttons by combining `aria-label` (screen reader context), `title` (native hover tooltips for mouse users), and `focus-visible` states (for keyboard navigability).
