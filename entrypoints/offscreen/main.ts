@@ -2,6 +2,7 @@ import { type EngineProgress, type EngineType, RUNTIME_MESSAGES, type Settings }
 import { getEngineAttemptOrder } from '../../lib/processing/engine-orchestrator';
 import { executeChromeEngine } from '../../lib/processing/engines/chrome-engine';
 import { executeOnline } from '../../lib/processing/engines/online-engine';
+import { readStoredTestEngineOverride } from '../../lib/processing/test-engine-override';
 import { executeTranslationFallback } from '../../lib/processing/engines/translation-fallback-engine';
 
 const OFFSCREEN_PORT = 'proofduck-offscreen-port';
@@ -52,6 +53,17 @@ async function executeOffscreenProcessing(input: {
 
   for (const attempt of attempts) {
     try {
+      const storedOverride = await readStoredTestEngineOverride(attempt.engine);
+      if (storedOverride) {
+        return {
+          result: storedOverride.result,
+          notice: storedOverride.notice,
+          engine: storedOverride.engine,
+          localRuntime: storedOverride.localRuntime,
+          fallbackUsed: storedOverride.fallbackUsed,
+        };
+      }
+
       if (attempt.engine === 'chrome-ai') {
         const execution = await executeChromeEngine(input);
         return {

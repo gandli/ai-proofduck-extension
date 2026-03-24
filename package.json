@@ -8,6 +8,7 @@
     "build": "wxt build",
     "compile": "tsc --noEmit",
     "test": "vitest run",
+    "test:bdd": "node tests/bdd/proofduck.chrome-bdd.mjs",
     "icons": "node scripts/generate-icons.mjs",
     "smoke": "node scripts/smoke-extension.mjs"
   },

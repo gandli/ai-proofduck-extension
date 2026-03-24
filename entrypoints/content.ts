@@ -8,6 +8,11 @@ import {
   type Settings,
 } from './shared/contracts';
 import { toEngineBadge } from './shared/engine-display';
+import {
+  buildInlineTranslationWarmupKey,
+  getInlineTranslationTimeoutMs,
+  getInlineTranslationUnavailableMessage,
+} from '../lib/processing/inline-translation';
 
 const INLINE_TRANSLATION_MAP: Record<string, string> = {
   inference: '推理',
@@ -18,6 +23,8 @@ const INLINE_TRANSLATION_MAP: Record<string, string> = {
   engine: '引擎',
   local: '本地',
 };
+
+let lastWarmupKey = '';
 
 function getSelectionDraft(): InputDraft | null {
   const selection = window.getSelection();
@@ -52,6 +59,7 @@ export default defineContentScript({
   runAt: 'document_idle',
   main() {
     let currentDraft: InputDraft | null = null;
+    let lastSelectionDraft: InputDraft | null = null;
     let hoverHideTimer: number | null = null;
     let hoverTranslateTimer: number | null = null;
     let lastTranslatedKey = '';
@@ -344,6 +352,7 @@ export default defineContentScript({
 
       const rect = selection.getRangeAt(0).getBoundingClientRect();
       const settings = await getCurrentSettings();
+      void prewarmInlineTranslationHost(settings);
       const cacheKey = buildTranslationCacheKey(draft.text, settings);
 
       if (lastTranslatedKey === cacheKey && lastTranslatedResult) {
@@ -359,7 +368,7 @@ export default defineContentScript({
         const response = await requestOffscreenTranslation(draft.text, settings);
 
         if (!response.ok || !response.result || !response.notice) {
-          throw new Error('当前策略暂时不可用，请点击 🐣 在侧边栏中继续。');
+          throw new Error(getInlineTranslationUnavailableMessage(settings));
         }
 
         const translated = normalizePopupTranslation(response.result);
@@ -371,8 +380,8 @@ export default defineContentScript({
         renderPopup(draft, translated, rect, notice);
         void syncSelectionTranslation(draft, translated, notice);
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : '当前策略暂时不可用，请点击 🐣 在侧边栏中继续。';
+      const message =
+          error instanceof Error ? error.message : getInlineTranslationUnavailableMessage(settings);
         renderPopupFailure(draft, rect, message);
       }
     };
@@ -395,6 +404,7 @@ export default defineContentScript({
         hideAllFloatingUi();
         return;
       }
+      lastSelectionDraft = currentDraft;
 
       if (lastTranslatedText !== currentDraft.text) {
         lastTranslatedKey = '';
@@ -402,6 +412,10 @@ export default defineContentScript({
         lastTranslatedNotice = '';
         sidepanelButton.textContent = '🐣';
       }
+
+      void getCurrentSettings().then((settings) => {
+        void prewarmInlineTranslationHost(settings);
+      });
 
       const rect = selection.getRangeAt(0).getBoundingClientRect();
       const anchorX = lastPointerX || rect.left + rect.width / 2;
@@ -458,6 +472,12 @@ export default defineContentScript({
         type: RUNTIME_MESSAGES.queueDraft,
         payload: queuedDraft,
       });
+
+      try {
+        await openSidePanelFromContent();
+      } catch {
+        // Keep the draft cached so the user can open the sidepanel manually.
+      }
     });
 
     sidepanelButton.addEventListener('mouseenter', () => {
@@ -521,7 +541,7 @@ export default defineContentScript({
 
     browser.runtime.onMessage.addListener((message) => {
       if (message?.type === RUNTIME_MESSAGES.getSelection) {
-        return Promise.resolve(getSelectionDraft());
+        return Promise.resolve(getSelectionDraft() ?? currentDraft ?? lastSelectionDraft);
       }
 
       if (message?.type === RUNTIME_MESSAGES.getPageText) {
@@ -558,6 +578,7 @@ async function getCurrentSettings() {
 }
 
 async function requestOffscreenTranslation(text: string, settings: Settings) {
+  const timeoutMs = getInlineTranslationTimeoutMs(settings);
   const translationPromise = browser.runtime.sendMessage({
     type: RUNTIME_MESSAGES.offscreenTranslate,
     payload: {
@@ -568,11 +589,42 @@ async function requestOffscreenTranslation(text: string, settings: Settings) {
 
   const timeoutPromise = new Promise<never>((_, reject) => {
     window.setTimeout(() => {
-      reject(new Error('当前策略暂时不可用，请点击 🐣 在侧边栏中继续。'));
-    }, 8000);
+      reject(new Error(getInlineTranslationUnavailableMessage(settings)));
+    }, timeoutMs);
   });
 
-  return Promise.race([translationPromise, timeoutPromise]);
+  const response = await Promise.race([translationPromise, timeoutPromise]);
+
+  if (!response || typeof response !== 'object') {
+    throw new Error(getInlineTranslationUnavailableMessage(settings));
+  }
+
+  if ('ok' in response && response.ok === false) {
+    throw new Error(
+      typeof response.error === 'string' && response.error
+        ? response.error
+        : getInlineTranslationUnavailableMessage(settings),
+    );
+  }
+
+  return response;
+}
+
+async function prewarmInlineTranslationHost(settings: Settings) {
+  const warmupKey = buildInlineTranslationWarmupKey(settings);
+  if (warmupKey === lastWarmupKey) {
+    return;
+  }
+
+  lastWarmupKey = warmupKey;
+
+  try {
+    await browser.runtime.sendMessage({
+      type: RUNTIME_MESSAGES.ensureOffscreenHost,
+    });
+  } catch {
+    lastWarmupKey = '';
+  }
 }
 
 function buildTranslationCacheKey(text: string, settings: Settings) {
@@ -614,4 +666,24 @@ async function syncSelectionTranslation(draft: InputDraft, result: string, notic
   } catch {
     // Ignore sync failures; inline popup already has the result.
   }
+}
+
+async function openSidePanelFromContent() {
+  const sidePanelApi = (browser as typeof browser & {
+    sidePanel?: {
+      open?: (options: { windowId: number }) => Promise<void>;
+    };
+  }).sidePanel;
+
+  if (!sidePanelApi?.open || !browser.windows?.getCurrent) {
+    return false;
+  }
+
+  const currentWindow = await browser.windows.getCurrent();
+  if (!currentWindow.id) {
+    return false;
+  }
+
+  await sidePanelApi.open({ windowId: currentWindow.id });
+  return true;
 }

@@ -11,6 +11,9 @@ interface ChromeExecutionInput {
   onProgress?: (progress: EngineProgress) => void;
 }
 
+const SUPPORTED_LANGUAGE_CODES = ['en', 'es', 'ja'] as const;
+type SupportedLanguageCode = (typeof SUPPORTED_LANGUAGE_CODES)[number];
+
 function getLanguageModelClass() {
   const scoped = globalThis as typeof globalThis & {
     LanguageModel?: typeof LanguageModel;
@@ -33,6 +36,24 @@ export async function getChromeAvailability() {
   }
 }
 
+function toChromeLanguageCode(language: string): SupportedLanguageCode | null {
+  const normalized = language.trim().toLowerCase();
+
+  if (normalized.includes('english') || normalized.includes('英语') || normalized === 'en') {
+    return 'en';
+  }
+
+  if (normalized.includes('spanish') || normalized.includes('西班牙') || normalized === 'es') {
+    return 'es';
+  }
+
+  if (normalized.includes('japanese') || normalized.includes('日语') || normalized.includes('日本語') || normalized === 'ja') {
+    return 'ja';
+  }
+
+  return null;
+}
+
 export async function executeChromeEngine(input: ChromeExecutionInput) {
   const LanguageModelClass = getLanguageModelClass();
 
@@ -40,7 +61,15 @@ export async function executeChromeEngine(input: ChromeExecutionInput) {
     throw new Error('当前浏览器没有可用的内置 AI');
   }
 
-  const availability = await LanguageModelClass.availability();
+  const outputLanguage = toChromeLanguageCode(input.settings.targetLanguage);
+  if (!outputLanguage) {
+    throw new Error('浏览器内置 AI 当前只支持英文、西班牙语、日语输出');
+  }
+
+  const availability = await LanguageModelClass.availability({
+    expectedInputs: [{ type: 'text', languages: ['en'] }],
+    expectedOutputs: [{ type: 'text', languages: [outputLanguage] }],
+  });
   if (availability === 'unavailable') {
     throw new Error('当前浏览器暂不支持内置 AI');
   }
@@ -52,6 +81,8 @@ export async function executeChromeEngine(input: ChromeExecutionInput) {
   });
 
   const session = await LanguageModelClass.create({
+    expectedInputs: [{ type: 'text', languages: ['en'] }],
+    expectedOutputs: [{ type: 'text', languages: [outputLanguage] }],
     monitor(monitor: CreateMonitor) {
       monitor.addEventListener('downloadprogress', (event: ProgressEvent) => {
         const total = event.total || 1;

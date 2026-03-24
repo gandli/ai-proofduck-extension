@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import App from './App';
-import { STORAGE_KEYS } from '../shared/contracts';
+import { RUNTIME_MESSAGES, STORAGE_KEYS } from '../shared/contracts';
 
 const storageState: Record<string, unknown> = {};
 
@@ -115,6 +115,24 @@ describe('App', () => {
     expect(screen.getByText('TRANSLATION')).toBeTruthy();
   });
 
+  it('updates the sidepanel when a new draft is pushed in', async () => {
+    render(<App />);
+
+    for (const listener of runtimeListeners) {
+      listener({
+        type: RUNTIME_MESSAGES.inputDraftUpdated,
+        payload: {
+          text: '新的选区内容',
+          source: 'selection',
+          preferredMode: 'translate',
+          capturedAt: new Date().toISOString(),
+        },
+      });
+    }
+
+    expect(await screen.findByDisplayValue('新的选区内容')).toBeTruthy();
+  });
+
   it('processes text and renders a real result', async () => {
     render(<App />);
 
@@ -199,5 +217,89 @@ describe('App', () => {
 
     fireEvent.click(clearButtons[1]);
     expect(screen.getByText('Result will appear here.')).toBeTruthy();
+  });
+
+  it('imports the latest selection into the source box', async () => {
+    vi.mocked(browser.runtime.sendMessage).mockImplementation(async (...args: unknown[]) => {
+      const message = (args.length > 1 ? args[1] : args[0]) as { type?: string } | undefined;
+      if (message?.type === RUNTIME_MESSAGES.getSelection) {
+        return {
+          text: '来自网页选区的最新内容',
+          source: 'selection',
+          capturedAt: new Date().toISOString(),
+        };
+      }
+
+      return null;
+    });
+
+    render(<App />);
+
+    fireEvent.click(await screen.findByRole('button', { name: '导入选区' }));
+
+    expect(await screen.findByDisplayValue('来自网页选区的最新内容')).toBeTruthy();
+  });
+
+  it('shows a clear notice when there is no selection to import', async () => {
+    render(<App />);
+
+    const textarea = (await screen.findByRole('textbox')) as HTMLTextAreaElement;
+    fireEvent.change(textarea, { target: { value: '保留这段原文' } });
+
+    vi.mocked(browser.runtime.sendMessage).mockImplementation(async (...args: unknown[]) => {
+      const message = (args.length > 1 ? args[1] : args[0]) as { type?: string } | undefined;
+      if (message?.type === RUNTIME_MESSAGES.getSelection) {
+        return null;
+      }
+
+      return null;
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: '导入选区' }));
+
+    expect(await screen.findByText('当前页面没有可导入的选区')).toBeTruthy();
+    expect(textarea.value).toBe('保留这段原文');
+  });
+
+  it('imports the current page body into the source box', async () => {
+    vi.mocked(browser.runtime.sendMessage).mockImplementation(async (...args: unknown[]) => {
+      const message = (args.length > 1 ? args[1] : args[0]) as { type?: string } | undefined;
+      if (message?.type === RUNTIME_MESSAGES.getPageText) {
+        return {
+          text: '整页正文内容',
+          source: 'page',
+          capturedAt: new Date().toISOString(),
+        };
+      }
+
+      return null;
+    });
+
+    render(<App />);
+
+    fireEvent.click(await screen.findByRole('button', { name: '抓取正文' }));
+
+    expect(await screen.findByDisplayValue('整页正文内容')).toBeTruthy();
+  });
+
+  it('shows a clear notice when the current page has no extractable body', async () => {
+    render(<App />);
+
+    const textarea = (await screen.findByRole('textbox')) as HTMLTextAreaElement;
+    fireEvent.change(textarea, { target: { value: '保留原文' } });
+
+    vi.mocked(browser.runtime.sendMessage).mockImplementation(async (...args: unknown[]) => {
+      const message = (args.length > 1 ? args[1] : args[0]) as { type?: string } | undefined;
+      if (message?.type === RUNTIME_MESSAGES.getPageText) {
+        return null;
+      }
+
+      return null;
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: '抓取正文' }));
+
+    expect(await screen.findByText('当前页面没有可抓取的正文')).toBeTruthy();
+    expect(textarea.value).toBe('保留原文');
   });
 });

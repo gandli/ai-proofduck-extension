@@ -33,6 +33,7 @@ bun run dev
 bun run build
 bun run compile
 bun run test
+bun run test:bdd
 bun run smoke
 ```
 
@@ -54,12 +55,24 @@ bun run smoke
 bun run test
 bun run compile
 bun run build
+bun run test:bdd
 bun run smoke
 ```
 
-其中 `bun run smoke` 会真实验证这条链路：
+其中 `bun run smoke` 会快速验证主链路，`bun run test:bdd` 会把主要用户场景完整走一遍。
+
+`bun run smoke` 会真实验证这条链路：
 
 1. 在网页里选中文字
 2. 发送到扩展侧边栏
 3. 默认走本地兼容模式完成一次处理
 4. 切到在线 API 并确认返回真实结果
+
+`bun run test:bdd` 目前会覆盖这些场景：
+
+1. 悬停 `🐣` 后页内翻译卡片和侧边栏同步显示
+2. 翻译卡片在关闭、复制、点击空白后消失
+3. 点击 `🐣` 把选区送入侧边栏，并复用已有翻译结果
+4. `导入选区` 与 `抓取正文` 两个按钮可用
+5. 五种处理模式都能产出结果
+6. 设置页随着首选策略切换显示对应设置区块

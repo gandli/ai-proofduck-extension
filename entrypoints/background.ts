@@ -1,5 +1,8 @@
 import { RUNTIME_MESSAGES, STORAGE_KEYS, type InputDraft, type SelectionTranslationPayload } from './shared/contracts';
 import { DEFAULT_SETTINGS } from './shared/contracts';
+import { getEngineAttemptOrder } from '../lib/processing/engine-orchestrator';
+import { getInlineTranslationTimeoutMs } from '../lib/processing/inline-translation';
+import { readStoredTestEngineOverride } from '../lib/processing/test-engine-override';
 
 const OFFSCREEN_PATH = '/offscreen.html';
 const OFFSCREEN_PORT = 'proofduck-offscreen-port';
@@ -17,6 +20,38 @@ const pendingOffscreenRequests = new Map<
     timeout: ReturnType<typeof setTimeout>;
   }
 >();
+
+function resetOffscreenConnectionState() {
+  offscreenPort = null;
+  offscreenReady = false;
+}
+
+async function hasOffscreenDocument() {
+  if (!browser.runtime?.getContexts) {
+    return false;
+  }
+
+  const contexts = await browser.runtime.getContexts({
+    contextTypes: ['OFFSCREEN_DOCUMENT'],
+    documentUrls: [browser.runtime.getURL(OFFSCREEN_PATH)],
+  });
+
+  return contexts.length > 0;
+}
+
+async function recreateOffscreenDocument() {
+  resetOffscreenConnectionState();
+
+  if (browser.offscreen?.closeDocument) {
+    try {
+      await browser.offscreen.closeDocument();
+    } catch {
+      // Ignore close failures; createDocument below will decide the real state.
+    }
+  }
+
+  await ensureOffscreenDocument();
+}
 
 async function ensureOffscreenDocument() {
   if (!browser.offscreen?.createDocument) {
@@ -37,33 +72,58 @@ async function ensureOffscreenDocument() {
   }
 }
 
-async function forwardOffscreenTranslation(payload: { text: string; settings: typeof DEFAULT_SETTINGS }) {
-  await ensureOffscreenDocument();
+async function waitForOffscreenReady(timeoutMs = 1600) {
+  const startedAt = Date.now();
 
-  for (let attempt = 0; attempt < 10; attempt += 1) {
+  while (Date.now() - startedAt < timeoutMs) {
     if (offscreenPort && offscreenReady) {
-      break;
+      return true;
     }
 
     await new Promise((resolve) => setTimeout(resolve, 80));
   }
 
-  if (!offscreenPort || !offscreenReady) {
-    throw new Error('隐藏翻译页暂时没有响应');
+  return Boolean(offscreenPort && offscreenReady);
+}
+
+async function ensureOffscreenReady() {
+  await ensureOffscreenDocument();
+
+  if (await waitForOffscreenReady()) {
+    return;
   }
+
+  const documentExists = await hasOffscreenDocument();
+  if (documentExists) {
+    await recreateOffscreenDocument();
+  } else {
+    await ensureOffscreenDocument();
+  }
+
+  if (await waitForOffscreenReady(2200)) {
+    return;
+  }
+
+  throw new Error('隐藏翻译页暂时没有响应，请稍后重试');
+}
+
+async function forwardOffscreenTranslation(payload: { text: string; settings: typeof DEFAULT_SETTINGS }) {
+  await ensureOffscreenReady();
 
   const requestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
   const activePort = offscreenPort;
   if (!activePort) {
-    throw new Error('隐藏翻译页暂时没有响应');
+    throw new Error('隐藏翻译页暂时没有响应，请稍后重试');
   }
 
   return new Promise((resolve, reject) => {
+    const timeoutMs = getInlineTranslationTimeoutMs(payload.settings);
     const timeout = setTimeout(() => {
       pendingOffscreenRequests.delete(requestId);
-      reject(new Error('隐藏翻译页暂时没有响应'));
-    }, 7000);
+      resetOffscreenConnectionState();
+      reject(new Error('隐藏翻译页暂时没有响应，请稍后重试'));
+    }, timeoutMs);
 
     pendingOffscreenRequests.set(requestId, {
       resolve,
@@ -161,17 +221,13 @@ export default defineBackground(() => {
   browser.runtime.onMessage.addListener((message, sender) => {
     if (message?.type === RUNTIME_MESSAGES.queueDraft) {
       return saveDraft(message.payload as InputDraft).then(async () => {
-        const tabId = sender.tab?.id;
-        const windowId = sender.tab?.windowId;
-
-        if (tabId) {
-          await browser.sidePanel.open({ tabId });
-          return { ok: true };
-        }
-
-        if (windowId) {
-          await browser.sidePanel.open({ windowId });
-          return { ok: true };
+        try {
+          await browser.runtime.sendMessage({
+            type: RUNTIME_MESSAGES.inputDraftUpdated,
+            payload: message.payload,
+          });
+        } catch {
+          // Sidepanel may be closed; storage is enough for later restore.
         }
 
         return { ok: true };
@@ -179,19 +235,45 @@ export default defineBackground(() => {
     }
 
     if (message?.type === RUNTIME_MESSAGES.getSelection || message?.type === RUNTIME_MESSAGES.getPageText) {
-      return getActiveTab().then((tab) =>
-        browser.tabs.sendMessage(tab.id!, {
+      return (async () => {
+        if (message.type === RUNTIME_MESSAGES.getSelection) {
+          const overrideResult = await browser.storage.local.get(STORAGE_KEYS.testSelectionDraftResponse);
+          if (STORAGE_KEYS.testSelectionDraftResponse in overrideResult) {
+            return overrideResult[STORAGE_KEYS.testSelectionDraftResponse] as InputDraft | null;
+          }
+        }
+
+        if (message.type === RUNTIME_MESSAGES.getPageText) {
+          const overrideResult = await browser.storage.local.get(STORAGE_KEYS.testPageDraftResponse);
+          if (STORAGE_KEYS.testPageDraftResponse in overrideResult) {
+            return overrideResult[STORAGE_KEYS.testPageDraftResponse] as InputDraft | null;
+          }
+        }
+
+        const tab = await getActiveTab();
+        return browser.tabs.sendMessage(tab.id!, {
           type: message.type,
-        }),
-      );
+        });
+      })();
     }
 
     if (message?.type === RUNTIME_MESSAGES.ensureOffscreenHost) {
-      return ensureOffscreenDocument().then(() => ({ ok: true }));
+      return ensureOffscreenReady().then(() => ({ ok: true }));
     }
 
     if (message?.type === RUNTIME_MESSAGES.offscreenTranslate) {
-      return forwardOffscreenTranslation(message.payload as { text: string; settings: typeof DEFAULT_SETTINGS });
+      const payload = message.payload as { text: string; settings: typeof DEFAULT_SETTINGS };
+      return (async () => {
+        const attempts = getEngineAttemptOrder('translate', payload.settings);
+        for (const attempt of attempts) {
+          const override = await readStoredTestEngineOverride(attempt.engine);
+          if (override) {
+            return { ok: true, ...override };
+          }
+        }
+
+        return forwardOffscreenTranslation(payload);
+      })();
     }
 
     if (message?.type === RUNTIME_MESSAGES.syncSelectionTranslation) {

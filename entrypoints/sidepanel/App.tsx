@@ -39,9 +39,11 @@ export default function App() {
   const [engineNotice, setEngineNotice] = useState('');
   const [progressText, setProgressText] = useState('');
   const [pendingAutoRun, setPendingAutoRun] = useState(false);
+  const [inputNotice, setInputNotice] = useState('');
 
   const applyDraft = (draft: InputDraft) => {
     setText(draft.text);
+    setInputNotice('');
     if (draft.preferredMode) {
       setMode(draft.preferredMode);
     }
@@ -87,6 +89,15 @@ export default function App() {
 
   useEffect(() => {
     const listener = (message: { type?: string; payload?: SelectionTranslationPayload }) => {
+      if (message?.type === RUNTIME_MESSAGES.inputDraftUpdated) {
+        const draft = message.payload as InputDraft | undefined;
+        if (draft?.text) {
+          applyDraft(draft);
+        }
+
+        return undefined;
+      }
+
       if (message?.type !== RUNTIME_MESSAGES.selectionTranslationUpdated || !message.payload?.draft?.text) {
         return undefined;
       }
@@ -146,8 +157,12 @@ export default function App() {
       type: RUNTIME_MESSAGES.getSelection,
     })) as InputDraft | null;
 
-    if (!draft?.text) return;
+    if (!draft?.text) {
+      setInputNotice('当前页面没有可导入的选区');
+      return;
+    }
 
+    setInputNotice('');
     setText(draft.text);
   };
 
@@ -156,13 +171,18 @@ export default function App() {
       type: RUNTIME_MESSAGES.getPageText,
     })) as InputDraft | null;
 
-    if (!draft?.text) return;
+    if (!draft?.text) {
+      setInputNotice('当前页面没有可抓取的正文');
+      return;
+    }
 
+    setInputNotice('');
     setText(draft.text);
   };
 
   const clearInput = () => {
     setText('');
+    setInputNotice('');
     setProcessingStatus('idle');
     setProgressText('');
     setEngineNotice('');
@@ -227,12 +247,14 @@ export default function App() {
               value={text}
               onChange={(event) => {
                 setText(event.target.value);
+                setInputNotice('');
                 setProcessingStatus('idle');
                 setProgressText('');
               }}
               placeholder="在这里粘贴文本，或者直接从网页选区与整页正文带入内容。"
               className="min-h-[11rem] h-[33vh] max-h-[47vh] w-full resize-y overflow-auto rounded-[1.15rem] border border-[#e8eef6] bg-white p-3.5 text-sm leading-7 text-slate-600 outline-none transition duration-200 focus:border-brand-orange focus:shadow-[0_0_0_3px_rgba(255,90,17,0.08)]"
             />
+            {inputNotice ? <p className="mt-2 px-1 text-[11px] font-medium text-[#c45a1a]">{inputNotice}</p> : null}
           </div>
 
           <ResultPanel

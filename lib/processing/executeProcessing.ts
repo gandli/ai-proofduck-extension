@@ -3,6 +3,7 @@ import type { EngineProgress, EngineType, ModeKey, Settings } from '../../entryp
 import { getEngineAttemptOrder } from './engine-orchestrator';
 import { executeChromeEngine } from './engines/chrome-engine';
 import { executeOnline } from './engines/online-engine';
+import { readStoredTestEngineOverride } from './test-engine-override';
 import { executeTranslationFallback } from './engines/translation-fallback-engine';
 
 export interface ExecuteProcessingInput {
@@ -20,6 +21,27 @@ export interface ExecuteProcessingResult {
   fallbackUsed: boolean;
 }
 
+interface TestOverrideResult {
+  result: string;
+  notice: string;
+  engine?: EngineType;
+  localRuntime?: 'webgpu' | 'wasm' | null;
+  fallbackUsed?: boolean;
+}
+
+type TestEngineOverride = (
+  engine: EngineType,
+  input: ExecuteProcessingInput,
+) => Promise<TestOverrideResult | null | undefined> | TestOverrideResult | null | undefined;
+
+function getTestEngineOverride() {
+  const scoped = globalThis as typeof globalThis & {
+    __PROOFDUCK_TEST_ENGINE_OVERRIDE__?: TestEngineOverride;
+  };
+
+  return scoped.__PROOFDUCK_TEST_ENGINE_OVERRIDE__;
+}
+
 function isOnlineConfigured(settings: Settings) {
   return Boolean(settings.onlineApiBase && settings.onlineApiKey && settings.onlineModel);
 }
@@ -30,6 +52,31 @@ export async function executeProcessing(input: ExecuteProcessingInput): Promise<
 
   for (const attempt of attempts) {
     try {
+      const testOverride = getTestEngineOverride();
+      if (testOverride) {
+        const mocked = await testOverride(attempt.engine, input);
+        if (mocked) {
+          return {
+            result: mocked.result,
+            notice: mocked.notice,
+            engine: mocked.engine ?? attempt.engine,
+            localRuntime: mocked.localRuntime ?? null,
+            fallbackUsed: mocked.fallbackUsed ?? false,
+          };
+        }
+      }
+
+      const storedOverride = await readStoredTestEngineOverride(attempt.engine);
+      if (storedOverride) {
+        return {
+          result: storedOverride.result,
+          notice: storedOverride.notice,
+          engine: storedOverride.engine,
+          localRuntime: storedOverride.localRuntime,
+          fallbackUsed: storedOverride.fallbackUsed,
+        };
+      }
+
       if (attempt.engine === 'chrome-ai') {
         const execution = await executeChromeEngine(input);
         return {

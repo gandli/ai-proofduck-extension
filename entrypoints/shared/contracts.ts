@@ -77,10 +77,14 @@ export const STORAGE_KEYS = {
   settings: 'proofduck:settings',
   inputDraft: 'proofduck:input-draft',
   selectionTranslation: 'proofduck:selection-translation',
+  testEngineOverride: 'proofduck:test-engine-override',
+  testPageDraftResponse: 'proofduck:test-page-draft-response',
+  testSelectionDraftResponse: 'proofduck:test-selection-draft-response',
 } as const;
 
 export const RUNTIME_MESSAGES = {
   queueDraft: 'proofduck:queue-draft',
+  inputDraftUpdated: 'proofduck:input-draft-updated',
   getSelection: 'proofduck:get-selection',
   getPageText: 'proofduck:get-page-text',
   translateSelection: 'proofduck:translate-selection',
