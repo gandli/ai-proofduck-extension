@@ -313,7 +313,7 @@ describe('App', () => {
     expect(screen.getByText('Result will appear here.')).toBeTruthy();
   });
 
-  it('imports the latest selection into the source box', async () => {
+  it('imports the latest selection into the source box and clears previous result', async () => {
     vi.mocked(browser.runtime.sendMessage).mockImplementation(async (...args: unknown[]) => {
       const message = (args.length > 1 ? args[1] : args[0]) as { type?: string } | undefined;
       if (message?.type === RUNTIME_MESSAGES.getSelection) {
@@ -329,9 +329,16 @@ describe('App', () => {
 
     render(<App />);
 
+    const textarea = await screen.findByRole('textbox');
+    fireEvent.change(textarea, { target: { value: '旧的待翻译内容' } });
+    fireEvent.click(screen.getByRole('button', { name: '执行翻译' }));
+    
+    expect(await screen.findByText(/翻译结果/)).toBeTruthy();
+
     fireEvent.click(await screen.findByRole('button', { name: '导入选区' }));
 
     expect(await screen.findByDisplayValue('来自网页选区的最新内容')).toBeTruthy();
+    expect(screen.getByText('Result will appear here.')).toBeTruthy();
   });
 
   it('shows a clear notice when there is no selection to import', async () => {
@@ -355,7 +362,7 @@ describe('App', () => {
     expect(textarea.value).toBe('保留这段原文');
   });
 
-  it('imports the current page full text into the source box', async () => {
+  it('imports the current page full text into the source box and clears previous result', async () => {
     vi.mocked(browser.runtime.sendMessage).mockImplementation(async (...args: unknown[]) => {
       const message = (args.length > 1 ? args[1] : args[0]) as { type?: string } | undefined;
       if (message?.type === RUNTIME_MESSAGES.getPageText) {
@@ -371,9 +378,16 @@ describe('App', () => {
 
     render(<App />);
 
+    const textarea = await screen.findByRole('textbox');
+    fireEvent.change(textarea, { target: { value: '旧的待翻译内容' } });
+    fireEvent.click(screen.getByRole('button', { name: '执行翻译' }));
+
+    expect(await screen.findByText(/翻译结果/)).toBeTruthy();
+
     fireEvent.click(await screen.findByRole('button', { name: '抓取全文' }));
 
     expect(await screen.findByDisplayValue('整页全文内容')).toBeTruthy();
+    expect(screen.getByText('Result will appear here.')).toBeTruthy();
   });
 
   it('shows a clear notice when the current page has no extractable full text', async () => {

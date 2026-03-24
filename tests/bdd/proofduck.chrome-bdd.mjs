@@ -466,14 +466,12 @@ async function main() {
         },
       ]);
 
-      await runScenario('导入选区与抓取全文按钮都能把内容带入原文框', [
+      await runScenario('导入选区与抓取全文按钮都能把内容带入原文框，并清空旧结果', [
         {
           kind: 'GIVEN',
           text: '网页里有新的选区，侧边栏已经打开',
           run: async () => {
-            await page.bringToFront();
-            await page.locator('#sample').selectText();
-            await selectSampleText(page);
+            await setTestSelectionDraftResponse(sidepanel, { text: '第二段内容用来验证新的选区状态是否会正确重置' });
             await sidepanel.bringToFront();
           },
         },
@@ -486,25 +484,30 @@ async function main() {
         },
         {
           kind: 'THEN',
-          text: '原文框会显示当前选区',
+          text: '原文框会显示当前选区，且旧的处理结果会被清空',
           run: async () => {
             const text = await sidepanel.locator('textarea').inputValue();
-            assert(text.includes('校对鸭是一个面向网页阅读与写作场景的助手'), '导入选区没有成功带入内容');
+            assert(text.includes('第二段内容用来验证新的选区状态是否会正确重置'), '导入选区没有成功带入新内容');
+            await sidepanel.getByText('Result will appear here.').waitFor({ timeout: 10000 });
+            await clearTestSelectionDraftResponse(sidepanel);
           },
         },
         {
           kind: 'WHEN',
           text: '用户点击抓取全文',
           run: async () => {
+            await setTestPageDraftResponse(sidepanel, { text: '翻译、摘要、校对、润色和扩写' });
             await clickButtonInsidePage(sidepanel, '抓取全文');
           },
         },
         {
           kind: 'THEN',
-          text: '原文框会显示整页全文',
+          text: '原文框会显示整页全文，且处理结果保持清空状态',
           run: async () => {
             const text = await sidepanel.locator('textarea').inputValue();
             assert(text.includes('翻译、摘要、校对、润色和扩写'), '抓取全文没有成功带入内容');
+            await sidepanel.getByText('Result will appear here.').waitFor({ timeout: 10000 });
+            await clearTestPageDraftResponse(sidepanel);
           },
         },
       ]);

@@ -219,6 +219,10 @@ export default function App() {
 
     setInputNotice('');
     setText(draft.text);
+    setProcessingStatus('idle');
+    setProgressText('');
+    setResult('');
+    setEngineNotice('');
   };
 
   const importPage = async () => {
@@ -233,6 +237,10 @@ export default function App() {
 
     setInputNotice('');
     setText(draft.text);
+    setProcessingStatus('idle');
+    setProgressText('');
+    setResult('');
+    setEngineNotice('');
   };
 
   const clearInput = () => {
