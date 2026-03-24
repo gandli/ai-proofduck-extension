@@ -394,6 +394,13 @@ export default defineContentScript({
 
     const showButtonForSelection = () => {
       const selection = window.getSelection();
+      
+      if (selection && selection.anchorNode) {
+        if (popup.contains(selection.anchorNode) || actionBar.contains(selection.anchorNode)) {
+          return;
+        }
+      }
+
       if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
         hideAllFloatingUi();
         return;
@@ -447,7 +454,17 @@ export default defineContentScript({
       window.setTimeout(showButtonForSelection, 0);
     });
 
-    document.addEventListener('scroll', hideAllFloatingUi, true);
+    document.addEventListener(
+      'scroll',
+      (event) => {
+        const target = event.target as Node;
+        if (target && popup.contains(target)) {
+          return;
+        }
+        hideAllFloatingUi();
+      },
+      true,
+    );
     window.addEventListener('resize', hideAllFloatingUi);
 
     actionBar.addEventListener('mousedown', (event) => {
