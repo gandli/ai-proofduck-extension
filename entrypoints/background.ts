@@ -141,12 +141,22 @@ async function forwardOffscreenTranslation(payload: { text: string; settings: ty
 }
 
 async function getActiveTab() {
-  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-  if (!tab?.id) {
-    throw new Error('Active tab not found');
+  const tabs = await browser.tabs.query({ active: true, lastFocusedWindow: true });
+  if (tabs.length > 0 && tabs[0].id) {
+    return tabs[0];
   }
 
-  return tab;
+  const backupTabs = await browser.tabs.query({ active: true, currentWindow: true });
+  if (backupTabs.length > 0 && backupTabs[0].id) {
+    return backupTabs[0];
+  }
+
+  const normalTabs = await browser.tabs.query({ active: true, windowType: 'normal' });
+  if (normalTabs.length > 0 && normalTabs[0].id) {
+    return normalTabs[0];
+  }
+
+  throw new Error('Active tab not found');
 }
 
 async function saveDraft(draft: InputDraft) {

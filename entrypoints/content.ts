@@ -544,7 +544,8 @@ export default defineContentScript({
 
     browser.runtime.onMessage.addListener((message) => {
       if (message?.type === RUNTIME_MESSAGES.getSelection) {
-        return Promise.resolve(getSelectionDraft());
+        const current = getSelectionDraft();
+        return Promise.resolve(current?.text ? current : lastSelectionDraft);
       }
 
       if (message?.type === RUNTIME_MESSAGES.getPageText) {

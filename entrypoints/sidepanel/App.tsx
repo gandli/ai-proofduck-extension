@@ -208,39 +208,47 @@ export default function App() {
   };
 
   const importSelection = async () => {
-    const draft = (await browser.runtime.sendMessage({
-      type: RUNTIME_MESSAGES.getSelection,
-    })) as InputDraft | null;
+    try {
+      const draft = (await browser.runtime.sendMessage({
+        type: RUNTIME_MESSAGES.getSelection,
+      })) as InputDraft | null;
 
-    if (!draft?.text) {
+      if (!draft?.text) {
+        setInputNotice('当前页面没有可导入的选区');
+        return;
+      }
+
+      setInputNotice('');
+      setText(draft.text);
+      setProcessingStatus('idle');
+      setProgressText('');
+      setResult('');
+      setEngineNotice('');
+    } catch {
       setInputNotice('当前页面没有可导入的选区');
-      return;
     }
-
-    setInputNotice('');
-    setText(draft.text);
-    setProcessingStatus('idle');
-    setProgressText('');
-    setResult('');
-    setEngineNotice('');
   };
 
   const importPage = async () => {
-    const draft = (await browser.runtime.sendMessage({
-      type: RUNTIME_MESSAGES.getPageText,
-    })) as InputDraft | null;
+    try {
+      const draft = (await browser.runtime.sendMessage({
+        type: RUNTIME_MESSAGES.getPageText,
+      })) as InputDraft | null;
 
-    if (!draft?.text) {
+      if (!draft?.text) {
+        setInputNotice('当前页面没有可抓取的全文');
+        return;
+      }
+
+      setInputNotice('');
+      setText(draft.text);
+      setProcessingStatus('idle');
+      setProgressText('');
+      setResult('');
+      setEngineNotice('');
+    } catch {
       setInputNotice('当前页面没有可抓取的全文');
-      return;
     }
-
-    setInputNotice('');
-    setText(draft.text);
-    setProcessingStatus('idle');
-    setProgressText('');
-    setResult('');
-    setEngineNotice('');
   };
 
   const clearInput = () => {
