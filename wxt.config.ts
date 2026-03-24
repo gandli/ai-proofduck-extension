@@ -1,4 +1,5 @@
 import { defineConfig } from 'wxt';
+import { EXTENSION_PAGE_CSP } from './entrypoints/shared/manifest-config';
 
 export default defineConfig({
   outDir: 'dist',
@@ -11,6 +12,9 @@ export default defineConfig({
     host_permissions: ['https://*/*', 'http://*/*'],
     action: {
       default_title: '打开校对鸭',
+    },
+    content_security_policy: {
+      extension_pages: EXTENSION_PAGE_CSP,
     },
     icons: {
       '16': 'icons/icon-16.png',

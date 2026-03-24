@@ -27,6 +27,9 @@ export function buildInlineTranslationWarmupKey(
     | 'localModel'
     | 'localAllowWasmFallback'
     | 'translationFallbackEnabled'
+    | 'translationFallbackProvider'
+    | 'baiduTranslateAppId'
+    | 'baiduTranslateKey'
     | 'onlineApiBase'
     | 'onlineApiKey'
     | 'onlineModel'
@@ -38,6 +41,42 @@ export function buildInlineTranslationWarmupKey(
     localModel: settings.localModel,
     localAllowWasmFallback: settings.localAllowWasmFallback,
     translationFallbackEnabled: settings.translationFallbackEnabled,
+    translationFallbackProvider: settings.translationFallbackProvider,
+    baiduTranslateAppId: settings.baiduTranslateAppId,
+    baiduTranslateKey: settings.baiduTranslateKey,
+    onlineApiBase: settings.onlineApiBase,
+    onlineModel: settings.onlineModel,
+    onlineApiConfigured: Boolean(settings.onlineApiKey),
+  });
+}
+
+export function buildInlineTranslationCacheKey(
+  text: string,
+  settings: Pick<
+    Settings,
+    | 'enginePreference'
+    | 'targetLanguage'
+    | 'localModel'
+    | 'localAllowWasmFallback'
+    | 'translationFallbackEnabled'
+    | 'translationFallbackProvider'
+    | 'baiduTranslateAppId'
+    | 'baiduTranslateKey'
+    | 'onlineApiBase'
+    | 'onlineApiKey'
+    | 'onlineModel'
+  >,
+) {
+  return JSON.stringify({
+    text,
+    targetLanguage: settings.targetLanguage,
+    enginePreference: settings.enginePreference,
+    localModel: settings.localModel,
+    localAllowWasmFallback: settings.localAllowWasmFallback,
+    translationFallbackEnabled: settings.translationFallbackEnabled,
+    translationFallbackProvider: settings.translationFallbackProvider,
+    baiduTranslateAppId: settings.baiduTranslateAppId,
+    baiduTranslateKey: settings.baiduTranslateKey,
     onlineApiBase: settings.onlineApiBase,
     onlineModel: settings.onlineModel,
     onlineApiConfigured: Boolean(settings.onlineApiKey),

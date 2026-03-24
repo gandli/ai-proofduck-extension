@@ -17,11 +17,17 @@ export function ResultPanel({ title, result, notice, isLoading = false, progress
   const engineTag = toEngineTag(notice);
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col">
+    <section data-proofduck-result-panel="true" className="flex min-h-0 flex-1 flex-col">
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h2 className="text-sm font-bold text-slate-700">{title}</h2>
-          {engineTag ? <span className="text-[11px] font-medium text-[#c45a1a]">{engineTag}</span> : null}
+          <h2 data-proofduck-result-title="true" className="text-sm font-bold text-slate-700">
+            {title}
+          </h2>
+          {engineTag ? (
+            <span data-proofduck-result-engine="true" className="text-[11px] font-medium text-[#c45a1a]">
+              {engineTag}
+            </span>
+          ) : null}
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-slate-400">{result.length} 字</span>
@@ -49,7 +55,7 @@ export function ResultPanel({ title, result, notice, isLoading = false, progress
             <div className="pd-shimmer pd-skeleton-line h-4 w-[84%]" />
           </div>
         ) : (
-          <div className={`whitespace-pre-wrap ${result ? 'pd-result-enter' : ''}`}>
+          <div data-proofduck-result-text="true" className={`whitespace-pre-wrap ${result ? 'pd-result-enter' : ''}`}>
             {result || 'Result will appear here.'}
           </div>
         )}

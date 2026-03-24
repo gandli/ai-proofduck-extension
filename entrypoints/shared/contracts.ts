@@ -2,6 +2,7 @@ export type ModeKey = 'translate' | 'summarize' | 'correct' | 'proofread' | 'exp
 
 export type EngineType = 'chrome-ai' | 'local' | 'online' | 'fallback';
 export type EnginePreference = 'auto' | 'chrome-ai' | 'local' | 'online';
+export type TranslationFallbackProvider = 'auto' | 'google' | 'baidu';
 export type InputSource = 'manual' | 'selection' | 'page';
 
 export interface Settings {
@@ -10,6 +11,9 @@ export interface Settings {
   localModel: string;
   localAllowWasmFallback: boolean;
   translationFallbackEnabled: boolean;
+  translationFallbackProvider: TranslationFallbackProvider;
+  baiduTranslateAppId: string;
+  baiduTranslateKey: string;
   onlineApiBase: string;
   onlineApiKey: string;
   onlineModel: string;
@@ -68,6 +72,9 @@ export const DEFAULT_SETTINGS: Settings = {
   localModel: 'Llama-3.2-1B-Instruct-q4f16_1-MLC',
   localAllowWasmFallback: true,
   translationFallbackEnabled: true,
+  translationFallbackProvider: 'auto',
+  baiduTranslateAppId: '',
+  baiduTranslateKey: '',
   onlineApiBase: '',
   onlineApiKey: '',
   onlineModel: '',
@@ -90,6 +97,7 @@ export const RUNTIME_MESSAGES = {
   translateSelection: 'proofduck:translate-selection',
   offscreenTranslate: 'proofduck:offscreen-translate',
   ensureOffscreenHost: 'proofduck:ensure-offscreen-host',
+  runSelectionTranslationInPanel: 'proofduck:run-selection-translation-in-panel',
   syncSelectionTranslation: 'proofduck:sync-selection-translation',
   selectionTranslationUpdated: 'proofduck:selection-translation-updated',
 } as const;

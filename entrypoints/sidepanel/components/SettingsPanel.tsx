@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
-import { type EnginePreference, type Settings } from '../types';
+import { OFFICIAL_LOCAL_MODELS, type OfficialLocalModelOption } from '../../../lib/processing/official-webllm-models';
+import { type EnginePreference, type Settings, type TranslationFallbackProvider } from '../types';
 import { CloseIcon, SettingsIcon } from './Icons';
 
 interface SettingsPanelProps {
@@ -17,11 +18,11 @@ const ENGINES: Array<{ value: EnginePreference; label: string }> = [
   { value: 'online', label: '在线 LLM API' },
 ];
 
-interface LocalModelOption {
-  id: string;
-  vram: number | null;
-  context: number | null;
-}
+const FALLBACK_PROVIDERS: Array<{ value: TranslationFallbackProvider; label: string }> = [
+  { value: 'auto', label: '自动选择（Google 优先）' },
+  { value: 'google', label: '仅 Google 翻译' },
+  { value: 'baidu', label: '仅百度翻译' },
+];
 
 const RECOMMENDED_MODEL_IDS = [
   'Llama-3.2-1B-Instruct-q4f16_1-MLC',
@@ -41,7 +42,7 @@ function formatContext(value: number | null) {
   return `${value.toLocaleString()} 上下文`;
 }
 
-function formatModelMeta(option: LocalModelOption) {
+function formatModelMeta(option: OfficialLocalModelOption) {
   return [formatVram(option.vram), formatContext(option.context)].filter(Boolean).join(' · ');
 }
 
@@ -76,52 +77,13 @@ function getVisibleSections(preference: EnginePreference) {
 }
 
 export function SettingsPanel({ open, settings, onClose, onChange }: SettingsPanelProps) {
-  const [officialModels, setOfficialModels] = useState<LocalModelOption[]>([]);
-  const [modelsLoading, setModelsLoading] = useState(false);
-  const [modelsLoadFailed, setModelsLoadFailed] = useState(false);
   const visibleSections = getVisibleSections(settings.enginePreference);
+  const officialModels = OFFICIAL_LOCAL_MODELS;
   const recommendedModels = useMemo(
-    () => RECOMMENDED_MODEL_IDS.map((id) => officialModels.find((item) => item.id === id)).filter(Boolean) as LocalModelOption[],
+    () =>
+      RECOMMENDED_MODEL_IDS.map((id) => officialModels.find((item) => item.id === id)).filter(Boolean) as OfficialLocalModelOption[],
     [officialModels],
   );
-
-  useEffect(() => {
-    if (!open || !visibleSections.showLocal || officialModels.length > 0 || modelsLoading) {
-      return;
-    }
-
-    let alive = true;
-    setModelsLoading(true);
-    setModelsLoadFailed(false);
-
-    import('@mlc-ai/web-llm')
-      .then((module) => {
-        if (!alive) return;
-        const rawList = module.prebuiltAppConfig?.model_list ?? [];
-        const next = rawList
-          .map((item) => ({
-            id: item.model_id,
-            vram: typeof item.vram_required_MB === 'number' ? item.vram_required_MB : null,
-            context: readContextWindow(item),
-          }))
-          .sort((a, b) => {
-            const byVram = (a.vram ?? Number.MAX_SAFE_INTEGER) - (b.vram ?? Number.MAX_SAFE_INTEGER);
-            if (byVram !== 0) return byVram;
-            return a.id.localeCompare(b.id);
-          });
-        setOfficialModels(next);
-      })
-      .catch(() => {
-        if (alive) setModelsLoadFailed(true);
-      })
-      .finally(() => {
-        if (alive) setModelsLoading(false);
-      });
-
-    return () => {
-      alive = false;
-    };
-  }, [modelsLoading, officialModels.length, open, visibleSections.showLocal]);
 
   if (!open) return null;
 
@@ -216,7 +178,7 @@ export function SettingsPanel({ open, settings, onClose, onChange }: SettingsPan
                       <p className="mt-1 text-xs leading-5 text-slate-500">先给你几款更常用、也更容易跑起来的官方模型。</p>
                     </div>
                     <span className="text-[11px] font-medium text-[#c45a1a]">
-                      {modelsLoading ? '正在加载官方列表' : officialModels.length ? `官方共 ${officialModels.length} 个` : '等待加载'}
+                      {officialModels.length ? `官方共 ${officialModels.length} 个` : '未找到官方模型'}
                     </span>
                   </div>
 
@@ -240,7 +202,7 @@ export function SettingsPanel({ open, settings, onClose, onChange }: SettingsPan
                     </div>
                   ) : (
                     <p className="mt-3 text-xs leading-5 text-slate-500">
-                      {modelsLoadFailed ? '官方模型列表暂时加载失败，你仍然可以手动填写模型名。' : '正在读取 web-llm 官方模型列表。'}
+                      当前没有可展示的推荐模型，你仍然可以手动填写模型名。
                     </p>
                   )}
                 </div>
@@ -248,7 +210,7 @@ export function SettingsPanel({ open, settings, onClose, onChange }: SettingsPan
                 <div className="rounded-[1rem] border border-[#ffe2d5] bg-white px-4 py-3">
                   <p className="text-sm font-medium text-slate-700">全部官方模型</p>
                   <p className="mt-1 text-xs leading-5 text-slate-500">
-                    可以直接在上面的输入框里搜索并选择，完整列表来自当前安装的 web-llm 官方模型清单。
+                    可以直接在上面的输入框里搜索并选择，完整列表已经随当前安装的 web-llm 官方模型清单同步。
                   </p>
                 </div>
 
@@ -310,39 +272,77 @@ export function SettingsPanel({ open, settings, onClose, onChange }: SettingsPan
 
           {visibleSections.showFallback ? (
             <section className="rounded-[1.35rem] border border-[#ffd9c9] bg-[#fff4ee] p-4">
-              <label className="flex items-center justify-between gap-4 rounded-[1rem] border border-[#ffe2d5] bg-white px-4 py-3">
-                <div>
-                  <span className="block text-sm font-medium text-slate-700">启用翻译兜底</span>
-                  <span className="mt-1 block text-xs leading-5 text-slate-500">
-                    翻译模式下，前面几条路都不通时自动使用第三方免费翻译。
-                  </span>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={settings.translationFallbackEnabled}
-                  onChange={(event) => void onChange({ translationFallbackEnabled: event.target.checked })}
-                  className="h-4 w-4 accent-[#ff5a11]"
-                />
-              </label>
+              <div className="mb-3">
+                <h3 className="text-sm font-bold text-slate-800">翻译服务</h3>
+                <p className="mt-1 text-xs leading-5 text-slate-500">翻译模式下，前面几条路都不通时，自动改走 Google 或百度。</p>
+              </div>
+              <div className="space-y-3">
+                <label className="flex items-center justify-between gap-4 rounded-[1rem] border border-[#ffe2d5] bg-white px-4 py-3">
+                  <div>
+                    <span className="block text-sm font-medium text-slate-700">启用翻译兜底</span>
+                    <span className="mt-1 block text-xs leading-5 text-slate-500">
+                      翻译模式下，前面几条路都不通时自动使用第三方翻译服务。
+                    </span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={settings.translationFallbackEnabled}
+                    onChange={(event) => void onChange({ translationFallbackEnabled: event.target.checked })}
+                    className="h-4 w-4 accent-[#ff5a11]"
+                  />
+                </label>
+
+                {settings.translationFallbackEnabled ? (
+                  <>
+                    <label className="block">
+                      <span className="mb-1.5 block text-xs font-semibold text-slate-500">服务来源</span>
+                      <select
+                        className="w-full rounded-[1rem] border border-[#ffd2bf] bg-white px-4 py-3 text-sm outline-none transition focus:border-brand-orange"
+                        value={settings.translationFallbackProvider}
+                        onChange={(event) =>
+                          void onChange({ translationFallbackProvider: event.target.value as TranslationFallbackProvider })
+                        }
+                      >
+                        {FALLBACK_PROVIDERS.map((provider) => (
+                          <option key={provider.value} value={provider.value}>
+                            {provider.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    {settings.translationFallbackProvider !== 'google' ? (
+                      <>
+                        <label className="block">
+                          <span className="mb-1.5 block text-xs font-semibold text-slate-500">Baidu APP ID</span>
+                          <input
+                            className="w-full rounded-[1rem] border border-[#ffd2bf] bg-white px-4 py-3 text-sm outline-none transition focus:border-brand-orange"
+                            value={settings.baiduTranslateAppId}
+                            placeholder="百度翻译开放平台 APP ID"
+                            onChange={(event) => void onChange({ baiduTranslateAppId: event.target.value })}
+                          />
+                        </label>
+                        <label className="block">
+                          <span className="mb-1.5 block text-xs font-semibold text-slate-500">Baidu 密钥</span>
+                          <input
+                            className="w-full rounded-[1rem] border border-[#ffd2bf] bg-white px-4 py-3 text-sm outline-none transition focus:border-brand-orange"
+                            value={settings.baiduTranslateKey}
+                            placeholder="百度翻译开放平台密钥"
+                            onChange={(event) => void onChange({ baiduTranslateKey: event.target.value })}
+                          />
+                        </label>
+                        <p className="text-xs leading-5 text-slate-500">
+                          自动模式下，Google 会先试；填了百度信息后，Google 失败时会再试百度。
+                        </p>
+                      </>
+                    ) : null}
+                  </>
+                ) : null}
+              </div>
             </section>
           ) : null}
         </div>
       </div>
     </div>
   );
-}
-
-function readContextWindow(item: {
-  overrides?: { context_window_size?: unknown };
-  context_window_size?: unknown;
-}) {
-  if (typeof item.overrides?.context_window_size === 'number') {
-    return item.overrides.context_window_size;
-  }
-
-  if (typeof item.context_window_size === 'number') {
-    return item.context_window_size;
-  }
-
-  return null;
 }

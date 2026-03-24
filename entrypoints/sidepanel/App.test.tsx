@@ -133,6 +133,94 @@ describe('App', () => {
     expect(await screen.findByDisplayValue('新的选区内容')).toBeTruthy();
   });
 
+  it('responds to inline translation requests through the open sidepanel runtime', async () => {
+    render(<App />);
+
+    const listener = [...runtimeListeners][0];
+    const response = await listener({
+      type: RUNTIME_MESSAGES.runSelectionTranslationInPanel,
+      payload: {
+        text: '你好，世界。',
+        settings: {
+          targetLanguage: 'English',
+          enginePreference: 'local',
+          localModel: 'Llama-3.2-1B-Instruct-q4f16_1-MLC',
+          localAllowWasmFallback: true,
+          translationFallbackEnabled: true,
+          translationFallbackProvider: 'auto',
+          baiduTranslateAppId: '',
+          baiduTranslateKey: '',
+          onlineApiBase: '',
+          onlineApiKey: '',
+          onlineModel: '',
+        },
+      },
+    });
+
+    expect(response).toMatchObject({ ok: true });
+    expect((response as { result: string }).result).toContain('Hello');
+  });
+
+  it('reuses the current sidepanel translation for matching inline requests', async () => {
+    storageState[STORAGE_KEYS.settings] = {
+      targetLanguage: 'English',
+      enginePreference: 'local',
+      localModel: 'Llama-3.2-1B-Instruct-q4f16_1-MLC',
+      localAllowWasmFallback: false,
+      translationFallbackEnabled: true,
+      translationFallbackProvider: 'auto',
+      baiduTranslateAppId: '',
+      baiduTranslateKey: '',
+      onlineApiBase: '',
+      onlineApiKey: '',
+      onlineModel: '',
+    };
+    storageState[STORAGE_KEYS.inputDraft] = {
+      text: 'Hello from ProofDuck GPU test.',
+      source: 'selection',
+      preferredMode: 'translate',
+      prefilledResult: 'Hello from ProofDuck.',
+      prefilledNotice: '已使用本地 WebGPU 模型',
+      capturedAt: new Date().toISOString(),
+    };
+
+    render(<App />);
+
+    expect(await screen.findByDisplayValue('Hello from ProofDuck GPU test.')).toBeTruthy();
+    expect(await screen.findByText('Hello from ProofDuck.')).toBeTruthy();
+    expect(await screen.findByText('本地 AI（GPU）')).toBeTruthy();
+
+    const listener = [...runtimeListeners][0];
+    const response = await listener({
+      type: RUNTIME_MESSAGES.runSelectionTranslationInPanel,
+      payload: {
+        text: 'Hello from ProofDuck GPU test.',
+        settings: {
+          targetLanguage: 'English',
+          enginePreference: 'local',
+          localModel: 'Llama-3.2-1B-Instruct-q4f16_1-MLC',
+          localAllowWasmFallback: false,
+          translationFallbackEnabled: true,
+          translationFallbackProvider: 'auto',
+          baiduTranslateAppId: '',
+          baiduTranslateKey: '',
+          onlineApiBase: '',
+          onlineApiKey: '',
+          onlineModel: '',
+        },
+      },
+    });
+
+    expect(response).toEqual({
+      ok: true,
+      result: 'Hello from ProofDuck.',
+      notice: '已使用本地 WebGPU 模型',
+      engine: 'local',
+      localRuntime: 'webgpu',
+      fallbackUsed: false,
+    });
+  });
+
   it('processes text and renders a real result', async () => {
     render(<App />);
 
@@ -153,6 +241,9 @@ describe('App', () => {
       localModel: 'Llama-3.2-1B-Instruct-q4f16_1-MLC',
       localAllowWasmFallback: false,
       translationFallbackEnabled: true,
+      translationFallbackProvider: 'auto',
+      baiduTranslateAppId: '',
+      baiduTranslateKey: '',
       onlineApiBase: '',
       onlineApiKey: '',
       onlineModel: '',
@@ -185,6 +276,9 @@ describe('App', () => {
       localModel: 'Llama-3.2-1B-Instruct-q4f16_1-MLC',
       localAllowWasmFallback: true,
       translationFallbackEnabled: true,
+      translationFallbackProvider: 'auto',
+      baiduTranslateAppId: '',
+      baiduTranslateKey: '',
       onlineApiBase: 'https://example.com/v1',
       onlineApiKey: 'test-key',
       onlineModel: 'demo-model',
@@ -261,12 +355,12 @@ describe('App', () => {
     expect(textarea.value).toBe('保留这段原文');
   });
 
-  it('imports the current page body into the source box', async () => {
+  it('imports the current page full text into the source box', async () => {
     vi.mocked(browser.runtime.sendMessage).mockImplementation(async (...args: unknown[]) => {
       const message = (args.length > 1 ? args[1] : args[0]) as { type?: string } | undefined;
       if (message?.type === RUNTIME_MESSAGES.getPageText) {
         return {
-          text: '整页正文内容',
+          text: '整页全文内容',
           source: 'page',
           capturedAt: new Date().toISOString(),
         };
@@ -277,12 +371,12 @@ describe('App', () => {
 
     render(<App />);
 
-    fireEvent.click(await screen.findByRole('button', { name: '抓取正文' }));
+    fireEvent.click(await screen.findByRole('button', { name: '抓取全文' }));
 
-    expect(await screen.findByDisplayValue('整页正文内容')).toBeTruthy();
+    expect(await screen.findByDisplayValue('整页全文内容')).toBeTruthy();
   });
 
-  it('shows a clear notice when the current page has no extractable body', async () => {
+  it('shows a clear notice when the current page has no extractable full text', async () => {
     render(<App />);
 
     const textarea = (await screen.findByRole('textbox')) as HTMLTextAreaElement;
@@ -297,9 +391,9 @@ describe('App', () => {
       return null;
     });
 
-    fireEvent.click(screen.getByRole('button', { name: '抓取正文' }));
+    fireEvent.click(screen.getByRole('button', { name: '抓取全文' }));
 
-    expect(await screen.findByText('当前页面没有可抓取的正文')).toBeTruthy();
+    expect(await screen.findByText('当前页面没有可抓取的全文')).toBeTruthy();
     expect(textarea.value).toBe('保留原文');
   });
 });

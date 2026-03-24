@@ -14,6 +14,8 @@
    - 支持 OpenAI 兼容格式，可接 OpenAI、DeepSeek、GLM 等
 4. 第三方免费翻译兜底
    - 仅在翻译模式启用
+   - 默认可直接走 Google 翻译
+   - 也支持补充百度翻译开放平台 `APP ID / 密钥`，在 Google 失败时继续兜底
 
 侧边栏会明确显示“首选策略”“实际使用引擎”“当前说明”和“加载进度”，方便判断这次到底走了哪条路。
 
@@ -34,6 +36,8 @@ bun run build
 bun run compile
 bun run test
 bun run test:bdd
+bun run test:real
+bun run test:chrome-probe
 bun run smoke
 ```
 
@@ -42,9 +46,9 @@ bun run smoke
 ## 当前能力
 
 - 页内选中文本后，可通过浮层入口直接发送到校对鸭
-- 侧边栏可导入当前选区或抓取整页正文
+- 侧边栏可导入当前选区或抓取整页全文
 - 五种处理模式已经接通统一入口
-- 设置面板可管理自动优先、本地模型、在线 API 和翻译兜底
+- 设置面板可管理自动优先、本地模型、在线 API，以及 Google / 百度翻译兜底
 - 侧边栏主题已经统一为活力橙，并与 logo 配色对齐
 
 ## 验证方式
@@ -59,7 +63,7 @@ bun run test:bdd
 bun run smoke
 ```
 
-其中 `bun run smoke` 会快速验证主链路，`bun run test:bdd` 会把主要用户场景完整走一遍。
+其中 `bun run smoke` 会快速验证主链路，`bun run test:bdd` 会用单个 `Chromium` 实例把主要用户场景完整走一遍，`bun run test:real` 会额外跑一次有界面的真实本地 GPU 主链路，`bun run test:chrome-probe` 只负责诊断这台机器上的 Chrome 正式版会不会拦自动化直开扩展页。
 
 `bun run smoke` 会真实验证这条链路：
 
@@ -71,8 +75,8 @@ bun run smoke
 `bun run test:bdd` 目前会覆盖这些场景：
 
 1. 悬停 `🐣` 后页内翻译卡片和侧边栏同步显示
-2. 翻译卡片在关闭、复制、点击空白后消失
+2. 翻译卡片在关闭、点击空白后消失；点击 `Copy` 只复制，不关闭
 3. 点击 `🐣` 把选区送入侧边栏，并复用已有翻译结果
-4. `导入选区` 与 `抓取正文` 两个按钮可用
+4. `导入选区` 与 `抓取全文` 两个按钮可用
 5. 五种处理模式都能产出结果
 6. 设置页随着首选策略切换显示对应设置区块

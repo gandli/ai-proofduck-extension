@@ -1,4 +1,4 @@
-import { extractPageText, normalizeText } from './content/extractors';
+import { extractFullPageText, normalizeText } from './content/extractors';
 import {
   DEFAULT_SETTINGS,
   RUNTIME_MESSAGES,
@@ -9,6 +9,7 @@ import {
 } from './shared/contracts';
 import { toEngineBadge } from './shared/engine-display';
 import {
+  buildInlineTranslationCacheKey,
   buildInlineTranslationWarmupKey,
   getInlineTranslationTimeoutMs,
   getInlineTranslationUnavailableMessage,
@@ -42,7 +43,7 @@ function getSelectionDraft(): InputDraft | null {
 }
 
 function getPageDraft(): InputDraft | null {
-  const text = extractPageText(document);
+  const text = extractFullPageText(document);
   if (!text) return null;
 
   return {
@@ -96,6 +97,7 @@ export default defineContentScript({
     actionBar.appendChild(sidepanelButton);
 
     const popup = document.createElement('div');
+    popup.setAttribute('data-proofduck-inline-card', 'true');
     popup.style.position = 'fixed';
     popup.style.zIndex = '2147483647';
     popup.style.display = 'none';
@@ -168,6 +170,7 @@ export default defineContentScript({
     sourceLabel.style.color = '#98a2b3';
     sourceWrap.appendChild(sourceLabel);
     const sourceText = document.createElement('div');
+    sourceText.setAttribute('data-proofduck-inline-source', 'true');
     sourceText.style.marginTop = '8px';
     sourceText.style.paddingLeft = '10px';
     sourceText.style.borderLeft = '3px solid #eceff5';
@@ -191,12 +194,14 @@ export default defineContentScript({
     translationWrap.appendChild(translationLabel);
 
     const engineTag = document.createElement('span');
+    engineTag.setAttribute('data-proofduck-inline-engine', 'true');
     engineTag.style.fontSize = '10px';
     engineTag.style.fontWeight = '600';
     engineTag.style.letterSpacing = 'normal';
     engineTag.style.color = '#c45a1a';
     translationLabel.appendChild(engineTag);
     const translationText = document.createElement('div');
+    translationText.setAttribute('data-proofduck-inline-result', 'true');
     translationText.style.marginTop = '8px';
     translationText.style.fontSize = '13px';
     translationText.style.lineHeight = '1.6';
@@ -353,7 +358,7 @@ export default defineContentScript({
       const rect = selection.getRangeAt(0).getBoundingClientRect();
       const settings = await getCurrentSettings();
       void prewarmInlineTranslationHost(settings);
-      const cacheKey = buildTranslationCacheKey(draft.text, settings);
+      const cacheKey = buildInlineTranslationCacheKey(draft.text, settings);
 
       if (lastTranslatedKey === cacheKey && lastTranslatedResult) {
         const reusedNotice = lastTranslatedNotice || '已复用最近一次选区翻译结果';
@@ -365,7 +370,8 @@ export default defineContentScript({
       showTranslating(draft, rect);
 
       try {
-        const response = await requestOffscreenTranslation(draft.text, settings);
+        const response =
+          (await requestSidepanelTranslation(draft.text, settings)) ?? (await requestOffscreenTranslation(draft.text, settings));
 
         if (!response.ok || !response.result || !response.notice) {
           throw new Error(getInlineTranslationUnavailableMessage(settings));
@@ -453,7 +459,7 @@ export default defineContentScript({
       hideAllFloatingUi();
       if (!draft) return;
       const settings = await getCurrentSettings();
-      const cacheKey = buildTranslationCacheKey(draft.text, settings);
+      const cacheKey = buildInlineTranslationCacheKey(draft.text, settings);
       const queuedDraft: InputDraft =
         lastTranslatedKey === cacheKey && lastTranslatedResult
           ? {
@@ -510,9 +516,6 @@ export default defineContentScript({
         copyButton.textContent = 'Copied';
       } catch {
         copyButton.textContent = 'Copy failed';
-      } finally {
-        clearTimers();
-        hidePopup();
       }
     });
 
@@ -541,7 +544,7 @@ export default defineContentScript({
 
     browser.runtime.onMessage.addListener((message) => {
       if (message?.type === RUNTIME_MESSAGES.getSelection) {
-        return Promise.resolve(getSelectionDraft() ?? currentDraft ?? lastSelectionDraft);
+        return Promise.resolve(getSelectionDraft());
       }
 
       if (message?.type === RUNTIME_MESSAGES.getPageText) {
@@ -610,6 +613,26 @@ async function requestOffscreenTranslation(text: string, settings: Settings) {
   return response;
 }
 
+async function requestSidepanelTranslation(text: string, settings: Settings) {
+  try {
+    const response = (await browser.runtime.sendMessage({
+      type: RUNTIME_MESSAGES.runSelectionTranslationInPanel,
+      payload: {
+        text,
+        settings,
+      },
+    })) as { ok?: boolean; result?: string; notice?: string } | null;
+
+    if (!response || typeof response !== 'object' || !response.ok || !response.result || !response.notice) {
+      return null;
+    }
+
+    return response;
+  } catch {
+    return null;
+  }
+}
+
 async function prewarmInlineTranslationHost(settings: Settings) {
   const warmupKey = buildInlineTranslationWarmupKey(settings);
   if (warmupKey === lastWarmupKey) {
@@ -625,20 +648,6 @@ async function prewarmInlineTranslationHost(settings: Settings) {
   } catch {
     lastWarmupKey = '';
   }
-}
-
-function buildTranslationCacheKey(text: string, settings: Settings) {
-  return JSON.stringify({
-    text,
-    targetLanguage: settings.targetLanguage,
-    enginePreference: settings.enginePreference,
-    localModel: settings.localModel,
-    localAllowWasmFallback: settings.localAllowWasmFallback,
-    translationFallbackEnabled: settings.translationFallbackEnabled,
-    onlineApiBase: settings.onlineApiBase,
-    onlineModel: settings.onlineModel,
-    onlineApiConfigured: Boolean(settings.onlineApiKey),
-  });
 }
 
 function toInlineEngineTag(notice: string) {

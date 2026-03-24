@@ -9,6 +9,7 @@ const OFFSCREEN_PORT = 'proofduck-offscreen-port';
 const OFFSCREEN_EXECUTE = 'proofduck:offscreen-translation-execute';
 const OFFSCREEN_RESULT = 'proofduck:offscreen-translation-result';
 const OFFSCREEN_READY = 'proofduck:offscreen-ready';
+const TEST_EMPTY_DRAFT_SENTINEL = '__proofduckEmptyDraft';
 
 let offscreenPort: chrome.runtime.Port | null = null;
 let offscreenReady = false;
@@ -164,6 +165,19 @@ async function getSettings() {
   };
 }
 
+function readTestDraftOverride(value: unknown): InputDraft | null | undefined {
+  if (
+    value &&
+    typeof value === 'object' &&
+    TEST_EMPTY_DRAFT_SENTINEL in value &&
+    (value as Record<string, unknown>)[TEST_EMPTY_DRAFT_SENTINEL] === true
+  ) {
+    return null;
+  }
+
+  return value as InputDraft | null | undefined;
+}
+
 export default defineBackground(() => {
   browser.runtime.onConnect.addListener((port) => {
     if (port.name !== OFFSCREEN_PORT) {
@@ -239,14 +253,14 @@ export default defineBackground(() => {
         if (message.type === RUNTIME_MESSAGES.getSelection) {
           const overrideResult = await browser.storage.local.get(STORAGE_KEYS.testSelectionDraftResponse);
           if (STORAGE_KEYS.testSelectionDraftResponse in overrideResult) {
-            return overrideResult[STORAGE_KEYS.testSelectionDraftResponse] as InputDraft | null;
+            return readTestDraftOverride(overrideResult[STORAGE_KEYS.testSelectionDraftResponse]);
           }
         }
 
         if (message.type === RUNTIME_MESSAGES.getPageText) {
           const overrideResult = await browser.storage.local.get(STORAGE_KEYS.testPageDraftResponse);
           if (STORAGE_KEYS.testPageDraftResponse in overrideResult) {
-            return overrideResult[STORAGE_KEYS.testPageDraftResponse] as InputDraft | null;
+            return readTestDraftOverride(overrideResult[STORAGE_KEYS.testPageDraftResponse]);
           }
         }
 

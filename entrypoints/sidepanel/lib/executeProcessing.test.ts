@@ -9,6 +9,9 @@ const onlineSettings: Settings = {
   localModel: 'Llama-3.2-1B-Instruct-q4f16_1-MLC',
   localAllowWasmFallback: true,
   translationFallbackEnabled: true,
+  translationFallbackProvider: 'auto',
+  baiduTranslateAppId: '',
+  baiduTranslateKey: '',
   onlineApiBase: 'https://example.com/v1',
   onlineApiKey: 'test-key',
   onlineModel: 'demo-model',
@@ -39,21 +42,55 @@ describe('executeProcessing', () => {
     expect(result.notice).toContain('在线 API');
   });
 
-  it('fails directly when the selected online api strategy is unavailable', async () => {
+  it('falls back to translation service when the configured online api request fails', async () => {
     const fetchMock = vi
       .fn()
-      .mockRejectedValueOnce(new Error('network down'));
+      .mockRejectedValueOnce(new Error('network down'))
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [[['Hello from Google']]],
+      });
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(
-      executeProcessing({
-        text: '你好，世界。',
-        mode: 'translate',
-        settings: {
-          ...onlineSettings,
-          localAllowWasmFallback: false,
-        },
-      }),
-    ).rejects.toThrow(/online: network down/);
+    const result = await executeProcessing({
+      text: '你好，世界。',
+      mode: 'translate',
+      settings: {
+        ...onlineSettings,
+        localAllowWasmFallback: false,
+      },
+    });
+
+    expect(result.engine).toBe('fallback');
+    expect(result.notice).toContain('Google');
+    expect(result.result).toContain('Hello from Google');
+  });
+
+  it('falls back to Baidu translation when Google fallback is unavailable but Baidu is configured', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('online down'))
+      .mockRejectedValueOnce(new Error('google down'))
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          trans_result: [{ dst: 'Hello from Baidu' }],
+        }),
+      });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await executeProcessing({
+      text: '你好，世界。',
+      mode: 'translate',
+      settings: {
+        ...onlineSettings,
+        baiduTranslateAppId: 'test-app-id',
+        baiduTranslateKey: 'test-secret',
+      },
+    });
+
+    expect(result.engine).toBe('fallback');
+    expect(result.notice).toContain('百度');
+    expect(result.result).toContain('Hello from Baidu');
   });
 });

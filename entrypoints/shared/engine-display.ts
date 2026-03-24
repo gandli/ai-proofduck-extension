@@ -6,7 +6,10 @@ export function toEngineBadge(notice?: string) {
   if (notice.includes('在线 API')) return '在线 AI';
   if (
     notice.includes('第三方免费翻译兜底') ||
-    notice.includes('内置翻译兜底')
+    notice.includes('内置翻译兜底') ||
+    notice.includes('Google 翻译') ||
+    notice.includes('百度翻译') ||
+    notice.includes('翻译服务暂时不可用')
   ) {
     return '翻译服务';
   }

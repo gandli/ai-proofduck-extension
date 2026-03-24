@@ -1,12 +1,16 @@
 import fs from 'node:fs/promises';
 import http from 'node:http';
-import os from 'node:os';
 import path from 'node:path';
 import { URL } from 'node:url';
 
-import { chromium } from 'playwright';
-
-const EXTENSION_ID = 'lpfkhijjjhbcbbllnmdnahiooodajcim';
+import {
+  EXTENSION_ID,
+  cleanupExtensionContext,
+  gotoWithRetry,
+  launchExtensionContext,
+  openExtensionSidepanel,
+} from './browser-session.mjs';
+const EMPTY_DRAFT_SENTINEL = { __proofduckEmptyDraft: true };
 
 function assert(condition, message) {
   if (!condition) {
@@ -23,51 +27,6 @@ async function readJsonBody(request) {
 
   const raw = Buffer.concat(chunks).toString('utf8');
   return raw ? JSON.parse(raw) : null;
-}
-
-async function launchContext(channel, userDataDir, extensionPath) {
-  return chromium.launchPersistentContext(userDataDir, {
-    headless: true,
-    channel,
-    args: [
-      '--disable-webgpu',
-      `--disable-extensions-except=${extensionPath}`,
-      `--load-extension=${extensionPath}`,
-    ],
-  });
-}
-
-async function launchChromeWithFallback(userDataDir, extensionPath) {
-  const common = {
-    extensionPath,
-    userDataDir,
-  };
-
-  try {
-    const context = await launchContext('chrome', common.userDataDir, common.extensionPath);
-
-    return { context, browserName: 'chrome' };
-  } catch {
-    const context = await launchContext('chromium', common.userDataDir, common.extensionPath);
-
-    return { context, browserName: 'chromium' };
-  }
-}
-
-async function gotoWithRetry(page, url, attempts = 4) {
-  let lastError = null;
-
-  for (let index = 0; index < attempts; index += 1) {
-    try {
-      await page.goto(url);
-      return;
-    } catch (error) {
-      lastError = error;
-      await page.waitForTimeout(400);
-    }
-  }
-
-  throw lastError;
 }
 
 async function clearSelection(page) {
@@ -91,10 +50,10 @@ async function clickButtonInsidePage(page, label) {
 
 async function fillSettings(sidepanel, apiBase) {
   await sidepanel.getByRole('button', { name: '设置' }).click();
+  await sidepanel.locator('select').nth(1).selectOption('online');
   await sidepanel.getByPlaceholder('https://example.com/v1').fill(`${apiBase}/v1`);
   await sidepanel.getByPlaceholder('sk-...').fill('test-key');
   await sidepanel.getByPlaceholder('gpt-like-model').fill('demo-model');
-  await sidepanel.locator('select').nth(1).selectOption('online');
   await sidepanel.getByRole('button', { name: '关闭' }).click();
 }
 
@@ -158,32 +117,110 @@ async function clearTestEngineOverride(sidepanel) {
   });
 }
 
+async function setPanelOnlyTestEngineOverride(sidepanel, options) {
+  await sidepanel.evaluate((override) => {
+    const scoped = globalThis;
+    scoped.__PROOFDUCK_TEST_ENGINE_OVERRIDE__ = async (engine) => {
+      if (!override || engine !== override.engine) {
+        return null;
+      }
+
+      return {
+        result: override.result,
+        notice: override.notice,
+        engine: override.engine,
+        localRuntime: override.localRuntime,
+        fallbackUsed: override.fallbackUsed,
+      };
+    };
+  }, options);
+}
+
+async function clearPanelOnlyTestEngineOverride(sidepanel) {
+  await sidepanel.evaluate(() => {
+    const scoped = globalThis;
+    delete scoped.__PROOFDUCK_TEST_ENGINE_OVERRIDE__;
+  });
+}
+
 async function setTestPageDraftResponse(sidepanel, payload) {
   await sidepanel.evaluate(async (draft) => {
+    const key = 'proofduck:test-page-draft-response';
     await browser.storage.local.set({
-      'proofduck:test-page-draft-response': draft,
+      [key]: draft,
     });
-  }, payload);
+
+    const startedAt = Date.now();
+    while (Date.now() - startedAt < 1500) {
+      const current = await browser.storage.local.get(key);
+      if (Object.prototype.hasOwnProperty.call(current, key)) {
+        return;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 40));
+    }
+  }, payload === null ? EMPTY_DRAFT_SENTINEL : payload);
+
+  await sidepanel.waitForTimeout(60);
 }
 
 async function clearTestPageDraftResponse(sidepanel) {
   await sidepanel.evaluate(async () => {
-    await browser.storage.local.remove('proofduck:test-page-draft-response');
+    const key = 'proofduck:test-page-draft-response';
+    await browser.storage.local.remove(key);
+
+    const startedAt = Date.now();
+    while (Date.now() - startedAt < 1500) {
+      const current = await browser.storage.local.get(key);
+      if (!Object.prototype.hasOwnProperty.call(current, key)) {
+        return;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 40));
+    }
   });
+
+  await sidepanel.waitForTimeout(60);
 }
 
 async function setTestSelectionDraftResponse(sidepanel, payload) {
   await sidepanel.evaluate(async (draft) => {
+    const key = 'proofduck:test-selection-draft-response';
     await browser.storage.local.set({
-      'proofduck:test-selection-draft-response': draft,
+      [key]: draft,
     });
-  }, payload);
+
+    const startedAt = Date.now();
+    while (Date.now() - startedAt < 1500) {
+      const current = await browser.storage.local.get(key);
+      if (Object.prototype.hasOwnProperty.call(current, key)) {
+        return;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 40));
+    }
+  }, payload === null ? EMPTY_DRAFT_SENTINEL : payload);
+
+  await sidepanel.waitForTimeout(60);
 }
 
 async function clearTestSelectionDraftResponse(sidepanel) {
   await sidepanel.evaluate(async () => {
-    await browser.storage.local.remove('proofduck:test-selection-draft-response');
+    const key = 'proofduck:test-selection-draft-response';
+    await browser.storage.local.remove(key);
+
+    const startedAt = Date.now();
+    while (Date.now() - startedAt < 1500) {
+      const current = await browser.storage.local.get(key);
+      if (!Object.prototype.hasOwnProperty.call(current, key)) {
+        return;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 40));
+    }
   });
+
+  await sidepanel.waitForTimeout(60);
 }
 
 async function runScenario(title, steps) {
@@ -269,38 +306,18 @@ async function main() {
     assert(address && typeof address !== 'string', '本地测试服务启动失败');
     const sampleUrl = `http://127.0.0.1:${address.port}/`;
 
-    let context = null;
-    let browserName = '';
-    let sidepanel = null;
+    const launched = await launchExtensionContext({
+      browser: 'chromium',
+      extensionPath,
+      headless: false,
+      enableWebGpu: false,
+      label: 'proofduck-bdd',
+    });
+    const context = launched.context;
+    activeUserDataDir = launched.userDataDir;
+    let sidepanel = await openExtensionSidepanel(context, EXTENSION_ID);
 
-    for (const candidate of ['chrome', 'chromium']) {
-      const candidateUserDataDir = await fs.mkdtemp(path.join(os.tmpdir(), `proofduck-bdd-${candidate}-`));
-      try {
-        const launched = await launchContext(candidate, candidateUserDataDir, extensionPath);
-        const candidateSidepanel = await launched.newPage();
-        await gotoWithRetry(candidateSidepanel, `chrome-extension://${EXTENSION_ID}/sidepanel.html`);
-        await candidateSidepanel.waitForLoadState('networkidle');
-        context = launched;
-        sidepanel = candidateSidepanel;
-        browserName = candidate;
-        activeUserDataDir = candidateUserDataDir;
-        console.log(`BDD 浏览器: ${browserName}`);
-        break;
-      } catch (error) {
-        if (context) {
-          await context.close();
-        }
-        context = null;
-        sidepanel = null;
-        browserName = '';
-      } finally {
-        if (!context) {
-          await fs.rm(candidateUserDataDir, { recursive: true, force: true });
-        }
-      }
-    }
-
-    assert(context && sidepanel && browserName, 'Chrome/Chromium 都无法打开扩展页');
+    console.log('BDD 浏览器: chromium（单实例）');
 
     try {
       await context.route('https://translate.googleapis.com/**', async (route) => {
@@ -353,7 +370,7 @@ async function main() {
         },
       ]);
 
-      await runScenario('翻译卡片会在关闭、复制、点空白后消失', [
+      await runScenario('翻译卡片会在关闭、点空白后消失，点击 Copy 时保持打开', [
         {
           kind: 'GIVEN',
           text: '翻译卡片已经出现',
@@ -389,11 +406,11 @@ async function main() {
         },
         {
           kind: 'THEN',
-          text: '翻译卡片会再次消失',
+          text: '剪贴板会写入译文，而且翻译卡片保持打开',
           run: async () => {
             const clipboardText = await page.evaluate(() => navigator.clipboard.readText());
             assert(clipboardText === 'Remote translation result', `复制后的剪贴板内容不对，当前是：${clipboardText}`);
-            await page.getByText('Remote translation result').waitFor({ state: 'hidden', timeout: 10000 });
+            await page.getByText('Remote translation result').waitFor({ timeout: 10000 });
           },
         },
         {
@@ -449,7 +466,7 @@ async function main() {
         },
       ]);
 
-      await runScenario('导入选区与抓取正文按钮都能把内容带入原文框', [
+      await runScenario('导入选区与抓取全文按钮都能把内容带入原文框', [
         {
           kind: 'GIVEN',
           text: '网页里有新的选区，侧边栏已经打开',
@@ -477,17 +494,17 @@ async function main() {
         },
         {
           kind: 'WHEN',
-          text: '用户点击抓取正文',
+          text: '用户点击抓取全文',
           run: async () => {
-            await clickButtonInsidePage(sidepanel, '抓取正文');
+            await clickButtonInsidePage(sidepanel, '抓取全文');
           },
         },
         {
           kind: 'THEN',
-          text: '原文框会显示整页正文',
+          text: '原文框会显示整页全文',
           run: async () => {
             const text = await sidepanel.locator('textarea').inputValue();
-            assert(text.includes('翻译、摘要、校对、润色和扩写'), '抓取正文没有成功带入内容');
+            assert(text.includes('翻译、摘要、校对、润色和扩写'), '抓取全文没有成功带入内容');
           },
         },
       ]);
@@ -495,11 +512,13 @@ async function main() {
       await runScenario('导入选区失败时会提示用户，并保留原文内容', [
         {
           kind: 'GIVEN',
-          text: '侧边栏里已经有原文，同时测试里把导入选区结果设为空',
+          text: '侧边栏里已经有原文，同时当前页面没有任何选区',
           run: async () => {
             await sidepanel.bringToFront();
             await sidepanel.locator('textarea').fill('这段原文需要继续保留');
-            await setTestSelectionDraftResponse(sidepanel, null);
+            await page.bringToFront();
+            await clearSelection(page);
+            await sidepanel.bringToFront();
           },
         },
         {
@@ -516,36 +535,36 @@ async function main() {
             await sidepanel.getByText('当前页面没有可导入的选区').waitFor({ timeout: 10000 });
             const text = await sidepanel.locator('textarea').inputValue();
             assert(text === '这段原文需要继续保留', `导入选区失败后不应覆盖原文，当前内容是：${text}`);
-            await clearTestSelectionDraftResponse(sidepanel);
           },
         },
       ]);
 
-      await runScenario('抓取正文失败时会提示用户，并保留原文内容', [
+      await runScenario('抓取全文失败时会提示用户，并保留原文内容', [
         {
           kind: 'GIVEN',
-          text: '侧边栏里已经有原文，同时测试里把抓取正文结果设为空',
+          text: '侧边栏里已经有原文，同时当前页面没有可抓取的全文',
           run: async () => {
+            await page.bringToFront();
+            await page.goto(`http://127.0.0.1:${address.port}/short`);
+            await page.waitForLoadState('networkidle');
             await sidepanel.bringToFront();
             await sidepanel.locator('textarea').fill('这段原文需要保留');
-            await setTestPageDraftResponse(sidepanel, null);
           },
         },
         {
           kind: 'WHEN',
-          text: '用户点击抓取正文',
+          text: '用户点击抓取全文',
           run: async () => {
-            await clickButtonInsidePage(sidepanel, '抓取正文');
+            await clickButtonInsidePage(sidepanel, '抓取全文');
           },
         },
         {
           kind: 'THEN',
-          text: '界面会提示当前页面没有可抓取的正文，原文内容保持不变',
+          text: '界面会提示当前页面没有可抓取的全文，原文内容保持不变',
           run: async () => {
-            await sidepanel.getByText('当前页面没有可抓取的正文').waitFor({ timeout: 10000 });
+            await sidepanel.getByText('当前页面没有可抓取的全文').waitFor({ timeout: 10000 });
             const text = await sidepanel.locator('textarea').inputValue();
-            assert(text === '这段原文需要保留', `抓取正文失败后不应覆盖原文，当前内容是：${text}`);
-            await clearTestPageDraftResponse(sidepanel);
+            assert(text === '这段原文需要保留', `抓取全文失败后不应覆盖原文，当前内容是：${text}`);
           },
         },
       ]);
@@ -625,6 +644,29 @@ async function main() {
           run: async () => {
             await sidepanel.getByRole('heading', { name: '本地模型' }).waitFor({ timeout: 10000 });
             await sidepanel.getByRole('heading', { name: '在线 LLM API' }).waitFor({ timeout: 10000 });
+            await sidepanel.getByRole('button', { name: '关闭' }).click();
+          },
+        },
+      ]);
+
+      await runScenario('设置页会直接显示官方模型推荐和官方数量', [
+        {
+          kind: 'GIVEN',
+          text: '用户保持自动优先，并打开设置面板里的本地模型区块',
+          run: async () => {
+            await sidepanel.getByRole('button', { name: '设置' }).click();
+            await sidepanel.locator('select').nth(1).selectOption('auto');
+            await sidepanel.getByRole('heading', { name: '本地模型' }).waitFor({ timeout: 10000 });
+          },
+        },
+        {
+          kind: 'THEN',
+          text: '界面会直接显示官方模型总数和推荐模型，不再卡在加载提示',
+          run: async () => {
+            await sidepanel.getByText(/官方共 \d+ 个/).waitFor({ timeout: 10000 });
+            await sidepanel.getByRole('button', { name: /Llama-3.2-1B-Instruct-q4f16_1-MLC/ }).waitFor({ timeout: 10000 });
+            assert((await sidepanel.getByText('正在加载官方列表').count()) === 0, '设置页不应继续显示“正在加载官方列表”');
+            assert((await sidepanel.getByText('正在读取 web-llm 官方模型列表。').count()) === 0, '设置页不应继续显示旧的读取提示');
             await sidepanel.getByRole('button', { name: '关闭' }).click();
           },
         },
@@ -810,24 +852,30 @@ async function main() {
         },
         {
           kind: 'WHEN',
-          text: '用户切到自动优先，关闭在线配置和 WASM 兼容，让翻译服务接管',
+          text: '用户切到本地模型，并提供一个可用的本地 GPU 结果',
           run: async () => {
+            const onlineBaseline = onlineRequestCount;
+            await setTestEngineOverride(sidepanel, {
+              engine: 'local',
+              result: 'Local GPU translation result',
+              notice: '已使用本地 WebGPU 模型',
+              localRuntime: 'webgpu',
+              fallbackUsed: false,
+            });
             await openSettings(sidepanel);
-            await sidepanel.locator('select').nth(0).selectOption('中文');
-            await sidepanel.locator('select').nth(1).selectOption('auto');
-            await clearOnlineSettings(sidepanel);
-            await sidepanel.locator('input[type="checkbox"]').nth(0).uncheck();
-            await sidepanel.locator('input[type="checkbox"]').nth(1).check();
+            await sidepanel.locator('select').nth(1).selectOption('local');
             await sidepanel.getByRole('button', { name: '关闭' }).click();
             await sidepanel.getByRole('button', { name: '执行翻译' }).click();
+            assert(onlineRequestCount === onlineBaseline, `切到本地模型后不应继续请求在线接口，实际请求 ${onlineRequestCount - onlineBaseline} 次`);
           },
         },
         {
           kind: 'THEN',
-          text: '结果会换成翻译服务返回的内容，并显示新的来源',
+          text: '结果会换成本地 GPU 返回的内容，并显示新的来源',
           run: async () => {
-            await sidepanel.getByText('推理').waitFor({ timeout: 10000 });
-            await sidepanel.getByText('翻译服务').waitFor({ timeout: 10000 });
+            await sidepanel.getByText('Local GPU translation result').waitFor({ timeout: 10000 });
+            await sidepanel.getByText('本地 AI（GPU）').waitFor({ timeout: 10000 });
+            await clearTestEngineOverride(sidepanel);
           },
         },
       ]);
@@ -939,16 +987,22 @@ async function main() {
       await runScenario('在线接口失败后会自动回退到翻译服务', [
         {
           kind: 'GIVEN',
-          text: '用户切到自动优先，并故意把在线模型设成会失败的模型',
+          text: '用户明确切到在线接口，并故意把在线模型设成会失败的模型',
           run: async () => {
+            await setTestEngineOverride(sidepanel, {
+              engine: 'fallback',
+              result: '推理',
+              notice: '已使用第三方免费翻译兜底',
+              localRuntime: null,
+              fallbackUsed: true,
+            });
             await openSettings(sidepanel);
             await sidepanel.locator('select').nth(0).selectOption('中文');
-            await sidepanel.locator('select').nth(1).selectOption('auto');
+            await sidepanel.locator('select').nth(1).selectOption('online');
             await sidepanel.getByPlaceholder('https://example.com/v1').fill(`http://127.0.0.1:${address.port}/v1`);
             await sidepanel.getByPlaceholder('sk-...').fill('test-key');
             await sidepanel.getByPlaceholder('gpt-like-model').fill('force-error-model');
-            await sidepanel.locator('input[type="checkbox"]').nth(0).uncheck();
-            await sidepanel.locator('input[type="checkbox"]').nth(1).check();
+            await sidepanel.locator('input[type="checkbox"]').nth(0).check();
             await sidepanel.getByRole('button', { name: '关闭' }).click();
           },
         },
@@ -965,14 +1019,16 @@ async function main() {
           kind: 'THEN',
           text: '界面会回退到翻译服务，并显示翻译服务来源',
           run: async () => {
-            await sidepanel.getByText('推理').waitFor({ timeout: 10000 });
             await sidepanel.getByText('翻译服务').waitFor({ timeout: 10000 });
+            const resultText = (await sidepanel.locator('[data-proofduck-result-text="true"]').innerText()).trim();
+            assert(resultText && resultText !== 'Result will appear here.', '翻译服务没有产出可见结果');
           },
         },
         {
           kind: 'AND',
           text: '用户重新补回正常在线模型，后续场景可继续使用',
           run: async () => {
+            await clearTestEngineOverride(sidepanel);
             await fillSettings(sidepanel, `http://127.0.0.1:${address.port}`);
           },
         },
@@ -1079,26 +1135,25 @@ async function main() {
         },
       ]);
 
-      await runScenario('当可用引擎都关闭时，界面会明确提示失败', [
+      await runScenario('当当前策略彻底不可用时，界面会明确提示失败', [
         {
           kind: 'GIVEN',
-          text: '用户把自动优先保留，但关闭可用的本地兼容、在线接口和翻译服务',
+          text: '用户明确切到在线接口，清空配置并关闭翻译兜底，同时结果区里还有上一轮结果',
           run: async () => {
             await openSettings(sidepanel);
             await sidepanel.locator('select').nth(0).selectOption('中文');
-            await sidepanel.locator('select').nth(1).selectOption('auto');
+            await sidepanel.locator('select').nth(1).selectOption('online');
             await clearOnlineSettings(sidepanel);
             await sidepanel.locator('input[type="checkbox"]').nth(0).uncheck();
-            await sidepanel.locator('input[type="checkbox"]').nth(1).uncheck();
             await sidepanel.getByRole('button', { name: '关闭' }).click();
+            await sidepanel.locator('textarea').fill('保留这段旧结果');
+            await sidepanel.getByRole('button', { name: '翻译', exact: true }).click();
           },
         },
         {
           kind: 'WHEN',
           text: '用户执行翻译',
           run: async () => {
-            await sidepanel.locator('textarea').fill('inference');
-            await sidepanel.getByRole('button', { name: '翻译', exact: true }).click();
             await sidepanel.getByRole('button', { name: '执行翻译' }).click();
           },
         },
@@ -1348,15 +1403,55 @@ async function main() {
         },
       ]);
 
+      await runScenario('当侧边栏已经打开时，页内翻译卡片会复用侧边栏里的本地模型结果', [
+        {
+          kind: 'GIVEN',
+          text: '用户保持本地模型策略，并且只有侧边栏这边有本地 GPU 结果',
+          run: async () => {
+            await clearTestEngineOverride(sidepanel);
+            await openSettings(sidepanel);
+            await sidepanel.locator('select').nth(1).selectOption('local');
+            await sidepanel.getByRole('button', { name: '关闭' }).click();
+            await setPanelOnlyTestEngineOverride(sidepanel, {
+              engine: 'local',
+              result: 'Panel-local translation result',
+              notice: '已使用本地 WebGPU 模型',
+              localRuntime: 'webgpu',
+              fallbackUsed: false,
+            });
+          },
+        },
+        {
+          kind: 'WHEN',
+          text: '用户在网页里重新选区并悬停 🐣',
+          run: async () => {
+            await page.bringToFront();
+            await clearSelection(page);
+            const trigger = await selectSampleText(page);
+            await trigger.hover();
+          },
+        },
+        {
+          kind: 'THEN',
+          text: '页内卡片和侧边栏都会显示同一份侧边栏本地结果，而不是继续提示准备中',
+          run: async () => {
+            await page.getByText('Panel-local translation result').waitFor({ timeout: 10000 });
+            await page.getByText('本地 AI（GPU）').waitFor({ timeout: 10000 });
+            await sidepanel.getByText('Panel-local translation result').waitFor({ timeout: 10000 });
+            await sidepanel.getByText('本地 AI（GPU）').waitFor({ timeout: 10000 });
+            assert((await page.getByText('当前策略仍在准备中，请稍后再试，或点击 🐣 在侧边栏中继续。').count()) === 0, '页内卡片不应继续显示准备中提示');
+            await clearPanelOnlyTestEngineOverride(sidepanel);
+          },
+        },
+      ]);
+
       console.log('\nBDD OK');
     } finally {
-      await context.close();
+      await cleanupExtensionContext(context, activeUserDataDir);
+      activeUserDataDir = '';
     }
   } finally {
     await new Promise((resolve, reject) => server.close((error) => (error ? reject(error) : resolve(undefined))));
-    if (activeUserDataDir) {
-      await fs.rm(activeUserDataDir, { recursive: true, force: true });
-    }
   }
 }
 

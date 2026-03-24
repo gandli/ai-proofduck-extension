@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { extractPageText, normalizeText } from './extractors';
+import { extractFullPageText, extractPageText, normalizeText } from './extractors';
 
 describe('extractors', () => {
   it('normalizes whitespace', () => {
@@ -16,5 +16,19 @@ describe('extractors', () => {
     `;
 
     expect(extractPageText(document)).toContain('这是一个足够长的正文内容');
+  });
+
+  it('returns the full page text when the user wants the whole page', () => {
+    document.body.innerHTML = `
+      <header>页面头部导航</header>
+      <main>
+        <article>这是页面正文的主体内容。</article>
+      </main>
+      <footer>页面底部补充说明</footer>
+    `;
+
+    expect(extractFullPageText(document)).toContain('页面头部导航');
+    expect(extractFullPageText(document)).toContain('这是页面正文的主体内容。');
+    expect(extractFullPageText(document)).toContain('页面底部补充说明');
   });
 });

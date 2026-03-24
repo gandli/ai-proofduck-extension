@@ -9,6 +9,9 @@
     "compile": "tsc --noEmit",
     "test": "vitest run",
     "test:bdd": "node tests/bdd/proofduck.chrome-bdd.mjs",
+    "test:chrome-probe": "node tests/bdd/proofduck.chrome-probe.mjs",
+    "test:real": "node tests/bdd/proofduck.real-browser.mjs",
+    "models:sync": "node scripts/sync-webllm-models.cjs",
     "icons": "node scripts/generate-icons.mjs",
     "smoke": "node scripts/smoke-extension.mjs"
   },

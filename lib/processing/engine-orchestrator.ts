@@ -39,9 +39,14 @@ export function getEngineAttemptOrder(mode: ModeKey, settings: Settings): Engine
   const automaticOrder: EngineType[] = ['chrome-ai', 'local', 'online'];
   const preferred =
     settings.enginePreference === 'auto' ? automaticOrder : [PREFERRED_TO_ENGINE[settings.enginePreference]];
+  const canFallbackAfterOnline =
+    settings.enginePreference === 'online' &&
+    Boolean(settings.onlineApiBase && settings.onlineApiKey && settings.onlineModel);
 
   const withFallback: EngineType[] =
-    settings.enginePreference === 'auto' && mode === 'translate' && settings.translationFallbackEnabled
+    mode === 'translate' &&
+    settings.translationFallbackEnabled &&
+    (settings.enginePreference === 'auto' || canFallbackAfterOnline)
       ? [...preferred, 'fallback']
       : [...preferred];
 
