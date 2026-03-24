@@ -118,7 +118,7 @@ export default function App() {
     setEngineNotice(`当前策略：${PREFERENCE_LABELS[settings.enginePreference]}`);
 
     try {
-      const { executeProcessing } = await import('./lib/executeProcessing');
+      const { executeProcessing } = await import('../../lib/processing/executeProcessing');
       const execution = await executeProcessing({
         text,
         mode,

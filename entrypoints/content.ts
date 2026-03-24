@@ -303,6 +303,17 @@ export default defineContentScript({
       popup.style.display = 'block';
     };
 
+    const renderPopupFailure = (draft: InputDraft, rect: DOMRect, message: string) => {
+      popupStatusText.textContent = 'UNAVAILABLE';
+      sourceText.textContent = draft.text;
+      translationText.textContent = message;
+      engineTag.textContent = '';
+      copyButton.textContent = 'Copy';
+      sidepanelButton.textContent = '🐣';
+      positionPopup(rect);
+      popup.style.display = 'block';
+    };
+
     const showTranslating = (draft: InputDraft, rect: DOMRect) => {
       popupStatusText.textContent = 'TRANSLATING';
       sourceText.textContent = draft.text;
@@ -345,28 +356,24 @@ export default defineContentScript({
       showTranslating(draft, rect);
 
       try {
-        const response = (await browser.runtime.sendMessage({
-          type: RUNTIME_MESSAGES.translateSelection,
-          payload: { text: draft.text },
-        })) as { ok?: boolean; result?: string; notice?: string } | null;
+        const response = await requestOffscreenTranslation(draft.text, settings);
 
-        const translated = normalizePopupTranslation(response?.result ?? buildInlineFallbackTranslation(draft.text));
-        const notice = response?.notice ?? '已使用快速翻译';
+        if (!response.ok || !response.result || !response.notice) {
+          throw new Error('当前策略暂时不可用，请点击 🐣 在侧边栏中继续。');
+        }
+
+        const translated = normalizePopupTranslation(response.result);
+        const notice = response.notice;
         lastTranslatedKey = cacheKey;
         lastTranslatedText = draft.text;
         lastTranslatedResult = translated;
         lastTranslatedNotice = notice;
         renderPopup(draft, translated, rect, notice);
         void syncSelectionTranslation(draft, translated, notice);
-      } catch {
-        const translated = buildInlineFallbackTranslation(draft.text);
-        const notice = '已使用快速翻译';
-        lastTranslatedKey = cacheKey;
-        lastTranslatedText = draft.text;
-        lastTranslatedResult = translated;
-        lastTranslatedNotice = notice;
-        renderPopup(draft, translated, rect, notice);
-        void syncSelectionTranslation(draft, translated, notice);
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : '当前策略暂时不可用，请点击 🐣 在侧边栏中继续。';
+        renderPopupFailure(draft, rect, message);
       }
     };
 
@@ -548,6 +555,24 @@ async function getCurrentSettings() {
   const result = await browser.storage.local.get(STORAGE_KEYS.settings);
   const saved = result[STORAGE_KEYS.settings] as Partial<Settings> | undefined;
   return { ...DEFAULT_SETTINGS, ...saved };
+}
+
+async function requestOffscreenTranslation(text: string, settings: Settings) {
+  const translationPromise = browser.runtime.sendMessage({
+    type: RUNTIME_MESSAGES.offscreenTranslate,
+    payload: {
+      text,
+      settings,
+    },
+  }) as Promise<{ ok?: boolean; result?: string; notice?: string; error?: string }>;
+
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    window.setTimeout(() => {
+      reject(new Error('当前策略暂时不可用，请点击 🐣 在侧边栏中继续。'));
+    }, 8000);
+  });
+
+  return Promise.race([translationPromise, timeoutPromise]);
 }
 
 function buildTranslationCacheKey(text: string, settings: Settings) {

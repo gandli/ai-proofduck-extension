@@ -119,8 +119,8 @@ export function resolveEnginePlan(
 
   return {
     selectedEngine,
-    engine: mode === 'translate' && settings.translationFallbackEnabled ? 'fallback' : 'online',
+    engine: settings.enginePreference === 'auto' && mode === 'translate' && settings.translationFallbackEnabled ? 'fallback' : 'online',
     notice: `${selectedStatus}，请检查浏览器能力或在线配置`,
-    blocked: !(mode === 'translate' && settings.translationFallbackEnabled),
+    blocked: !(settings.enginePreference === 'auto' && mode === 'translate' && settings.translationFallbackEnabled),
   };
 }

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { Settings } from '../../shared/contracts';
-import { executeProcessing } from './executeProcessing';
+import { executeProcessing } from '../../../lib/processing/executeProcessing';
 
 const onlineSettings: Settings = {
   targetLanguage: 'English',
@@ -39,27 +39,21 @@ describe('executeProcessing', () => {
     expect(result.notice).toContain('在线 API');
   });
 
-  it('falls back for translate mode when online api request fails', async () => {
+  it('fails directly when the selected online api strategy is unavailable', async () => {
     const fetchMock = vi
       .fn()
-      .mockRejectedValueOnce(new Error('network down'))
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => [[['Fallback translation']]],
-      });
+      .mockRejectedValueOnce(new Error('network down'));
     vi.stubGlobal('fetch', fetchMock);
 
-    const result = await executeProcessing({
-      text: '你好，世界。',
-      mode: 'translate',
-      settings: {
-        ...onlineSettings,
-        localAllowWasmFallback: false,
-      },
-    });
-
-    expect(result.engine).toBe('fallback');
-    expect(result.result).toContain('Fallback translation');
-    expect(result.notice).toContain('兜底');
+    await expect(
+      executeProcessing({
+        text: '你好，世界。',
+        mode: 'translate',
+        settings: {
+          ...onlineSettings,
+          localAllowWasmFallback: false,
+        },
+      }),
+    ).rejects.toThrow(/online: network down/);
   });
 });

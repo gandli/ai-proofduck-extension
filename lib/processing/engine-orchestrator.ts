@@ -1,4 +1,4 @@
-import type { EnginePreference, EngineType, ModeKey, Settings } from '../../shared/contracts';
+import type { EnginePreference, EngineType, ModeKey, Settings } from '../../entrypoints/shared/contracts';
 
 export interface RuntimeCapabilities {
   hasLanguageModel: boolean;

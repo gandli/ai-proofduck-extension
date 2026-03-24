@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
+import { URL } from 'node:url';
 
 import { chromium } from 'playwright';
 
@@ -13,7 +14,43 @@ async function main() {
   let onlineRequestCount = 0;
   let fallbackRequestCount = 0;
 
-  const server = http.createServer((_request, response) => {
+  async function clearSelection(page) {
+    await page.evaluate(() => {
+      window.getSelection()?.removeAllRanges();
+      document.dispatchEvent(new Event('selectionchange'));
+    });
+  }
+
+  async function gotoWithRetry(page, url, attempts = 4) {
+    let lastError = null;
+
+    for (let index = 0; index < attempts; index += 1) {
+      try {
+        await page.goto(url);
+        return;
+      } catch (error) {
+        lastError = error;
+        await page.waitForTimeout(400);
+      }
+    }
+
+    throw lastError;
+  }
+
+  const server = http.createServer(async (request, response) => {
+    const url = new URL(request.url || '/', 'http://127.0.0.1');
+
+    if (request.method === 'POST' && url.pathname === '/v1/chat/completions') {
+      onlineRequestCount += 1;
+      response.writeHead(200, { 'Content-Type': 'application/json' });
+      response.end(
+        JSON.stringify({
+          choices: [{ message: { content: 'Remote translation result' } }],
+        }),
+      );
+      return;
+    }
+
     response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     response.end(`
       <html>
@@ -54,16 +91,6 @@ async function main() {
       const sidepanelUrl = `chrome-extension://${extensionId}/sidepanel.html`;
       console.log('STEP 1: start route stubs');
 
-      await context.route('https://example.com/v1/chat/completions', async (route) => {
-        onlineRequestCount += 1;
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            choices: [{ message: { content: 'Remote translation result' } }],
-          }),
-        });
-      });
       await context.route('https://translate.googleapis.com/**', async (route) => {
         fallbackRequestCount += 1;
         await route.fulfill({
@@ -75,10 +102,10 @@ async function main() {
 
       console.log('STEP 2: open sidepanel and configure online API');
       const sidepanel = await context.newPage();
-      await sidepanel.goto(sidepanelUrl);
+      await gotoWithRetry(sidepanel, sidepanelUrl);
       await sidepanel.waitForLoadState('networkidle');
       await sidepanel.getByRole('button', { name: '设置' }).click();
-      await sidepanel.getByPlaceholder('https://example.com/v1').fill('https://example.com/v1');
+      await sidepanel.getByPlaceholder('https://example.com/v1').fill(`http://127.0.0.1:${address.port}/v1`);
       await sidepanel.getByPlaceholder('sk-...').fill('test-key');
       await sidepanel.getByPlaceholder('gpt-like-model').fill('demo-model');
       await sidepanel.locator('select').nth(1).selectOption('online');
@@ -95,10 +122,9 @@ async function main() {
       const trigger = page.locator('[data-proofduck-trigger="true"]');
       await trigger.waitFor({ state: 'visible', timeout: 15000 });
       await trigger.hover();
-      await page.getByText('TRANSLATION').waitFor({ timeout: 10000 });
       await page.getByText('Remote translation result').waitFor({ timeout: 10000 });
       await sidepanel.locator('textarea').waitFor({ timeout: 10000 });
-      await sidepanel.getByText('TRANSLATION').waitFor({ timeout: 10000 });
+      await sidepanel.getByRole('heading', { name: 'TRANSLATION' }).waitFor({ timeout: 10000 });
       await sidepanel.getByText('Remote translation result').waitFor({ timeout: 10000 });
       if (onlineRequestCount !== 1) {
         throw new Error(`Expected exactly one online translation request after hover, got ${onlineRequestCount}`);
@@ -107,25 +133,30 @@ async function main() {
         throw new Error(`Expected no fallback translation request during hover, got ${fallbackRequestCount}`);
       }
       await page.getByRole('button', { name: '关闭翻译弹窗' }).click();
-      await page.getByText('TRANSLATION').waitFor({ state: 'hidden', timeout: 10000 });
+      await page.getByText('Remote translation result').waitFor({ state: 'hidden', timeout: 10000 });
 
       console.log('STEP 5: popup should disappear after copy');
+      await page.mouse.move(20, 20);
+      await clearSelection(page);
       await page.locator('#sample').selectText();
       await trigger.waitFor({ state: 'visible', timeout: 15000 });
       await trigger.hover();
-      await page.getByText('TRANSLATION').waitFor({ timeout: 10000 });
+      await page.getByText('Remote translation result').waitFor({ timeout: 10000 });
       await page.getByRole('button', { name: 'Copy' }).click();
-      await page.getByText('TRANSLATION').waitFor({ state: 'hidden', timeout: 10000 });
+      await page.getByText('Remote translation result').waitFor({ state: 'hidden', timeout: 10000 });
 
       console.log('STEP 6: popup should disappear when clicking outside');
+      await page.mouse.move(20, 20);
+      await clearSelection(page);
       await page.locator('#sample').selectText();
       await trigger.waitFor({ state: 'visible', timeout: 15000 });
       await trigger.hover();
-      await page.getByText('TRANSLATION').waitFor({ timeout: 10000 });
+      await page.getByText('Remote translation result').waitFor({ timeout: 10000 });
       await page.mouse.click(20, 20);
-      await page.getByText('TRANSLATION').waitFor({ state: 'hidden', timeout: 10000 });
+      await page.getByText('Remote translation result').waitFor({ state: 'hidden', timeout: 10000 });
 
       console.log('STEP 7: click chick and verify no duplicate translation request');
+      await page.mouse.move(20, 20);
       await page.locator('#sample').selectText();
       await trigger.waitFor({ state: 'visible', timeout: 15000 });
       await trigger.click();

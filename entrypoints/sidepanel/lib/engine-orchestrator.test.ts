@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { Settings } from '../../shared/contracts';
-import { getEngineAttemptOrder, pickFirstMeaningfulEngine } from './engine-orchestrator';
+import { getEngineAttemptOrder, pickFirstMeaningfulEngine } from '../../../lib/processing/engine-orchestrator';
 
 const baseSettings: Settings = {
   targetLanguage: '中文',
@@ -32,13 +32,13 @@ describe('engine-orchestrator', () => {
     ]);
   });
 
-  it('prioritizes selected engine before auto order', () => {
+  it('uses only the selected engine in strict mode', () => {
     expect(
       getEngineAttemptOrder('summarize', {
         ...baseSettings,
         enginePreference: 'online',
       }).map((item) => item.engine),
-    ).toEqual(['online', 'chrome-ai', 'local']);
+    ).toEqual(['online']);
   });
 
   it('finds the next available engine when earlier engines are unavailable', () => {

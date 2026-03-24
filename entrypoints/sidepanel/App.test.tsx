@@ -128,13 +128,7 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: '执行翻译' })).toBeTruthy();
   });
 
-  it('shows a clear fallback when online api is selected but not configured', async () => {
-    const fetchMock = vi.fn(async () => ({
-      ok: true,
-      json: async () => [[['Fallback translation']]],
-    }));
-    vi.stubGlobal('fetch', fetchMock);
-
+  it('shows a clear error when online api is selected but not configured', async () => {
     storageState[STORAGE_KEYS.settings] = {
       targetLanguage: '中文',
       enginePreference: 'online',
@@ -152,8 +146,8 @@ describe('App', () => {
     fireEvent.change(textarea, { target: { value: '请帮我整理这段文本' } });
     fireEvent.click(screen.getByRole('button', { name: '执行翻译' }));
 
-    expect(await screen.findByText(/Fallback translation/)).toBeTruthy();
-    expect(await screen.findByText('翻译服务')).toBeTruthy();
+    expect(await screen.findByText(/处理失败：online: 在线 API 未配置/)).toBeTruthy();
+    expect(screen.getByText('Result will appear here.')).toBeTruthy();
   });
 
   it('renders remote result when online api is configured', async () => {

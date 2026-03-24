@@ -8,6 +8,7 @@ export default defineConfig({
     description: '本地优先的网页阅读与写作 AI 侧边栏助手',
     key: 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmkbOCDkojy8TDcQhLQEWgWdsl6mWhEej44kDiBypbdxRbChIBrRnZunWjdQ9YFyvyUEY7EuhqOEDjiiYb+HxydpdJselRNB6cXEvOgDhB+ppqOaLsq61tdPLnddtE4j6PRdgxO7iRPFJtWRb1IJ+PK61SogdqsCqbjUqkrJcJu5QIK9DwyJjPx9JBL1xcO9x/DzVlZyK97ctdfXRpOZspVpC5UAP/rpdKSvLHcV3RTBSuWP9/mkSiM9xE4bFW2Kzn3O8SHmXKaf80q5xfc2ntrbQrZJHaqNz+l717NUYafmPamdmSW5vUXofU+SxY8ewKpiirTah6WpiFVKgQ+jKLwIDAQAB',
     permissions: ['sidePanel', 'storage', 'activeTab', 'tabs', 'offscreen'],
+    host_permissions: ['https://*/*', 'http://*/*'],
     action: {
       default_title: '打开校对鸭',
     },

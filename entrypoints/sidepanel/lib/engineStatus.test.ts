@@ -43,7 +43,7 @@ describe('engineStatus', () => {
     expect(statuses.online.available).toBe(true);
   });
 
-  it('falls back to translation fallback when selected engine is unavailable in translate mode', () => {
+  it('blocks when a manually selected engine is unavailable', () => {
     const plan = resolveEnginePlan(
       'translate',
       {
@@ -56,8 +56,8 @@ describe('engineStatus', () => {
       },
     );
 
-    expect(plan.engine).toBe('local');
-    expect(plan.notice).toContain('本地模型');
+    expect(plan.blocked).toBe(true);
+    expect(plan.notice).toContain('浏览器内置 AI当前不可用');
   });
 
   it('marks local engine as wasm-compatible when gpu is missing but fallback is enabled', () => {

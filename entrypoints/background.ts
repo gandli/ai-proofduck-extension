@@ -2,6 +2,21 @@ import { RUNTIME_MESSAGES, STORAGE_KEYS, type InputDraft, type SelectionTranslat
 import { DEFAULT_SETTINGS } from './shared/contracts';
 
 const OFFSCREEN_PATH = '/offscreen.html';
+const OFFSCREEN_PORT = 'proofduck-offscreen-port';
+const OFFSCREEN_EXECUTE = 'proofduck:offscreen-translation-execute';
+const OFFSCREEN_RESULT = 'proofduck:offscreen-translation-result';
+const OFFSCREEN_READY = 'proofduck:offscreen-ready';
+
+let offscreenPort: chrome.runtime.Port | null = null;
+let offscreenReady = false;
+const pendingOffscreenRequests = new Map<
+  string,
+  {
+    resolve: (value: unknown) => void;
+    reject: (reason?: unknown) => void;
+    timeout: ReturnType<typeof setTimeout>;
+  }
+>();
 
 async function ensureOffscreenDocument() {
   if (!browser.offscreen?.createDocument) {
@@ -10,7 +25,7 @@ async function ensureOffscreenDocument() {
 
   try {
     await browser.offscreen.createDocument({
-      url: OFFSCREEN_PATH,
+      url: browser.runtime.getURL(OFFSCREEN_PATH),
       reasons: ['WORKERS'],
       justification: '在不打开侧边栏的情况下执行本地与浏览器 AI 翻译',
     });
@@ -22,24 +37,46 @@ async function ensureOffscreenDocument() {
   }
 }
 
-async function translateSelectionWithOffscreen(text: string) {
+async function forwardOffscreenTranslation(payload: { text: string; settings: typeof DEFAULT_SETTINGS }) {
   await ensureOffscreenDocument();
 
-  const settings = await getSettings();
-  const response = await browser.runtime.sendMessage({
-    type: RUNTIME_MESSAGES.offscreenTranslate,
-    payload: {
-      text,
-      settings,
-    },
-    target: 'offscreen',
-  });
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    if (offscreenPort && offscreenReady) {
+      break;
+    }
 
-  if (!response?.ok) {
-    throw new Error(response?.error ?? '隐藏翻译页面未返回结果');
+    await new Promise((resolve) => setTimeout(resolve, 80));
   }
 
-  return response;
+  if (!offscreenPort || !offscreenReady) {
+    throw new Error('隐藏翻译页暂时没有响应');
+  }
+
+  const requestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+  const activePort = offscreenPort;
+  if (!activePort) {
+    throw new Error('隐藏翻译页暂时没有响应');
+  }
+
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      pendingOffscreenRequests.delete(requestId);
+      reject(new Error('隐藏翻译页暂时没有响应'));
+    }, 7000);
+
+    pendingOffscreenRequests.set(requestId, {
+      resolve,
+      reject,
+      timeout,
+    });
+
+    activePort.postMessage({
+      type: OFFSCREEN_EXECUTE,
+      id: requestId,
+      payload,
+    });
+  });
 }
 
 async function getActiveTab() {
@@ -68,6 +105,53 @@ async function getSettings() {
 }
 
 export default defineBackground(() => {
+  browser.runtime.onConnect.addListener((port) => {
+    if (port.name !== OFFSCREEN_PORT) {
+      return;
+    }
+
+    offscreenPort = port;
+    offscreenReady = false;
+    port.onMessage.addListener((message) => {
+      const payloadMessage = message as {
+        type?: string;
+        id?: string;
+        payload?: unknown;
+      };
+
+      if (payloadMessage.type === OFFSCREEN_READY) {
+        offscreenReady = true;
+        return;
+      }
+
+      if (payloadMessage.type !== OFFSCREEN_RESULT || !payloadMessage.id) {
+        return;
+      }
+
+      const pending = pendingOffscreenRequests.get(payloadMessage.id);
+      if (!pending) {
+        return;
+      }
+
+      clearTimeout(pending.timeout);
+      pendingOffscreenRequests.delete(payloadMessage.id);
+      pending.resolve(payloadMessage.payload);
+    });
+
+    port.onDisconnect.addListener(() => {
+      if (offscreenPort === port) {
+        offscreenPort = null;
+        offscreenReady = false;
+      }
+
+      for (const [requestId, pending] of pendingOffscreenRequests.entries()) {
+        clearTimeout(pending.timeout);
+        pending.reject(new Error('隐藏翻译页连接已断开'));
+        pendingOffscreenRequests.delete(requestId);
+      }
+    });
+  });
+
   browser.runtime.onInstalled.addListener(() => {
     browser.sidePanel
       .setPanelBehavior({ openPanelOnActionClick: true })
@@ -75,10 +159,6 @@ export default defineBackground(() => {
   });
 
   browser.runtime.onMessage.addListener((message, sender) => {
-    if (message?.target === 'offscreen') {
-      return undefined;
-    }
-
     if (message?.type === RUNTIME_MESSAGES.queueDraft) {
       return saveDraft(message.payload as InputDraft).then(async () => {
         const tabId = sender.tab?.id;
@@ -106,8 +186,12 @@ export default defineBackground(() => {
       );
     }
 
-    if (message?.type === RUNTIME_MESSAGES.translateSelection) {
-      return translateSelectionWithOffscreen(String(message.payload?.text ?? ''));
+    if (message?.type === RUNTIME_MESSAGES.ensureOffscreenHost) {
+      return ensureOffscreenDocument().then(() => ({ ok: true }));
+    }
+
+    if (message?.type === RUNTIME_MESSAGES.offscreenTranslate) {
+      return forwardOffscreenTranslation(message.payload as { text: string; settings: typeof DEFAULT_SETTINGS });
     }
 
     if (message?.type === RUNTIME_MESSAGES.syncSelectionTranslation) {

@@ -85,6 +85,7 @@ export const RUNTIME_MESSAGES = {
   getPageText: 'proofduck:get-page-text',
   translateSelection: 'proofduck:translate-selection',
   offscreenTranslate: 'proofduck:offscreen-translate',
+  ensureOffscreenHost: 'proofduck:ensure-offscreen-host',
   syncSelectionTranslation: 'proofduck:sync-selection-translation',
   selectionTranslationUpdated: 'proofduck:selection-translation-updated',
 } as const;
