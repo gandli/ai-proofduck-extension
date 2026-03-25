@@ -1,5 +1,9 @@
 # Palette's Journal
 
+## 2026-03-25 - Comprehensive Interaction Patterns for Icon-Only Buttons
+**Learning:** For icon-only buttons, just having an `aria-label` is not enough for a fully accessible and intuitive experience. Visual sighted users need a `title` attribute for native hover tooltips to understand the button's function, and keyboard users need explicit focus indicators (e.g., `focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50`) to see which element is active.
+**Action:** When creating or modifying icon-only buttons, always ensure the trio of `aria-label`, `title`, and explicit custom `focus-visible` styles are present.
+
 ## 2026-03-03 - Custom Dropdown ARIA Accessibility
 **Learning:** Custom components like LocalModelSelector acting as dropdowns require explicit `role="combobox"`, `aria-expanded`, `aria-haspopup`, and `aria-controls` on the trigger, along with a linked `id`, `role="listbox"` on the container, and `role="option"` with `aria-selected` on items. This ensures screen reader users understand the component is a select input and can navigate its options correctly.
 **Action:** Whenever building custom select inputs, verify ARIA attributes mimic native `<select>` behavior closely to maintain keyboard and screen reader accessibility.
