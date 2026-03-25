@@ -5,7 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "wxt",
+    "dev:browser": "node scripts/dev-browser-loop.mjs",
     "build": "wxt build",
+    "chrome:open": "node scripts/open-chrome-extension.mjs",
+    "chrome:open:dev": "node scripts/open-chrome-extension.mjs --dev",
     "compile": "tsc --noEmit",
     "test": "vitest run",
     "test:bdd": "node tests/bdd/proofduck.chrome-bdd.mjs",

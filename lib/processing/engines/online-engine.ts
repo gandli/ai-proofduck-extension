@@ -18,7 +18,7 @@ export async function executeOnline(input: OnlineExecutionInput) {
     body: JSON.stringify({
       model: input.settings.onlineModel,
       messages: buildMessageList(input.text, input.mode, input.settings),
-      temperature: 0.3,
+      temperature: input.mode === 'translate' ? 0 : 0.3,
     }),
   });
 

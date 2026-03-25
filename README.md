@@ -32,16 +32,45 @@
 ```bash
 bun install
 bun run dev
+bun run dev:browser
 bun run build
 bun run compile
 bun run test
 bun run test:bdd
 bun run test:real
 bun run test:chrome-probe
+bun run chrome:open
+bun run chrome:open:dev
 bun run smoke
 ```
 
 如果你更习惯 `npm`，也可以直接替换成对应命令。
+
+如果你想边改边在带界面的浏览器里直接测扩展，直接运行：
+
+```bash
+bun run dev:browser
+```
+
+它会自动做这几件事：
+
+- 启动或复用 `bun dev`
+- 打开带界面的 `Chromium`
+- 自动加载开发扩展 [dist/chrome-mv3-dev](/Users/user/Documents/ai-proofduck-extension/dist/chrome-mv3-dev)
+- 自动打开侧边栏和一张本地测试页
+
+开发态现在不再固定扩展 ID，这样可以避开之前那个被浏览器屏蔽的固定 ID。  
+如果改的是内容脚本而页面没有立刻刷新，可以在浏览器里按 `Alt+R` 重新加载开发扩展。
+
+如果你在 `chrome://extensions` 里手动加载时，遇到“清单文件缺失或不可读取”，现在可以直接用下面两个命令绕过手动选择目录：
+
+```bash
+bun run chrome:open
+bun run chrome:open:dev
+```
+
+- `bun run chrome:open` 会用当前构建产物打开 Chrome，并自动加载 [dist/chrome-mv3](/Users/user/Documents/ai-proofduck-extension/dist/chrome-mv3)
+- `bun run chrome:open:dev` 会打开开发产物 [dist/chrome-mv3-dev](/Users/user/Documents/ai-proofduck-extension/dist/chrome-mv3-dev)
 
 ## 当前能力
 

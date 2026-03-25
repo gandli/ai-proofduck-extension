@@ -91,7 +91,7 @@ export async function executeLocalWebLlm(input: LocalExecutionInput) {
 
   const completion = await engine.chat.completions.create({
     messages: buildMessageList(input.text, input.mode, input.settings) as never,
-    temperature: 0.3,
+    temperature: input.mode === 'translate' ? 0 : 0.3,
   });
   const result = extractAssistantText(completion);
 

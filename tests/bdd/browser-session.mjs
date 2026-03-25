@@ -6,6 +6,11 @@ import { chromium } from 'playwright';
 
 export const EXTENSION_ID = 'lpfkhijjjhbcbbllnmdnahiooodajcim';
 
+function parseExtensionIdFromUrl(url) {
+  const match = url.match(/^chrome-extension:\/\/([a-z]{32})\//);
+  return match?.[1] ?? null;
+}
+
 export async function gotoWithRetry(page, url, attempts = 4, timeout = 15000) {
   let lastError = null;
 
@@ -64,9 +69,27 @@ export async function cleanupExtensionContext(context, userDataDir) {
   }
 }
 
-export async function openExtensionSidepanel(context, extensionId = EXTENSION_ID) {
+export async function resolveExtensionId(context, fallback = EXTENSION_ID) {
+  const currentWorkers = context.serviceWorkers();
+  for (const worker of currentWorkers) {
+    const resolved = parseExtensionIdFromUrl(worker.url());
+    if (resolved) {
+      return resolved;
+    }
+  }
+
+  try {
+    const worker = await context.waitForEvent('serviceworker', { timeout: 15000 });
+    return parseExtensionIdFromUrl(worker.url()) ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export async function openExtensionSidepanel(context, extensionId) {
+  const resolvedExtensionId = extensionId ?? (await resolveExtensionId(context));
   const sidepanel = await context.newPage();
-  await gotoWithRetry(sidepanel, `chrome-extension://${extensionId}/sidepanel.html`, 8, 20000);
+  await gotoWithRetry(sidepanel, `chrome-extension://${resolvedExtensionId}/sidepanel.html`, 8, 20000);
   await sidepanel.waitForLoadState('networkidle');
   return sidepanel;
 }
