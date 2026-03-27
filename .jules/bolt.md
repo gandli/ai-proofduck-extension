@@ -5,3 +5,7 @@
 ## 2026-03-06 - [Hoist Regex Compilation in Web Worker]
 **Learning:** In highly trafficked interceptors like the global fetch proxy used in `worker.ts`, instantiating regular expressions inline within the handler function causes them to be recompiled on every single execution. For processes that stream data with potentially thousands of requests or checks, this introduces measurable latency and CPU overhead.
 **Action:** Always hoist static regex definitions outside of frequently called functions (e.g. event handlers or interceptors) into module scope or outer closures to compile them once during initialization.
+
+## 2024-05-18 - [Optimize String Replacements with Alternation on Unbounded Inputs]
+**Learning:** Chaining multiple `.replace()` calls on potentially long user inputs (e.g. sanitizing document text before model inference) forces the V8 engine to traverse the string multiple times, introducing O(N * C) overhead where N is string length and C is the number of chained operations.
+**Action:** Combine multiple string replacement rules into a single hoisted regular expression using alternation (`|`) whenever replacing with the same empty string or value, ensuring the text is traversed only once.

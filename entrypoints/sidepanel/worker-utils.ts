@@ -42,16 +42,18 @@ export function getSystemPrompt(mode: ModeKey, settings: Partial<Settings>) {
     return `[System Directive]\n${promptTemplate}\n${BASE_CONSTRAINT}`;
 }
 
+// Pre-compile the regex to avoid recompilation overhead on every function call
+// Use alternation to replace all target strings in a single pass
+const SANITIZE_REGEX = /<\/?TEXT_TO_PROCESS>|\[FINAL RESULT\]:/gi;
+
 /**
  * Formats the user prompt, sanitizing input to prevent prompt injection.
  * Removes structural tags that could confuse the model.
  */
 export function formatUserPrompt(text: string, mode: string, targetLang: string): string {
     // Sanitize input by removing structural tags used in the prompt
-    const sanitizedText = text
-        .replace(/<TEXT_TO_PROCESS>/gi, '')
-        .replace(/<\/TEXT_TO_PROCESS>/gi, '')
-        .replace(/\[FINAL RESULT\]:/gi, '');
+    // Replaced chained .replace() calls with a single-pass regex for better performance on long strings
+    const sanitizedText = text.replace(SANITIZE_REGEX, '');
 
     return `[MODE: ${mode.toUpperCase()}]\n[ACTION: PROCESS THE TEXT BELOW INTO ${targetLang}]\n<TEXT_TO_PROCESS>\n${sanitizedText}\n</TEXT_TO_PROCESS>\n[FINAL RESULT]:`;
 }
