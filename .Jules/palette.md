@@ -15,3 +15,7 @@
 ## 2026-03-08 - Explicit Form Controls & Custom Focus Outline
 **Learning:** For accessibility, form labels must explicitly use `htmlFor` connected to corresponding control `id`s. Also, any element (like a combobox) that strips the browser's default outline using `focus:outline-none` must substitute it with a visible custom focus state (e.g., `focus-visible:ring-2`) so keyboard navigability is preserved.
 **Action:** Always pair `<label htmlFor="control-id">` with `<input id="control-id">`, and when removing default outlines, add custom focus-visible styles.
+
+## 2024-10-24 - Link visual headings to textareas
+**Learning:** When explicit `<label>` elements are missing, explicitly linking visual section headings to `<textarea>` elements using `aria-labelledby` is crucial for screen reader accessibility.
+**Action:** Always link contextual visual headings to form inputs using `aria-labelledby` when explicit labels are absent.
