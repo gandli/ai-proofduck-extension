@@ -226,7 +226,7 @@ export function useWorker(opts: UseWorkerOptions) {
       }
 
       // Quick translate still goes through background
-      const requestId = `qt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const requestId = `qt-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
       pendingQuickTranslateId.current = requestId;
 
       const timeoutId = setTimeout(() => {
