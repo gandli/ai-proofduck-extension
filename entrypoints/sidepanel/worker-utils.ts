@@ -42,16 +42,18 @@ export function getSystemPrompt(mode: ModeKey, settings: Partial<Settings>) {
     return `[System Directive]\n${promptTemplate}\n${BASE_CONSTRAINT}`;
 }
 
+// ⚡ Bolt Optimization: Hoisted single-pass regex compilation
+// Impact: Reduces full-string traversals from 3 to 1 and avoids regex recompilation on every call.
+const SANITIZE_REGEX = /<TEXT_TO_PROCESS>|<\/TEXT_TO_PROCESS>|\[FINAL RESULT\]:/gi;
+
 /**
  * Formats the user prompt, sanitizing input to prevent prompt injection.
  * Removes structural tags that could confuse the model.
  */
 export function formatUserPrompt(text: string, mode: string, targetLang: string): string {
     // Sanitize input by removing structural tags used in the prompt
-    const sanitizedText = text
-        .replace(/<TEXT_TO_PROCESS>/gi, '')
-        .replace(/<\/TEXT_TO_PROCESS>/gi, '')
-        .replace(/\[FINAL RESULT\]:/gi, '');
+    // ⚡ Bolt Optimization: Replace 3 chained `.replace()` calls with a single regex
+    const sanitizedText = text.replace(SANITIZE_REGEX, '');
 
     return `[MODE: ${mode.toUpperCase()}]\n[ACTION: PROCESS THE TEXT BELOW INTO ${targetLang}]\n<TEXT_TO_PROCESS>\n${sanitizedText}\n</TEXT_TO_PROCESS>\n[FINAL RESULT]:`;
 }
