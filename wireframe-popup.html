@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProofDuck 交互设计</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f0f2f5; min-height: 100vh; padding: 20px; }
+    h1 { text-align: center; margin-bottom: 20px; color: #333; }
+
+    .canvas { display: flex; gap: 40px; justify-content: center; flex-wrap: wrap; align-items: flex-start; }
+
+    .demo-section { text-align: center; }
+    .demo-section h3 { margin-bottom: 12px; color: #666; font-size: 14px; font-weight: 500; }
+
+    /* 页面右键菜单 */
+    .context-menu {
+      position: relative;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      padding: 6px 0;
+      min-width: 180px;
+      text-align: left;
+    }
+    .context-menu .item {
+      padding: 8px 16px;
+      font-size: 13px;
+      color: #333;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .context-menu .item:hover { background: #f5f5f5; }
+    .context-menu .item .icon { width: 18px; text-align: center; }
+    .context-menu .divider { height: 1px; background: #eee; margin: 4px 0; }
+    .context-menu .submenu { position: relative; }
+    .context-menu .submenu::after { content: '▶'; font-size: 8px; margin-left: auto; color: #999; }
+    .context-menu .sub-items {
+      position: absolute;
+      left: 100%;
+      top: 0;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      padding: 6px 0;
+      min-width: 160px;
+      display: none;
+    }
+    .context-menu .submenu:hover .sub-items { display: block; }
+    .context-menu .sub-items .item { font-size: 12px; padding: 6px 14px; }
+
+    /* ProofDuck 子菜单 - 4功能平铺 */
+    .proofduck-submenu {
+      position: absolute;
+      left: 100%;
+      top: 0;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      padding: 6px 0;
+      min-width: 200px;
+      display: none;
+    }
+    .context-menu .submenu:hover .proofduck-submenu { display: block; }
+    .proofduck-submenu .item {
+      padding: 8px 14px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .proofduck-submenu .item .icon { font-size: 14px; }
+    .proofduck-submenu .item:hover { background: #fff5f0; }
+    .proofduck-submenu .item:hover .label { color: #FF5A11; }
+    .proofduck-submenu .item .label { flex: 1; }
+    .proofduck-submenu .item .shortcut { font-size: 10px; color: #999; }
+
+    /* 翻译结果浮层 */
+    .result-popup {
+      position: relative;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      width: 320px;
+      overflow: hidden;
+    }
+    .result-popup .popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: #FF5A11;
+      color: white;
+    }
+    .result-popup .popup-header .engine-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .result-popup .popup-header .engine-name { font-size: 12px; font-weight: 500; }
+    .result-popup .popup-header .response-time { font-size: 10px; opacity: 0.8; }
+    .result-popup .popup-header .close-btn {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    .result-popup .popup-header .close-btn:hover { background: rgba(255,255,255,0.3); }
+
+    .result-popup .popup-content {
+      padding: 14px;
+      min-height: 80px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .result-popup .translated-text {
+      font-size: 13px;
+      color: #333;
+      line-height: 1.7;
+    }
+    .result-popup .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 14px;
+      background: #FF5A11;
+      margin-left: 2px;
+      animation: blink 0.8s infinite;
+      vertical-align: middle;
+    }
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    .result-popup .popup-footer {
+      display: flex;
+      gap: 8px;
+      padding: 10px 14px;
+      border-top: 1px solid #f0f0f0;
+      background: #fafafa;
+    }
+    .result-popup .action-btn {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 12px;
+      background: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .result-popup .action-btn:hover {
+      border-color: #FF5A11;
+      color: #FF5A11;
+    }
+    .result-popup .action-btn.active {
+      background: #FF5A11;
+      border-color: #FF5A11;
+      color: white;
+    }
+    .result-popup .action-btn.retry {
+      background: #FF5A11;
+      border-color: #FF5A11;
+      color: white;
+    }
+    .result-popup .action-btn.retry:hover {
+      background: #e54d00;
+    }
+
+    /* 浮层箭头 - 下方指向 */
+    .popup-arrow {
+      position: absolute;
+      bottom: -7px;
+      left: 20px;
+      width: 14px;
+      height: 14px;
+      background: #fff;
+      transform: rotate(45deg);
+      box-shadow: 2px 2px 4px rgba(0,0,0,0.08);
+      z-index: -1;
+    }
+
+    /* 模拟页面内容 */
+    .mock-page {
+      padding: 40px;
+      background: linear-gradient(135deg, #667 0%, #98ab 100%);
+      border-radius: 8px;
+      position: relative;
+      min-width: 400px;
+      min-height: 300px;
+    }
+    .mock-page p {
+      font-size: 14px;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 12px;
+    }
+    .mock-page .sample-text {
+      background: rgba(255,255,255,0.1);
+      padding: 12px 16px;
+      border-radius: 6px;
+      color: rgba(255,255,255,0.9);
+      font-size: 14px;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+    .mock-page .instruction {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 20px;
+    }
+
+    /* 状态提示 */
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      background: #e8f5e9;
+      color: #4caf50;
+      margin-left: 8px;
+    }
+    .status-badge.streaming {
+      background: #fff3e0;
+      color: #ff9800;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .legend {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 800px;
+      margin: 40px auto 0;
+    }
+    .legend h2 { margin-bottom: 12px; color: #333; font-size: 16px; }
+    .legend ul { padding-left: 20px; }
+    .legend li { margin-bottom: 8px; color: #666; font-size: 13px; }
+    .legend li strong { color: #333; }
+
+    /* 复制提示 */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #333;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 1000;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <h1>ProofDuck 交互设计</h1>
+
+  <div class="canvas">
+    <!-- 页面右键菜单 -->
+    <div class="demo-section">
+      <h3>页面右键菜单</h3>
+      <div class="context-menu">
+        <div class="item"><span class="icon">🔙</span> 后退</div>
+        <div class="item"><span class="icon">🔜</span> 前进</div>
+        <div class="item"><span class="icon">🔄</span> 重新加载</div>
+        <div class="divider"></div>
+        <div class="item"><span class="icon">📋</span> 复制</div>
+        <div class="item"><span class="icon">🔍</span> 查找</div>
+        <div class="divider"></div>
+        <div class="submenu">
+          <div class="item"><span class="icon">🦆</span> ProofDuck</div>
+          <div class="proofduck-submenu">
+            <div class="item"><span class="icon">🌐</span><span class="label">翻译页面</span></div>
+            <div class="divider"></div>
+            <div class="item"><span class="icon">🔤</span><span class="label">翻译选中文字</span><span class="shortcut">Alt+T</span></div>
+            <div class="item"><span class="icon">✨</span><span class="label">校对选中文字</span><span class="shortcut">Alt+P</span></div>
+            <div class="item"><span class="icon">💎</span><span class="label">润色选中文字</span><span class="shortcut">Alt+R</span></div>
+            <div class="item"><span class="icon">📖</span><span class="label">扩写选中文字</span><span class="shortcut">Alt+E</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 翻译结果浮层 -->
+    <div class="demo-section">
+      <h3>翻译结果浮层 <span class="status-badge streaming" id="statusBadge">流式输出中...</span></h3>
+      <div class="mock-page">
+        <p>页面内容</p>
+        <div class="sample-text">Hello, world! This is a sample text for translation.</div>
+        <p class="instruction">* 点击下方按钮模拟流式输出效果</p>
+
+        <div class="result-popup" style="position: absolute; bottom: 40px; left: 40px;" id="resultPopup">
+          <div class="popup-arrow"></div>
+          <div class="popup-header">
+            <div class="engine-info">
+              <span class="engine-name">谷歌翻译</span>
+              <span class="response-time" id="responseTime">响应 1.2s</span>
+            </div>
+            <button class="close-btn" id="closeBtn">×</button>
+          </div>
+          <div class="popup-content">
+            <div class="translated-text" id="translatedText"></div>
+            <span class="cursor" id="cursor"></span>
+          </div>
+          <div class="popup-footer">
+            <button class="action-btn" id="copyBtn">
+              <span>📋</span> 复制
+            </button>
+            <button class="action-btn" id="speakBtn">
+              <span>🔊</span> 朗读
+            </button>
+            <button class="action-btn retry" id="retryBtn">
+              <span>🔄</span> 重试
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <h2>交互说明</h2>
+    <ul>
+      <li><strong>页面右键菜单</strong>: 右键页面时显示 ProofDuck 子菜单，包含翻译页面和4个划词功能（翻译/校对/润色/扩写），显示快捷键</li>
+      <li><strong>翻译结果浮层</strong>: 选中文字后直接在选区附近显示翻译结果（流式输出），无需二次点击</li>
+      <li><strong>浮层结构</strong>: 标题栏（引擎名称+响应时间+关闭）+ 译文内容（流式显示）+ 底部操作（复制/朗读/重试）</li>
+      <li><strong>流式输出</strong>: 译文逐字显示，光标闪烁动画，底部显示响应时间</li>
+      <li><strong>位置自适应</strong>: 浮层根据选区位置自动调整，带有指向箭头</li>
+    </ul>
+  </div>
+
+  <div class="toast" id="toast">已复制到剪贴板</div>
+
+  <script>
+    const fullText = '你好，世界！这是一个用于翻译测试的示例文本。';
+    let isStreaming = false;
+    let streamingInterval = null;
+
+    const translatedText = document.getElementById('translatedText');
+    const cursor = document.getElementById('cursor');
+    const statusBadge = document.getElementById('statusBadge');
+    const toast = document.getElementById('toast');
+    const copyBtn = document.getElementById('copyBtn');
+    const speakBtn = document.getElementById('speakBtn');
+    const retryBtn = document.getElementById('retryBtn');
+    const closeBtn = document.getElementById('closeBtn');
+    const responseTime = document.getElementById('responseTime');
+    const resultPopup = document.getElementById('resultPopup');
+
+    // 模拟流式输出
+    function startStreaming() {
+      if (isStreaming) return;
+
+      translatedText.textContent = '';
+      cursor.style.display = 'inline-block';
+      statusBadge.style.display = 'inline-block';
+      statusBadge.textContent = '流式输出中...';
+      statusBadge.className = 'status-badge streaming';
+
+      let index = 0;
+      const startTime = Date.now();
+
+      isStreaming = true;
+
+      streamingInterval = setInterval(() => {
+        if (index < fullText.length) {
+          translatedText.textContent += fullText[index];
+          index++;
+          responseTime.textContent = `响应 ${((Date.now() - startTime) / 1000).toFixed(1)}s`;
+        } else {
+          clearInterval(streamingInterval);
+          isStreaming = false;
+          cursor.style.display = 'none';
+          statusBadge.textContent = '翻译完成';
+          statusBadge.className = 'status-badge';
+        }
+      }, 50);
+    }
+
+    // 复制功能
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(translatedText.textContent || fullText).then(() => {
+        copyBtn.classList.add('active');
+        copyBtn.innerHTML = '<span>✓</span> 已复制';
+        showToast('已复制到剪贴板');
+
+        setTimeout(() => {
+          copyBtn.classList.remove('active');
+          copyBtn.innerHTML = '<span>📋</span> 复制';
+        }, 2000);
+      });
+    });
+
+    // 朗读功能
+    speakBtn.addEventListener('click', () => {
+      if ('speechSynthesis' in window) {
+        if (speakBtn.classList.contains('active')) {
+          speechSynthesis.cancel();
+          speakBtn.classList.remove('active');
+          speakBtn.innerHTML = '<span>🔊</span> 朗读';
+        } else {
+          const utterance = new SpeechSynthesisUtterance(translatedText.textContent || fullText);
+          utterance.lang = 'zh-CN';
+          utterance.onend = () => {
+            speakBtn.classList.remove('active');
+            speakBtn.innerHTML = '<span>🔊</span> 朗读';
+          };
+          speechSynthesis.speak(utterance);
+          speakBtn.classList.add('active');
+          speakBtn.innerHTML = '<span>⏸</span> 停止';
+        }
+      } else {
+        showToast('当前浏览器不支持朗读功能');
+      }
+    });
+
+    // 重试功能
+    retryBtn.addEventListener('click', () => {
+      if (streamingInterval) {
+        clearInterval(streamingInterval);
+      }
+      startStreaming();
+    });
+
+    // 关闭浮层
+    closeBtn.addEventListener('click', () => {
+      resultPopup.style.display = 'none';
+    });
+
+    // 显示提示
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2000);
+    }
+
+    // 初始化 - 自动开始流式输出演示
+    setTimeout(() => {
+      startStreaming();
+    }, 500);
+  </script>
+</body>
+</html>

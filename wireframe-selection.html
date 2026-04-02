@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProofDuck 选择页面设计</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f0f2f5; min-height: 100vh; padding: 20px; }
+    h1 { text-align: center; margin-bottom: 20px; color: #333; }
+
+    .canvas { display: flex; gap: 40px; justify-content: center; flex-wrap: wrap; }
+
+    .demo-section { text-align: center; }
+    .demo-section h3 { margin-bottom: 12px; color: #666; font-size: 14px; }
+
+    /* 选择浮层 */
+    .selection-popup {
+      position: relative;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+      padding: 12px;
+      width: 280px;
+    }
+    .selection-popup .arrow {
+      position: absolute;
+      top: -8px;
+      left: 20px;
+      width: 16px;
+      height: 16px;
+      background: #fff;
+      transform: rotate(45deg);
+      box-shadow: -2px -2px 4px rgba(0,0,0,0.05);
+    }
+
+    /* 服务选择列表 */
+    .service-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .service-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .service-item:hover { background: #f5f5f5; }
+    .service-item.selected { background: #fff7f5; }
+    .service-item .icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+    .service-item .icon.translation { background: linear-gradient(135deg, #FF5A11, #ff7b3d); color: white; }
+    .service-item .icon.proofread { background: linear-gradient(135deg, #4caf50, #81c784); color: white; }
+    .service-item .icon.polish { background: linear-gradient(135deg, #2196f3, #64b5f6); color: white; }
+    .service-item .icon.expand { background: linear-gradient(135deg, #9c27b0, #ba68c8); color: white; }
+    .service-item .info { flex: 1; text-align: left; }
+    .service-item .name { font-size: 13px; font-weight: 500; color: #333; }
+    .service-item .desc { font-size: 11px; color: #999; margin-top: 2px; }
+    .service-item .check { color: #FF5A11; font-size: 16px; }
+
+    /* 引擎选择子列表 */
+    .engine-section { margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee; }
+    .engine-label { font-size: 10px; color: #999; margin-bottom: 6px; padding-left: 4px; }
+    .engine-list { display: flex; flex-direction: column; gap: 2px; }
+    .engine-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .engine-item:hover { background: #f5f5f5; }
+    .engine-item.selected { background: #fff7f5; }
+    .engine-item .radio {
+      width: 14px;
+      height: 14px;
+      border: 2px solid #ddd;
+      border-radius: 50%;
+      margin-right: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .engine-item.selected .radio { border-color: #FF5A11; }
+    .engine-item.selected .radio::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: #FF5A11;
+      border-radius: 50%;
+    }
+    .engine-item .name { flex: 1; }
+    .engine-item .status { font-size: 10px; color: #4caf50; }
+    .engine-item .status.offline { color: #999; }
+
+    /* 确认按钮 */
+    .confirm-btn {
+      width: 100%;
+      padding: 10px;
+      background: #FF5A11;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .confirm-btn:hover { background: #e54d00; }
+
+    /* 紧凑选择模式 */
+    .compact-selection {
+      position: relative;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+      padding: 12px;
+      width: 240px;
+    }
+    .compact-row {
+      display: flex;
+      gap: 6px;
+    }
+    .compact-btn {
+      flex: 1;
+      padding: 10px 8px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: #fafafa;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .compact-btn:hover { border-color: #FF5A11; }
+    .compact-btn.active { background: #fff7f5; border-color: #FF5A11; }
+    .compact-btn .icon { font-size: 18px; }
+    .compact-btn .label { font-size: 11px; color: #666; }
+    .compact-btn.active .label { color: #FF5A11; font-weight: 500; }
+
+    /* 语言选择器 */
+    .lang-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .lang-btn {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: #fafafa;
+      font-size: 12px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .lang-btn:hover { border-color: #FF5A11; }
+    .lang-arrow { color: #FF5A11; font-weight: bold; font-size: 14px; }
+
+    .legend {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 800px;
+      margin: 40px auto 0;
+    }
+    .legend h2 { margin-bottom: 12px; color: #333; }
+    .legend ul { padding-left: 20px; }
+    .legend li { margin-bottom: 8px; color: #666; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h1>ProofDuck 选择页面设计</h1>
+
+  <div class="canvas">
+    <!-- 完整功能选择 -->
+    <div class="demo-section">
+      <h3>功能 + 引擎选择</h3>
+      <div class="selection-popup">
+        <div class="arrow"></div>
+
+        <div class="lang-selector">
+          <div class="lang-btn">英文</div>
+          <span class="lang-arrow">→</span>
+          <div class="lang-btn">中文 ▼</div>
+        </div>
+
+        <div class="service-list">
+          <div class="service-item selected">
+            <div class="icon translation">🌐</div>
+            <div class="info">
+              <div class="name">翻译</div>
+              <div class="desc">翻译成目标语言</div>
+            </div>
+            <div class="check">✓</div>
+          </div>
+          <div class="service-item">
+            <div class="icon proofread">✨</div>
+            <div class="info">
+              <div class="name">校对</div>
+              <div class="desc">修正语法拼写错误</div>
+            </div>
+          </div>
+          <div class="service-item">
+            <div class="icon polish">💎</div>
+            <div class="info">
+              <div class="name">润色</div>
+              <div class="desc">优化语句表达</div>
+            </div>
+          </div>
+          <div class="service-item">
+            <div class="icon expand">📝</div>
+            <div class="info">
+              <div class="name">扩写</div>
+              <div class="desc">丰富内容细节</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="engine-section">
+          <div class="engine-label">选择翻译引擎</div>
+          <div class="engine-list">
+            <div class="engine-item selected">
+              <div class="radio"></div>
+              <span class="name">谷歌翻译</span>
+              <span class="status">●</span>
+            </div>
+            <div class="engine-item">
+              <div class="radio"></div>
+              <span class="name">百度翻译</span>
+              <span class="status">●</span>
+            </div>
+            <div class="engine-item">
+              <div class="radio"></div>
+              <span class="name">DeepL</span>
+              <span class="status offline">○</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="confirm-btn">执行翻译</button>
+      </div>
+    </div>
+
+    <!-- 紧凑选择模式 -->
+    <div class="demo-section">
+      <h3>紧凑模式</h3>
+      <div class="selection-popup">
+        <div class="arrow"></div>
+
+        <div class="compact-row">
+          <div class="compact-btn active">
+            <span class="icon">🌐</span>
+            <span class="label">翻译</span>
+          </div>
+          <div class="compact-btn">
+            <span class="icon">✨</span>
+            <span class="label">校对</span>
+          </div>
+          <div class="compact-btn">
+            <span class="icon">💎</span>
+            <span class="label">润色</span>
+          </div>
+          <div class="compact-btn">
+            <span class="icon">📝</span>
+            <span class="label">扩写</span>
+          </div>
+        </div>
+
+        <button class="confirm-btn">执行</button>
+      </div>
+    </div>
+
+    <!-- 纯引擎选择 -->
+    <div class="demo-section">
+      <h3>仅引擎选择</h3>
+      <div class="selection-popup">
+        <div class="arrow"></div>
+
+        <div class="engine-label">选择翻译引擎</div>
+        <div class="engine-list" style="margin-bottom: 10px;">
+          <div class="engine-item selected">
+            <div class="radio"></div>
+            <span class="name">🌐 谷歌翻译</span>
+            <span class="status">●</span>
+          </div>
+          <div class="engine-item">
+            <div class="radio"></div>
+            <span class="name">🌐 百度翻译</span>
+            <span class="status">●</span>
+          </div>
+          <div class="engine-item">
+            <div class="radio"></div>
+            <span class="name">🌐 有道翻译</span>
+            <span class="status">●</span>
+          </div>
+        </div>
+
+        <div class="engine-label" style="margin-top: 12px;">本地引擎</div>
+        <div class="engine-list">
+          <div class="engine-item">
+            <div class="radio"></div>
+            <span class="name">💻 Chrome AI</span>
+            <span class="status offline">○</span>
+          </div>
+          <div class="engine-item">
+            <div class="radio"></div>
+            <span class="name">💻 WebGPU</span>
+            <span class="status offline">下载</span>
+          </div>
+        </div>
+
+        <button class="confirm-btn">开始</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <h2>使用场景</h2>
+    <ul>
+      <li><strong>功能 + 引擎选择</strong>: 右键菜单选择"翻译"后，弹出选择使用哪个翻译引擎</li>
+      <li><strong>紧凑模式</strong>: 划词悬浮卡中，让用户快速选择功能（翻译/校对/润色/扩写）</li>
+      <li><strong>纯引擎选择</strong>: 在设置中快速切换默认翻译引擎</li>
+      <li><strong>智能记忆</strong>: 记住用户上次的选择，下次默认使用</li>
+    </ul>
+  </div>
+
+  <script>
+    // 点击切换选中状态
+    document.querySelectorAll('.service-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.service-item').forEach(i => i.classList.remove('selected'));
+        item.classList.add('selected');
+        item.querySelector('.check')?.remove();
+      });
+    });
+
+    document.querySelectorAll('.engine-item').forEach(item => {
+      item.addEventListener('click', () => {
+        item.closest('.engine-list').querySelectorAll('.engine-item').forEach(i => i.classList.remove('selected'));
+        item.classList.add('selected');
+      });
+    });
+
+    document.querySelectorAll('.compact-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.parentElement.querySelectorAll('.compact-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

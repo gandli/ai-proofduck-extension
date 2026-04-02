@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProofDuck 侧边栏线框图</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f0f2f5; min-height: 100vh; padding: 20px; }
+    h1 { text-align: center; margin-bottom: 20px; color: #333; }
+
+    .canvas { display: flex; justify-content: center; padding: 20px; }
+
+    .sidebar {
+      width: 320px;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+      max-height: 90vh;
+    }
+
+    .device-header {
+      background: linear-gradient(135deg, #FF5A11, #ff7b3d);
+      color: white;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .device-header .icon { width: 24px; height: 24px; }
+    .device-header .title { font-weight: 600; font-size: 13px; flex: 1; }
+    .device-header .settings-btn { background: rgba(255,255,255,0.2); border: none; color: white; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; padding: 0; }
+
+    /* Tab Bar */
+    .tab-bar {
+      display: flex;
+      background: #fafafa;
+      height: 36px;
+    }
+    .tab {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: #666;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+    .tab.active { color: #FF5A11; border-bottom-color: #FF5A11; background: #fff; }
+    .tab:not(.active):hover { background: #f5f5f5; }
+    .tab + .tab { border-left: 1px solid #eee; }
+
+    /* Tab Content */
+    .tab-content { display: flex; flex-direction: column; }
+
+    /* 顶部语言栏 */
+    .lang-bar {
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      border-bottom: 1px solid #eee;
+    }
+    .lang-btn {
+      padding: 5px 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      background: #fafafa;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .lang-btn:hover { border-color: #FF5A11; }
+    .lang-arrow { color: #FF5A11; font-weight: bold; font-size: 12px; }
+
+    .engine-indicator {
+      font-size: 10px;
+      color: #4caf50;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      margin-left: auto;
+    }
+    .engine-indicator .dot { width: 6px; height: 6px; border-radius: 50%; background: #4caf50; }
+
+    /* 底部操作栏 */
+    .action-bar {
+      padding: 8px 12px;
+      display: flex;
+      gap: 6px;
+      background: #fff;
+      border-top: 1px solid #eee;
+      flex-shrink: 0;
+    }
+    .action-btn {
+      flex: 1;
+      padding: 10px 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .action-btn.primary { background: #FF5A11; color: white; }
+    .action-btn.secondary { background: #f0f0f0; color: #333; }
+    .action-btn.accent { background: #4caf50; color: white; }
+    .action-btn.accent2 { background: #2196f3; color: white; }
+
+    /* 文本框区域 - 自适应 */
+    .text-area {
+      display: flex;
+      flex-direction: column;
+      padding: 8px 12px;
+    }
+
+    .text-box {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .text-box-label {
+      font-size: 10px;
+      color: #999;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .text-box-label .char-count { color: #bbb; }
+
+    .text-box textarea {
+      width: 100%;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 8px;
+      font-size: 12px;
+      font-family: inherit;
+      background: #fafafa;
+      line-height: 1.5;
+      resize: vertical;
+      min-height: 60px;
+    }
+    .text-box textarea:focus { outline: none; border-color: #FF5A11; background: #fff; }
+    .text-box textarea::placeholder { color: #bbb; }
+
+    /* 分隔条 */
+    .divider {
+      height: 8px;
+      margin: 8px 0;
+      border-top: 1px dashed #e0e0e0;
+      border-bottom: 1px dashed #e0e0e0;
+    }
+
+    /* 校对纠错样式 */
+    .correction { color: #f44336; text-decoration: underline wavy; cursor: pointer; }
+
+    /* 设置浮层 */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal {
+      background: white;
+      border-radius: 12px;
+      width: 300px;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      padding: 14px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      background: #fff;
+    }
+    .modal-header h2 { font-size: 14px; font-weight: 600; }
+    .modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: #999; }
+
+    .modal-content { padding: 12px 14px; }
+
+    .setting-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .setting-item:last-child { border-bottom: none; }
+    .setting-item .label { font-size: 12px; color: #333; }
+    .setting-item .desc { font-size: 10px; color: #999; margin-top: 2px; }
+    .toggle {
+      width: 36px;
+      height: 20px;
+      background: #ddd;
+      border-radius: 10px;
+      position: relative;
+      cursor: pointer;
+    }
+    .toggle.active { background: #FF5A11; }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: 0.2s;
+    }
+    .toggle.active::after { left: 18px; }
+
+    /* 服务引擎列表 */
+    .service-category { margin-top: 10px; }
+    .category-header {
+      display: flex;
+      align-items: center;
+      padding: 8px 10px;
+      background: #f5f5f5;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .category-header .arrow { margin-left: auto; transition: transform 0.2s; }
+    .category-header.open .arrow { transform: rotate(180deg); }
+    .category-items {
+      padding: 6px 0 6px 16px;
+      display: none;
+    }
+    .category-items.open { display: block; }
+
+    .service-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 10px;
+      background: #f8f8f8;
+      border-radius: 6px;
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+    .service-item .checkbox {
+      width: 16px;
+      height: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-right: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .service-item .checkbox.checked { background: #FF5A11; border-color: #FF5A11; color: white; }
+    .service-item .name { flex: 1; }
+    .service-item .status {
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .service-item .status.available { color: #4caf50; }
+    .service-item .status.offline { color: #999; }
+    .service-item .status.loading { color: #ff9800; }
+    .service-item .status.loading::before {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border: 2px solid #ff9800;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .service-item .status.done { color: #4caf50; }
+    .service-item .status.done::after { content: ' ✓'; }
+
+    .section-title {
+      font-size: 10px;
+      color: #999;
+      text-transform: uppercase;
+      margin-top: 12px;
+      margin-bottom: 8px;
+    }
+    .section-title:first-child { margin-top: 0; }
+
+    /* 说明区域 */
+    .legend {
+      background: white;
+      padding: 16px 20px;
+      border-radius: 12px;
+      max-width: 700px;
+      margin: 20px auto 0;
+    }
+    .legend h2 { margin-bottom: 12px; color: #333; font-size: 14px; }
+    .legend ul { padding-left: 18px; }
+    .legend li { margin-bottom: 6px; color: #666; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h1>ProofDuck 侧边栏 UI 线框图</h1>
+
+  <div class="canvas">
+    <!-- 侧边栏 - 撑满整屏 -->
+    <div class="sidebar">
+      <div class="device-header">
+        <svg class="icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+          <rect width="512" height="512" rx="114" fill="url(#d)"/>
+          <path fill="#FF5A11" d="M287.472 284.98c5.145 1.837 15.434 1.837 15.434-12.858.47-20.896-11.189-34.567-20.579-38.059-1.572-.585-3.43-1.252-4.458-.884-3.087 1.469 2.332 3.086-3.43 3.674-7.203.734-13.329 10.654-13.329 26.084 0 12.989 9.213 17.637 13.329 19.474 3.292 1.47 10.06 2.569 13.033 2.569"/>
+          <defs>
+            <linearGradient id="d" x1="309" x2="376" y1="-4.5" y2="470">
+              <stop offset=".019" stop-color="#ff8c2d"/>
+              <stop offset="1" stop-color="#fff1b3"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span class="title">ProofDuck</span>
+        <button class="settings-btn" onclick="toggleModal()">⚙</button>
+      </div>
+
+      <div class="tab-bar" id="mainTabBar">
+        <div class="tab active" data-tab="translate">翻译</div>
+        <div class="tab" data-tab="proofread">校对</div>
+        <div class="tab" data-tab="polish">润色</div>
+        <div class="tab" data-tab="expand">扩写</div>
+      </div>
+
+      <div class="tab-content">
+
+        <!-- 翻译内容 -->
+        <div id="translateContent">
+          <div class="lang-bar">
+            <button class="lang-btn">自动</button>
+            <span class="lang-arrow">→</span>
+            <button class="lang-btn">中文 ▼</button>
+            <span class="engine-indicator"><span class="dot"></span>谷歌</span>
+          </div>
+          <div class="text-area">
+            <div class="text-box">
+              <div class="text-box-label">
+                <span>原文</span>
+                <span class="char-count">52 字符</span>
+              </div>
+              <textarea placeholder="输入或粘贴需要翻译的文本...">Hello, world! This is a sample text for translation testing. This is a longer text to demonstrate scrolling behavior in the text area.</textarea>
+            </div>
+            <div class="divider"></div>
+            <div class="text-box">
+              <div class="text-box-label">
+                <span>译文</span>
+                <span class="char-count">28 字符</span>
+              </div>
+              <textarea placeholder="翻译结果...">你好，世界！这是一个用于翻译测试的示例文本。</textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- 校对内容 -->
+        <div id="proofreadContent" style="display:none;">
+          <div class="lang-bar">
+            <span class="engine-indicator"><span class="dot"></span>本地 AI</span>
+          </div>
+          <div class="text-area">
+            <div class="text-box">
+              <div class="text-box-label">
+                <span>原文</span>
+                <span class="char-count">67 字符</span>
+              </div>
+              <textarea placeholder="输入或粘贴需要校对的文本...">The quick brown fox jumpes over the lazy dog. This sentance has some erros and needs to be corrected.</textarea>
+            </div>
+            <div class="divider"></div>
+            <div class="text-box">
+              <div class="text-box-label">
+                <span>校对结果</span>
+                <span class="char-count">66 字符</span>
+              </div>
+              <textarea placeholder="校对结果...">The quick brown fox jumps over the lazy dog. This sentence has some errors and needs to be corrected.</textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- 润色内容 -->
+        <div id="polishContent" style="display:none;">
+          <div class="lang-bar">
+            <span class="engine-indicator"><span class="dot"></span>本地 AI</span>
+          </div>
+          <div class="text-area">
+            <div class="text-box">
+              <div class="text-box-label">
+                <span>原文</span>
+                <span class="char-count">55 字符</span>
+              </div>
+              <textarea placeholder="输入或粘贴需要润色的文本...">The project is going pretty good. We need to finish it soon and make it better.</textarea>
+            </div>
+            <div class="divider"></div>
+            <div class="text-box">
+              <div class="text-box-label">
+                <span>润色结果</span>
+                <span class="char-count">59 字符</span>
+              </div>
+              <textarea placeholder="润色结果...">The project is progressing well. We need to complete it soon and make it better.</textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- 扩写内容 -->
+        <div id="expandContent" style="display:none;">
+          <div class="lang-bar">
+            <span class="engine-indicator"><span class="dot"></span>本地 AI</span>
+          </div>
+          <div class="text-area">
+            <div class="text-box">
+              <div class="text-box-label">
+                <span>原文</span>
+                <span class="char-count">14 字符</span>
+              </div>
+              <textarea placeholder="输入或粘贴需要扩写的内容...">We love coding.</textarea>
+            </div>
+            <div class="divider"></div>
+            <div class="text-box">
+              <div class="text-box-label">
+                <span>扩写结果</span>
+                <span class="char-count">198 字符</span>
+              </div>
+              <textarea placeholder="扩写结果...">We are passionate about coding. Every day, we write clean, efficient, and elegant code that solves real-world problems. Programming is not just our work, but also our hobby and lifelong pursuit.</textarea>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="action-bar">
+        <button class="action-btn primary" id="actionButton">🌐 开始翻译</button>
+      </div>
+    </div>
+
+    <!-- 设置浮层 -->
+    <div id="settingsModal" class="modal-overlay" style="display: none;">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>⚙️ 设置</h2>
+          <button class="modal-close" onclick="toggleModal()">×</button>
+        </div>
+        <div class="modal-content">
+          <div class="section-title">通用设置</div>
+
+          <div class="setting-item">
+            <div>
+              <div class="label">自动翻译页面</div>
+              <div class="desc">打开网页时自动翻译</div>
+            </div>
+            <div class="toggle active"></div>
+          </div>
+
+          <div class="setting-item">
+            <div>
+              <div class="label">双语对照</div>
+              <div class="desc">译文显示在原文下方</div>
+            </div>
+            <div class="toggle active"></div>
+          </div>
+
+          <div class="setting-item">
+            <div>
+              <div class="label">默认目标语言</div>
+              <div class="desc">中文</div>
+            </div>
+            <span style="color:#999">▼</span>
+          </div>
+
+          <div class="section-title">服务引擎</div>
+
+          <!-- 通用翻译服务 -->
+          <div class="service-category">
+            <div class="category-header open" onclick="toggleCategory(this)">
+              <span>🌐 通用翻译服务</span>
+              <span class="arrow">▼</span>
+            </div>
+            <div class="category-items open">
+              <div class="service-item">
+                <div class="checkbox checked">✓</div>
+                <span class="name">谷歌翻译</span>
+                <span class="status available">●</span>
+              </div>
+              <div class="service-item">
+                <div class="checkbox">✓</div>
+                <span class="name">百度翻译</span>
+                <span class="status available">●</span>
+              </div>
+              <div class="service-item">
+                <div class="checkbox">✓</div>
+                <span class="name">有道翻译</span>
+                <span class="status available">●</span>
+              </div>
+              <div class="service-item">
+                <div class="checkbox">✓</div>
+                <span class="name">DeepL</span>
+                <span class="status offline">○</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 本地服务 -->
+          <div class="service-category">
+            <div class="category-header" onclick="toggleCategory(this)">
+              <span>💻 本地服务</span>
+              <span class="arrow">▼</span>
+            </div>
+            <div class="category-items">
+              <div class="service-item">
+                <div class="checkbox">✓</div>
+                <span class="name">Chrome AI (Gemini Nano)</span>
+                <span class="status offline">○</span>
+              </div>
+              <div class="service-item">
+                <div class="checkbox">✓</div>
+                <span class="name">WebGPU (Qwen2.5)</span>
+                <span class="status offline">下载</span>
+              </div>
+              <div class="service-item">
+                <div class="checkbox">✓</div>
+                <span class="name">WASM (NLLB-200)</span>
+                <span class="status available">✓</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- LLM API -->
+          <div class="service-category">
+            <div class="category-header" onclick="toggleCategory(this)">
+              <span>🤖 LLM API</span>
+              <span class="arrow">▼</span>
+            </div>
+            <div class="category-items">
+              <div class="service-item">
+                <div class="checkbox">✓</div>
+                <span class="name">OpenAI (GPT)</span>
+                <span class="status offline">配置</span>
+              </div>
+              <div class="service-item">
+                <div class="checkbox">✓</div>
+                <span class="name">Claude</span>
+                <span class="status offline">配置</span>
+              </div>
+              <div class="service-item">
+                <div class="checkbox">✓</div>
+                <span class="name">DeepSeek</span>
+                <span class="status offline">配置</span>
+              </div>
+              <div class="service-item">
+                <div class="checkbox">✓</div>
+                <span class="name">通义千问</span>
+                <span class="status offline">配置</span>
+              </div>
+              <div class="service-item">
+                <div class="checkbox">✓</div>
+                <span class="name">Gemini</span>
+                <span class="status offline">配置</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <!-- 设置浮层 -->
+    <div id="settingsModal" class="modal-overlay" style="display: none;">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>⚙️ 设置</h2>
+          <button class="modal-close" onclick="toggleModal()">×</button>
+        </div>
+        <div class="modal-content">
+          <div class="section-title">通用设置</div>
+
+          <div class="setting-item">
+            <div>
+              <div class="label">自动翻译页面</div>
+              <div class="desc">打开网页时自动翻译</div>
+            </div>
+            <div class="toggle active"></div>
+          </div>
+
+          <div class="setting-item">
+            <div>
+              <div class="label">双语对照</div>
+              <div class="desc">译文显示在原文下方</div>
+            </div>
+            <div class="toggle active"></div>
+          </div>
+
+          <div class="setting-item">
+            <div>
+              <div class="label">默认目标语言</div>
+              <div class="desc">中文</div>
+            </div>
+            <span style="color:#999">▼</span>
+          </div>
+
+          <div class="section-title">服务引擎</div>
+
+          <!-- 通用翻译服务 -->
+          <div class="service-category">
+            <div class="category-header open" onclick="toggleCategory(this)">
+              <span>🌐 通用翻译服务</span>
+              <span class="arrow">▼</span>
+            </div>
+            <div class="category-items open">
+              <div class="service-item">
+                <div class="checkbox checked">✓</div>
+                <span class="name">谷歌翻译</span>
+                <span class="status available">●</span>
+              </div>
+              <div class="service-item">
+                <div class="checkbox">✓</div>
+                <span class="name">百度翻译</span>
+                <span class="status available">●</span>
+              </div>
+              <div class="service-item">
+                <div class="checkbox">✓</div>
+                <span class="name">有道翻译</span>
+                <span class="status available">●</span>
+              </div>
+              <div class="service-item">
+                <div class="checkbox">✓</div>
+                <span class="name">DeepL</span>
+                <span class="status offline">○</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 本地服务 -->
+          <div class="service-category">
+            <div class="category-header" onclick="toggleCategory(this)">
+              <span>💻 本地服务</span>
+              <span class="arrow">▼</span>
+            </div>
+            <div class="category-items">
+              <div class="service-item">
+                <div class="checkbox">✓</div>
+                <span class="name">Chrome AI (Gemini Nano)</span>
+                <span class="status offline">○</span>
+              </div>
+              <div class="service-item">
+                <div class="checkbox">✓</div>
+                <span class="name">WebGPU (Qwen2.5)</span>
+                <span class="status offline">下载</span>
+              </div>
+              <div class="service-item">
+                <div class="checkbox">✓</div>
+                <span class="name">WASM (NLLB-200)</span>
+                <span class="status available">✓</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- LLM API -->
+          <div class="service-category">
+            <div class="category-header" onclick="toggleCategory(this)">
+              <span>🤖 LLM API</span>
+              <span class="arrow">▼</span>
+            </div>
+            <div class="category-items">
+              <div class="service-item">
+                <div class="checkbox">✓</div>
+                <span class="name">OpenAI (GPT)</span>
+                <span class="status offline">配置</span>
+              </div>
+              <div class="service-item">
+                <div class="checkbox">✓</div>
+                <span class="name">Claude</span>
+                <span class="status offline">配置</span>
+              </div>
+              <div class="service-item">
+                <div class="checkbox">✓</div>
+                <span class="name">DeepSeek</span>
+                <span class="status offline">配置</span>
+              </div>
+              <div class="service-item">
+                <div class="checkbox">✓</div>
+                <span class="name">通义千问</span>
+                <span class="status offline">配置</span>
+              </div>
+              <div class="service-item">
+                <div class="checkbox">✓</div>
+                <span class="name">Gemini</span>
+                <span class="status offline">配置</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <h2>布局说明</h2>
+    <ul>
+      <li><strong>侧边栏整屏</strong>：占满整个视口高度</li>
+      <li><strong>4 个 Tab</strong>：翻译 / 校对 / 润色 / 扩写，底部按钮随Tab切换</li>
+      <li><strong>可滚动文本框</strong>：原文框和结果框独立滚动，适应长内容</li>
+      <li><strong>服务引擎</strong>：分三类展开选择，勾选后静默后台加载</li>
+      <li><strong>品牌色</strong>：#FF5A11 活力橙</li>
+    </ul>
+  </div>
+
+  <script>
+    // Toggle 交互
+    document.querySelectorAll('.toggle').forEach(toggle => {
+      toggle.addEventListener('click', () => toggle.classList.toggle('active'));
+    });
+
+    // Tab 切换
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        e.target.parentElement.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        e.target.classList.add('active');
+      });
+    });
+
+    // 设置浮层
+    function toggleModal() {
+      const modal = document.getElementById('settingsModal');
+      modal.style.display = modal.style.display === 'none' ? 'flex' : 'none';
+    }
+    document.getElementById('settingsModal').addEventListener('click', (e) => {
+      if (e.target.classList.contains('modal-overlay')) toggleModal();
+    });
+
+    // 主Tab切换
+    const tabConfig = {
+      translate: { content: 'translateContent', buttonText: '🌐 开始翻译', buttonClass: 'primary' },
+      proofread: { content: 'proofreadContent', buttonText: '✨ 开始校对', buttonClass: 'accent' },
+      polish: { content: 'polishContent', buttonText: '✨ 开始润色', buttonClass: 'accent' },
+      expand: { content: 'expandContent', buttonText: '✨ 开始扩写', buttonClass: 'accent2' }
+    };
+
+    document.getElementById('mainTabBar').querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const tabName = tab.dataset.tab;
+        const config = tabConfig[tabName];
+
+        // 切换Tab高亮
+        document.querySelectorAll('#mainTabBar .tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        // 切换内容显示
+        Object.values(tabConfig).forEach(c => {
+          document.getElementById(c.content).style.display = 'none';
+        });
+        document.getElementById(config.content).style.display = 'block';
+
+        // 更新底部按钮
+        const btn = document.getElementById('actionButton');
+        btn.textContent = config.buttonText;
+        btn.className = 'action-btn ' + config.buttonClass;
+      });
+    });
+
+    // 分类展开/收起
+    function toggleCategory(header) {
+      header.classList.toggle('open');
+      header.nextElementSibling.classList.toggle('open');
+    }
+
+    // 服务项勾选 - 静默后台加载
+    document.querySelectorAll('.service-item .checkbox').forEach(checkbox => {
+      checkbox.addEventListener('click', () => {
+        const item = checkbox.closest('.service-item');
+        const status = item.querySelector('.status');
+        const originalStatus = status.textContent;
+
+        checkbox.classList.toggle('checked');
+        checkbox.textContent = checkbox.classList.contains('checked') ? '✓' : '';
+
+        // 如果是本地模型，显示静默加载状态
+        if (checkbox.classList.contains('checked') &&
+            (status.textContent.includes('下载') || status.textContent.includes('配置'))) {
+          status.className = 'status loading';
+          status.textContent = '后台加载中';
+
+          // 模拟后台静默加载
+          setTimeout(() => {
+            status.className = 'status done';
+            status.textContent = '已就绪';
+          }, 2000);
+        }
+      });
+    });
+
+    // 更新字符数
+    document.querySelectorAll('textarea').forEach(textarea => {
+      textarea.addEventListener('input', () => {
+        const box = textarea.closest('.text-box');
+        const label = box.querySelector('.char-count');
+        if (label) {
+          label.textContent = textarea.value.length + ' 字符';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
