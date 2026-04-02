@@ -1,13 +1,8 @@
-// Core functionality will be implemented in M2
-export interface EngineState {
-  currentEngine: string;
-  status: 'idle' | 'translating' | 'error';
-  error?: string;
-  fallbackEngines: string[];
-}
+/**
+ * Core 模块 - 引擎核心管理
+ */
 
-export interface ServiceConfig {
-  enabled: boolean;
-  priority: number;
-  status: 'available' | 'loading' | 'unavailable';
-}
+// Re-export types
+export type { EngineState, ServiceConfig } from '@/types';
+
+export { EngineManager, EngineError, getEngineManager, createEngineManager } from './EngineManager';

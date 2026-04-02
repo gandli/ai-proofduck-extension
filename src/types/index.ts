@@ -18,6 +18,14 @@ export interface TranslationResult {
 }
 
 /**
+ * 流式输出片段 (SSE)
+ */
+export interface StreamChunk {
+  delta: string;
+  done: boolean;
+}
+
+/**
  * 校对修正
  */
 export interface Correction {
@@ -74,6 +82,14 @@ export interface FullPageTranslationProgress {
 }
 
 /**
+ * 翻译引擎能力
+ */
+export interface EngineCapabilities {
+  supportedLanguages: string[];
+  maxTextLength: number;
+}
+
+/**
  * 翻译引擎接口
  */
 export interface TranslationEngine {
@@ -81,10 +97,11 @@ export interface TranslationEngine {
   readonly name: string;
   readonly category: 'translation' | 'local' | 'llm';
   readonly priority: number;
+  readonly capabilities: EngineCapabilities;
 
   checkAvailability(): Promise<boolean>;
   translate(text: string, from: string, to: string): Promise<TranslationResult>;
-  stream?(text: string, from: string, to: string): AsyncGenerator<string>;
+  stream?(text: string, from: string, to: string): AsyncGenerator<StreamChunk>;
 }
 
 /**
@@ -109,4 +126,15 @@ export interface EngineConfig {
   enabled: boolean;
   priority: number;
   apiKey?: string;
+}
+
+/**
+ * 引擎注册器 - 用于 EngineManager
+ */
+export interface EngineRegistry {
+  register(engine: TranslationEngine): void;
+  unregister(engineId: string): void;
+  getEngine(engineId: string): TranslationEngine | undefined;
+  getAllEngines(): TranslationEngine[];
+  getAvailableEngines(): Promise<TranslationEngine[]>;
 }
