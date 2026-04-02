@@ -54,6 +54,7 @@ self.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Respo
 };
 // ------------------------------------
 import { getSystemPrompt, formatUserPrompt, LANG_MAP } from "./worker-utils";
+import { probeWasmUrl } from "./wasm-probe-utils";
 import type { Settings, ModeKey, WorkerInboundMessage } from './types';
 
 class WebLLMWorker {
@@ -85,60 +86,6 @@ class WebLLMWorker {
         }
     }
 
-    /**
-     * Probes for valid WASM URL due to changing WebLLM prebuilt library naming rules.
-     */
-    static async probeWasmUrl(model: string, modelLibBase: string, modelVersion: string): Promise<string> {
-        const candidates: string[] = [];
-        let baseName = model.replace(/-MLC$/, "");
-        
-        if (baseName.includes("DeepSeek-R1-Distill-Qwen")) {
-            const size = baseName.match(/(\d+(\.\d+)?B)/)?.[1] || "1.5B";
-            baseName = `Qwen2-${size}-Instruct`;
-        } else if (baseName.includes("DeepSeek-R1-Distill-Llama")) {
-            const size = baseName.match(/(\d+(\.\d+)?B)/)?.[1] || "8B";
-            baseName = `Llama-3-${size}-Instruct`;
-        }
-
-        if (baseName.includes("Qwen1.5") || baseName.includes("Qwen2.5")) {
-            baseName = baseName.replace(/Qwen1\.5|Qwen2\.5/, "Qwen2");
-        }
-        if (baseName.includes("-Chat")) baseName = baseName.replace("-Chat", "-Instruct");
-        
-        const quantMatch = model.match(/q\df\d+(_\d)?/);
-        let quant = quantMatch ? quantMatch[0] : "q4f16_1";
-        if (quant === "q4f16_0") quant = "q4f16_1";
-
-        const cleanBase = baseName.split('-q')[0];
-        candidates.push(`${cleanBase}-${quant}-ctx4k_cs1k-webgpu.wasm`);
-        candidates.push(`${cleanBase}-${quant}-webgpu.wasm`);
-        if (!cleanBase.includes("-Instruct")) {
-            candidates.push(`${cleanBase}-Instruct-${quant}-ctx4k_cs1k-webgpu.wasm`);
-        }
-        candidates.push(`${model}-webgpu.wasm`);
-
-        console.log(`[Worker] Probing WASM candidates for ${model}...`);
-        for (const wasmName of candidates) {
-            const url = `${modelLibBase}/web-llm-models/${modelVersion}/${wasmName}`;
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout for probe
-                const response = await fetch(url, { 
-                    method: 'HEAD', 
-                    signal: controller.signal 
-                });
-                clearTimeout(timeoutId);
-                if (response.ok) {
-                    console.log(`[Worker] Found valid WASM: ${wasmName}`);
-                    return url;
-                }
-            } catch (e: unknown) {
-                console.warn(`[Worker] Probe failed for ${wasmName}:`, e);
-            }
-        }
-        return `${modelLibBase}/web-llm-models/${modelVersion}/${candidates[0]}`;
-    }
-
     static loadLocks = new Map<string, Promise<void>>();
 
     static async getEngine(settings: Settings, onProgress?: (progress: InitProgressReport) => void) {
@@ -164,7 +111,7 @@ class WebLLMWorker {
         const modelUrl = `https://huggingface.co/mlc-ai/${model}/resolve/main/`;
         const modelVersion = "v0_2_80"; 
         const modelLibBase = `https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/main`;
-        const versionedLibUrl = await this.probeWasmUrl(model, modelLibBase, modelVersion);
+        const versionedLibUrl = await probeWasmUrl(model, modelLibBase, modelVersion);
 
         const appConfig = {
             model_list: [

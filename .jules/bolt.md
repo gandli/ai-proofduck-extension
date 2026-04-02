@@ -1,7 +1,7 @@
-## 2024-03-24 - [Avoid Redundant DOM Queries in High-Frequency Handlers]
-**Learning:** Calling `document.getElementById` or `shadowRootNode.getElementById` repeatedly during high-frequency events like global `mousemove`/`mouseup` and WebSocket/Worker stream updates (e.g., `WORKER_UPDATE` every 50ms) causes unnecessary layout thrashing and CPU usage. In content scripts where performance is critical to avoid degrading page responsiveness, these DOM queries should be cached.
-**Action:** When working with dynamic UI injected via content scripts (e.g., translation popups), create a centralized cache object (e.g., `popupCache`) to store element references right after DOM creation or the first query, and reuse them in frequent event listeners.
+## 2025-04-02 - Regex and string processing performance patterns
+**Learning:** In modern JS engines, attempting to optimize sequential `.replace()` string sanitization into a single-pass `do...while` loop or complex alternation regex is often a rejected anti-pattern that can hurt worst-case performance and introduce logic flaws. Similarly, string concatenation `+=` is highly optimized via ConsString ropes and should not be replaced with array buffering.
+**Action:** Avoid micro-optimizing text processing functions that handle structural tags unless there is a proven bottleneck. Focus on measurable network or initialization latency instead.
 
-## 2026-03-06 - [Hoist Regex Compilation in Web Worker]
-**Learning:** In highly trafficked interceptors like the global fetch proxy used in `worker.ts`, instantiating regular expressions inline within the handler function causes them to be recompiled on every single execution. For processes that stream data with potentially thousands of requests or checks, this introduces measurable latency and CPU overhead.
-**Action:** Always hoist static regex definitions outside of frequently called functions (e.g. event handlers or interceptors) into module scope or outer closures to compile them once during initialization.
+## 2025-04-02 - Sequential fetching overhead
+**Learning:** Polling or probing multiple remote assets sequentially (e.g., in `probeWasmUrl` checking WASM variants with `for (const of)`) introduces significant blocking latency, especially when many requests timeout or 404.
+**Action:** Use `Promise.any` combined with `AbortController` timeouts for concurrent probing of fallback endpoints. This limits total wait time to the fastest success rather than the sum of all failures.
