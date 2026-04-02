@@ -1,0 +1,39 @@
+{
+  "extensionName": {
+    "message": "AI ProofDuck 拡張機能",
+    "description": "拡張機能名"
+  },
+  "extensionDescription": {
+    "message": "AIパワードの校正用ブラウザ拡張機能",
+    "description": "拡張機能の説明"
+  },
+  "popupTitle": {
+    "message": "WXT + React",
+    "description": "ポップアップタイトル"
+  },
+  "popupButtonLabel": {
+    "message": "クリックしてください",
+    "description": "ポップアップボタンのラベル"
+  },
+  "popupEditText": {
+    "message": "<code>$FILE$</code> を編集して保存してホットリロードをテスト",
+    "description": "編集指示テキスト",
+    "placeholders": {
+      "file": {
+        "content": "src/App.tsx"
+      }
+    }
+  },
+  "popupReadDocs": {
+    "message": "WXTとReactのロゴをクリックして詳細を確認",
+    "description": "ドキュメントリンクテキスト"
+  },
+  "backgroundHello": {
+    "message": "こんにちはバックグラウンドスクリプト！",
+    "description": "バックグラウンドスクリプトの挨拶"
+  },
+  "contentHello": {
+    "message": "こんにちはコンテンツスクリプト。",
+    "description": "コンテンツスクリプトの挨拶"
+  }
+}

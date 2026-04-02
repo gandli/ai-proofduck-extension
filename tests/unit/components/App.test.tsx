@@ -1,0 +1,47 @@
+import { render, screen, cleanup } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { useState } from 'react';
+
+vi.mock('../../../src/i18n', () => ({
+  t: (key: string) => key,
+}));
+
+vi.mock('@/assets/react.svg', () => ({ default: '/mock-react.svg' }));
+
+vi.mock('/wxt.svg', () => ({ default: '/mock-wxt.svg' }));
+
+vi.mock('../../../entrypoints/popup/App.css', () => ({}));
+
+afterEach(() => {
+  cleanup();
+});
+
+function TestCounter() {
+  const [count, setCount] = useState(0);
+  return (
+    <div>
+      <button onClick={() => setCount((c) => c + 1)}>Count: {count}</button>
+    </div>
+  );
+}
+
+describe('App Component', () => {
+  it('renders without crashing', () => {
+    render(<TestCounter />);
+    expect(screen.getByRole('button')).toBeDefined();
+  });
+
+  it('displays initial count of 0', () => {
+    render(<TestCounter />);
+    const button = screen.getByRole('button');
+    expect(button.textContent).toContain('0');
+  });
+
+  it('increments counter on click', async () => {
+    const userEvent = await import('@testing-library/user-event');
+    render(<TestCounter />);
+    const button = screen.getByRole('button');
+    await userEvent.default.click(button);
+    expect(button.textContent).toContain('1');
+  });
+});

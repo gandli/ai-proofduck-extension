@@ -1,0 +1,39 @@
+{
+  "extensionName": {
+    "message": "AI ProofDuck Extension",
+    "description": "Extension name"
+  },
+  "extensionDescription": {
+    "message": "A browser extension for AI-powered proofreading",
+    "description": "Extension description"
+  },
+  "popupTitle": {
+    "message": "WXT + React",
+    "description": "Popup title"
+  },
+  "popupButtonLabel": {
+    "message": "Click me",
+    "description": "Button label in popup"
+  },
+  "popupEditText": {
+    "message": "Edit <code>$FILE$</code> and save to test HMR",
+    "description": "Edit instruction text",
+    "placeholders": {
+      "file": {
+        "content": "src/App.tsx"
+      }
+    }
+  },
+  "popupReadDocs": {
+    "message": "Click on the WXT and React logos to learn more",
+    "description": "Documentation link text"
+  },
+  "backgroundHello": {
+    "message": "Hello background!",
+    "description": "Background script greeting"
+  },
+  "contentHello": {
+    "message": "Hello content.",
+    "description": "Content script greeting"
+  }
+}

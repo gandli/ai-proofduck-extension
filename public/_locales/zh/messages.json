@@ -1,0 +1,39 @@
+{
+  "extensionName": {
+    "message": "AI ProofDuck 扩展",
+    "description": "扩展名称"
+  },
+  "extensionDescription": {
+    "message": "一个用于AI辅助校对的浏览器扩展",
+    "description": "扩展描述"
+  },
+  "popupTitle": {
+    "message": "WXT + React",
+    "description": "弹窗标题"
+  },
+  "popupButtonLabel": {
+    "message": "点击我",
+    "description": "弹窗按钮标签"
+  },
+  "popupEditText": {
+    "message": "编辑 <code>$FILE$</code> 并保存以测试热更新",
+    "description": "编辑说明文本",
+    "placeholders": {
+      "file": {
+        "content": "src/App.tsx"
+      }
+    }
+  },
+  "popupReadDocs": {
+    "message": "点击 WXT 和 React 徽标了解更多",
+    "description": "文档链接文本"
+  },
+  "backgroundHello": {
+    "message": "你好背景脚本！",
+    "description": "背景脚本问候语"
+  },
+  "contentHello": {
+    "message": "你好内容脚本。",
+    "description": "内容脚本问候语"
+  }
+}
