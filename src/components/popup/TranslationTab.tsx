@@ -1,7 +1,8 @@
 /**
  * TranslationTab 组件 - 翻译/校对/润色/扩写 Tab 内容
+ * 支持键盘导航和 ARIA 属性
  */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useId } from 'react';
 import type { AIMode } from '@/types';
 import { t } from '@/i18n';
 import { LanguageSelector } from './LanguageSelector';
@@ -50,6 +51,22 @@ function getPlaceholder(mode: AIMode): string {
   }
 }
 
+// 根据模式获取 ARIA 标签
+function getAriaLabel(mode: AIMode): string {
+  switch (mode) {
+    case 'translate':
+      return '翻译文本输入';
+    case 'proofread':
+      return '校对文本输入';
+    case 'polish':
+      return '润色文本输入';
+    case 'expand':
+      return '扩写文本输入';
+    default:
+      return '文本输入';
+  }
+}
+
 export function TranslationTab({
   mode,
   sourceLang,
@@ -62,6 +79,9 @@ export function TranslationTab({
   error,
 }: TranslationTabProps) {
   const [inputText, setInputText] = useState('');
+  const textareaId = useId();
+  const errorId = useId();
+  const resultId = useId();
 
   const handleSubmit = useCallback(() => {
     if (!inputText.trim() || loading) return;
@@ -70,6 +90,7 @@ export function TranslationTab({
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
       handleSubmit();
     }
   };
@@ -78,7 +99,12 @@ export function TranslationTab({
   const showLanguageSelector = mode === 'translate';
 
   return (
-    <div className="flex flex-col h-full">
+    <div
+      className="flex flex-col h-full"
+      role="tabpanel"
+      id={`panel-${mode}`}
+      aria-labelledby={`tab-${mode}`}
+    >
       {/* 语言选择器 - 仅翻译模式显示 */}
       {showLanguageSelector && (
         <div className="px-4 py-3 border-b border-gray-200">
@@ -96,32 +122,46 @@ export function TranslationTab({
       <div className="flex-1 p-4 flex flex-col min-h-0">
         <div className="flex-1 relative">
           <textarea
+            id={textareaId}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={getPlaceholder(mode)}
+            placeholder={t(getPlaceholder(mode))}
             className="w-full h-full resize-none rounded-lg border border-gray-300 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 focus:border-brand-orange"
             disabled={loading}
+            aria-label={getAriaLabel(mode)}
+            aria-invalid={!!error}
+            aria-describedby={error ? errorId : undefined}
+            aria-readonly={loading}
           />
         </div>
 
         {/* 字符数显示 */}
         <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
-          <span>{charCount} 字符</span>
+          <span aria-live="polite">{charCount} 字符</span>
           <span>⌘ + Enter {t('tabSubmit')}</span>
         </div>
       </div>
 
       {/* 错误提示 */}
       {error && (
-        <div className="mx-4 mb-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">
+        <div
+          id={errorId}
+          className="mx-4 mb-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600"
+          role="alert"
+          aria-live="assertive"
+        >
           {error}
         </div>
       )}
 
       {/* 结果展示框 */}
       {result && (
-        <div className="mx-4 mb-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 max-h-32 overflow-y-auto">
+        <div
+          id={resultId}
+          className="mx-4 mb-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 max-h-32 overflow-y-auto"
+          aria-live="polite"
+        >
           <div className="font-medium text-xs text-gray-500 mb-1">{t('tabResult')}</div>
           <div className="whitespace-pre-wrap">{result}</div>
         </div>
@@ -143,10 +183,12 @@ export function TranslationTab({
                 : 'bg-gray-300 cursor-not-allowed'
             }
           `}
+          aria-busy={loading}
+          type="button"
         >
           {loading ? (
             <>
-              <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24">
+              <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
                 <circle
                   className="opacity-25"
                   cx="12"
@@ -166,7 +208,7 @@ export function TranslationTab({
             </>
           ) : (
             <>
-              <span>🌐</span>
+              <span aria-hidden="true">🌐</span>
               <span>{t(getButtonText(mode))}</span>
             </>
           )}

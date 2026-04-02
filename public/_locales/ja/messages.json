@@ -7,8 +7,104 @@
     "message": "AIパワードの校正用ブラウザ拡張機能",
     "description": "拡張機能の説明"
   },
+  "settings": {
+    "message": "設定",
+    "description": "設定ボタン"
+  },
+  "tabTranslate": {
+    "message": "翻訳",
+    "description": "翻訳タブ"
+  },
+  "tabProofread": {
+    "message": "校正",
+    "description": "校正タブ"
+  },
+  "tabPolish": {
+    "message": "潤色",
+    "description": "潤色タブ"
+  },
+  "tabExpand": {
+    "message": "拡張",
+    "description": "拡張タブ"
+  },
+  "tabStartTranslate": {
+    "message": "翻訳開始",
+    "description": "翻訳ボタン"
+  },
+  "tabStartProofread": {
+    "message": "校正開始",
+    "description": "校正ボタン"
+  },
+  "tabStartPolish": {
+    "message": "潤色開始",
+    "description": "潤色ボタン"
+  },
+  "tabStartExpand": {
+    "message": "拡張開始",
+    "description": "拡張ボタン"
+  },
+  "tabProcessing": {
+    "message": "処理中...",
+    "description": "処理中ステータス"
+  },
+  "tabInputPlaceholder": {
+    "message": "翻訳するテキストを入力...",
+    "description": "翻訳入力プレースホルダー"
+  },
+  "tabProofreadPlaceholder": {
+    "message": "校正するテキストを入力...",
+    "description": "校正入力プレースホルダー"
+  },
+  "tabPolishPlaceholder": {
+    "message": "潤色するテキストを入力...",
+    "description": "潤色入力プレースホルダー"
+  },
+  "tabExpandPlaceholder": {
+    "message": "拡張するコンテンツを入力...",
+    "description": "拡張入力プレースホルダー"
+  },
+  "tabSubmit": {
+    "message": "送信",
+    "description": "送信ショートカットヒント"
+  },
+  "tabResult": {
+    "message": "結果",
+    "description": "結果ラベル"
+  },
+  "settingsTitle": {
+    "message": "設定",
+    "description": "設定パネルタイトル"
+  },
+  "settingsEngines": {
+    "message": "サービスエンジン",
+    "description": "エンジン設定グループタイトル"
+  },
+  "settingsEngineReady": {
+    "message": "準備完了",
+    "description": "エンジン準備完了ステータス"
+  },
+  "settingsEngineIdle": {
+    "message": "待機中",
+    "description": "エンジン待機ステータス"
+  },
+  "settingsEngineError": {
+    "message": "エラー",
+    "description": "エンジンエラーステータス"
+  },
+  "settingsApiConfig": {
+    "message": "API 設定",
+    "description": "API 設定グループタイトル"
+  },
+  "settingsApiHint": {
+    "message": "クラウド LLM モデルを使用するには OpenRouter API キーを設定してください。",
+    "description": "API 設定ヒント"
+  },
+  "settingsSave": {
+    "message": "設定を保存",
+    "description": "保存ボタン"
+  },
   "popupTitle": {
-    "message": "WXT + React",
+    "message": "ProofDuck",
     "description": "ポップアップタイトル"
   },
   "popupButtonLabel": {
@@ -16,24 +112,47 @@
     "description": "ポップアップボタンのラベル"
   },
   "popupEditText": {
-    "message": "<code>$FILE$</code> を編集して保存してホットリロードをテスト",
-    "description": "編集指示テキスト",
-    "placeholders": {
-      "file": {
-        "content": "src/App.tsx"
-      }
-    }
+    "message": "編集して保存してホットリロードをテスト",
+    "description": "編集指示テキスト"
   },
   "popupReadDocs": {
-    "message": "WXTとReactのロゴをクリックして詳細を確認",
+    "message": "ロゴをクリックして詳細を確認",
     "description": "ドキュメントリンクテキスト"
   },
   "backgroundHello": {
-    "message": "こんにちはバックグラウンドスクリプト！",
+    "message": "バックグラウンドスクリプト起動！",
     "description": "バックグラウンドスクリプトの挨拶"
   },
   "contentHello": {
-    "message": "こんにちはコンテンツスクリプト。",
+    "message": "コンテンツスクリプト起動。",
     "description": "コンテンツスクリプトの挨拶"
+  },
+  "close": {
+    "message": "閉じる",
+    "description": "閉じるボタン"
+  },
+  "copy": {
+    "message": "コピー",
+    "description": "コピーボタン"
+  },
+  "copied": {
+    "message": "コピー済み",
+    "description": "コピー成功"
+  },
+  "speak": {
+    "message": "朗読",
+    "description": "朗読ボタン"
+  },
+  "speaking": {
+    "message": "朗読中",
+    "description": "朗読中ステータス"
+  },
+  "retry": {
+    "message": "再試行",
+    "description": "再試行ボタン"
+  },
+  "openSidebar": {
+    "message": "サイドバー",
+    "description": "サイドバーボタン"
   }
 }

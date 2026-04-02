@@ -1,0 +1,158 @@
+{
+  "extensionName": {
+    "message": "Extensión AI ProofDuck",
+    "description": "Nombre de la extensión"
+  },
+  "extensionDescription": {
+    "message": "Extensión de navegador para corrección con IA",
+    "description": "Descripción de la extensión"
+  },
+  "settings": {
+    "message": "Configuración",
+    "description": "Botón de configuración"
+  },
+  "tabTranslate": {
+    "message": "Traducir",
+    "description": "Pestaña Traducir"
+  },
+  "tabProofread": {
+    "message": "Corregir",
+    "description": "Pestaña Corregir"
+  },
+  "tabPolish": {
+    "message": "Perfeccionar",
+    "description": "Pestaña Perfeccionar"
+  },
+  "tabExpand": {
+    "message": "Expandir",
+    "description": "Pestaña Expandir"
+  },
+  "tabStartTranslate": {
+    "message": "Iniciar traducción",
+    "description": "Botón Traducir"
+  },
+  "tabStartProofread": {
+    "message": "Iniciar corrección",
+    "description": "Botón Corregir"
+  },
+  "tabStartPolish": {
+    "message": "Iniciar perfeccionamiento",
+    "description": "Botón Perfeccionar"
+  },
+  "tabStartExpand": {
+    "message": "Iniciar expansión",
+    "description": "Botón Expandir"
+  },
+  "tabProcessing": {
+    "message": "Procesando...",
+    "description": "Estado de procesamiento"
+  },
+  "tabInputPlaceholder": {
+    "message": "Ingrese texto para traducir...",
+    "description": "Marcador de posición de traducción"
+  },
+  "tabProofreadPlaceholder": {
+    "message": "Ingrese texto para corregir...",
+    "description": "Marcador de posición de corrección"
+  },
+  "tabPolishPlaceholder": {
+    "message": "Ingrese texto para perfeccionar...",
+    "description": "Marcador de posición de perfeccionamiento"
+  },
+  "tabExpandPlaceholder": {
+    "message": "Ingrese contenido para expandir...",
+    "description": "Marcador de posición de expansión"
+  },
+  "tabSubmit": {
+    "message": "enviar",
+    "description": "Atajo de envío"
+  },
+  "tabResult": {
+    "message": "Resultado",
+    "description": "Etiqueta de resultado"
+  },
+  "settingsTitle": {
+    "message": "Configuración",
+    "description": "Título del panel de configuración"
+  },
+  "settingsEngines": {
+    "message": "Motores de servicio",
+    "description": "Título del grupo de configuración de motores"
+  },
+  "settingsEngineReady": {
+    "message": "Listo",
+    "description": "Estado de motor listo"
+  },
+  "settingsEngineIdle": {
+    "message": "Inactivo",
+    "description": "Estado de motor inactivo"
+  },
+  "settingsEngineError": {
+    "message": "Error",
+    "description": "Estado de error del motor"
+  },
+  "settingsApiConfig": {
+    "message": "Configuración de API",
+    "description": "Título del grupo de configuración de API"
+  },
+  "settingsApiHint": {
+    "message": "Configure la clave API de OpenRouter para usar modelos LLM en la nube.",
+    "description": "Sugerencia de configuración de API"
+  },
+  "settingsSave": {
+    "message": "Guardar configuración",
+    "description": "Botón Guardar"
+  },
+  "popupTitle": {
+    "message": "ProofDuck",
+    "description": "Título del popup"
+  },
+  "popupButtonLabel": {
+    "message": "Haz clic en mí",
+    "description": "Etiqueta del botón del popup"
+  },
+  "popupEditText": {
+    "message": "Edite y guarde para probar la recarga en caliente",
+    "description": "Texto de instrucciones de edición"
+  },
+  "popupReadDocs": {
+    "message": "Haga clic en el logotipo para obtener más información",
+    "description": "Texto del enlace de documentación"
+  },
+  "backgroundHello": {
+    "message": "¡Hola script de fondo!",
+    "description": "Saludo del script de fondo"
+  },
+  "contentHello": {
+    "message": "Hola script de contenido.",
+    "description": "Saludo del script de contenido"
+  },
+  "close": {
+    "message": "Cerrar",
+    "description": "Botón Cerrar"
+  },
+  "copy": {
+    "message": "Copiar",
+    "description": "Botón Copiar"
+  },
+  "copied": {
+    "message": "Copiado",
+    "description": "Copia exitosa"
+  },
+  "speak": {
+    "message": "Hablar",
+    "description": "Botón Hablar"
+  },
+  "speaking": {
+    "message": "Hablando",
+    "description": "Estado de habla"
+  },
+  "retry": {
+    "message": "Reintentar",
+    "description": "Botón Reintentar"
+  },
+  "openSidebar": {
+    "message": "Barra lateral",
+    "description": "Botón Abrir barra lateral"
+  }
+}

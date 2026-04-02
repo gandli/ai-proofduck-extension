@@ -1,0 +1,158 @@
+{
+  "extensionName": {
+    "message": "AI ProofDuck Erweiterung",
+    "description": "Erweiterungsname"
+  },
+  "extensionDescription": {
+    "message": "Browser-Erweiterung für KI-gestütztes Korrektorat",
+    "description": "Erweiterungsbeschreibung"
+  },
+  "settings": {
+    "message": "Einstellungen",
+    "description": "Einstellungen-Schaltfläche"
+  },
+  "tabTranslate": {
+    "message": "Übersetzen",
+    "description": "Übersetzen-Tab"
+  },
+  "tabProofread": {
+    "message": "Korrektorat",
+    "description": "Korrektorat-Tab"
+  },
+  "tabPolish": {
+    "message": "Polieren",
+    "description": "Polieren-Tab"
+  },
+  "tabExpand": {
+    "message": "Erweitern",
+    "description": "Erweitern-Tab"
+  },
+  "tabStartTranslate": {
+    "message": "Übersetzung starten",
+    "description": "Übersetzen-Schaltfläche"
+  },
+  "tabStartProofread": {
+    "message": "Korrektorat starten",
+    "description": "Korrektorat-Schaltfläche"
+  },
+  "tabStartPolish": {
+    "message": "Polieren starten",
+    "description": "Polieren-Schaltfläche"
+  },
+  "tabStartExpand": {
+    "message": "Erweitern starten",
+    "description": "Erweitern-Schaltfläche"
+  },
+  "tabProcessing": {
+    "message": "Verarbeitung...",
+    "description": "Verarbeitungsstatus"
+  },
+  "tabInputPlaceholder": {
+    "message": "Text zum Übersetzen eingeben...",
+    "description": "Übersetzen-Eingabeplatzhalter"
+  },
+  "tabProofreadPlaceholder": {
+    "message": "Text zum Korrektorat eingeben...",
+    "description": "Korrektorat-Eingabeplatzhalter"
+  },
+  "tabPolishPlaceholder": {
+    "message": "Text zum Polieren eingeben...",
+    "description": "Polieren-Eingabeplatzhalter"
+  },
+  "tabExpandPlaceholder": {
+    "message": "Inhalt zum Erweitern eingeben...",
+    "description": "Erweitern-Eingabeplatzhalter"
+  },
+  "tabSubmit": {
+    "message": "absenden",
+    "description": "Absenden-Tastenkürzel"
+  },
+  "tabResult": {
+    "message": "Ergebnis",
+    "description": "Ergebnis-Label"
+  },
+  "settingsTitle": {
+    "message": "Einstellungen",
+    "description": "Einstellungen-Panel-Titel"
+  },
+  "settingsEngines": {
+    "message": "Dienstmodule",
+    "description": "Modul-Einstellungen Gruppentitel"
+  },
+  "settingsEngineReady": {
+    "message": "Bereit",
+    "description": "Modul Bereit-Status"
+  },
+  "settingsEngineIdle": {
+    "message": "Inaktiv",
+    "description": "Modul Inaktiv-Status"
+  },
+  "settingsEngineError": {
+    "message": "Fehler",
+    "description": "Modul Fehler-Status"
+  },
+  "settingsApiConfig": {
+    "message": "API-Konfiguration",
+    "description": "API-Konfigurations-Gruppentitel"
+  },
+  "settingsApiHint": {
+    "message": "Konfigurieren Sie den OpenRouter API-Schlüssel, um Cloud-LLM-Modelle zu nutzen.",
+    "description": "API-Konfigurationshinweis"
+  },
+  "settingsSave": {
+    "message": "Einstellungen speichern",
+    "description": "Speichern-Schaltfläche"
+  },
+  "popupTitle": {
+    "message": "ProofDuck",
+    "description": "Popup-Titel"
+  },
+  "popupButtonLabel": {
+    "message": "Klicken Sie mich",
+    "description": "Popup-Button-Label"
+  },
+  "popupEditText": {
+    "message": "Bearbeiten und speichern, um Hot-Reload zu testen",
+    "description": "Bearbeitungsanweisungstext"
+  },
+  "popupReadDocs": {
+    "message": "Klicken Sie auf das Logo, um mehr zu erfahren",
+    "description": "Dokumentationslink-Text"
+  },
+  "backgroundHello": {
+    "message": "Hallo Hintergrundskript!",
+    "description": "Hintergrundskript-Gruß"
+  },
+  "contentHello": {
+    "message": "Hallo Inhaltsskript.",
+    "description": "Inhaltsskript-Gruß"
+  },
+  "close": {
+    "message": "Schließen",
+    "description": "Schließen-Schaltfläche"
+  },
+  "copy": {
+    "message": "Kopieren",
+    "description": "Kopieren-Schaltfläche"
+  },
+  "copied": {
+    "message": "Kopiert",
+    "description": "Kopieren erfolgreich"
+  },
+  "speak": {
+    "message": "Sprechen",
+    "description": "Sprechen-Schaltfläche"
+  },
+  "speaking": {
+    "message": "Spricht",
+    "description": "Sprachstatus"
+  },
+  "retry": {
+    "message": "Wiederholen",
+    "description": "Wiederholen-Schaltfläche"
+  },
+  "openSidebar": {
+    "message": "Seitenleiste",
+    "description": "Seitenleiste-Öffnen-Schaltfläche"
+  }
+}

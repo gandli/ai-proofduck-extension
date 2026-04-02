@@ -1,0 +1,158 @@
+{
+  "extensionName": {
+    "message": "AI ProofDuck 확장",
+    "description": "확장 프로그램 이름"
+  },
+  "extensionDescription": {
+    "message": "AI 기반 교정을 위한 브라우저 확장",
+    "description": "확장 프로그램 설명"
+  },
+  "settings": {
+    "message": "설정",
+    "description": "설정 버튼"
+  },
+  "tabTranslate": {
+    "message": "번역",
+    "description": "번역 탭"
+  },
+  "tabProofread": {
+    "message": "교정",
+    "description": "교정 탭"
+  },
+  "tabPolish": {
+    "message": "윤문",
+    "description": "윤문 탭"
+  },
+  "tabExpand": {
+    "message": "확장",
+    "description": "확장 탭"
+  },
+  "tabStartTranslate": {
+    "message": "번역 시작",
+    "description": "번역 버튼"
+  },
+  "tabStartProofread": {
+    "message": "교정 시작",
+    "description": "교정 버튼"
+  },
+  "tabStartPolish": {
+    "message": "윤문 시작",
+    "description": "윤문 버튼"
+  },
+  "tabStartExpand": {
+    "message": "확장 시작",
+    "description": "확장 버튼"
+  },
+  "tabProcessing": {
+    "message": "처리 중...",
+    "description": "처리 중 상태"
+  },
+  "tabInputPlaceholder": {
+    "message": "번역할 텍스트 입력...",
+    "description": "번역 입력 플레이스홀더"
+  },
+  "tabProofreadPlaceholder": {
+    "message": "교정할 텍스트 입력...",
+    "description": "교정 입력 플레이스홀더"
+  },
+  "tabPolishPlaceholder": {
+    "message": "윤문할 텍스트 입력...",
+    "description": "윤문 입력 플레이스홀더"
+  },
+  "tabExpandPlaceholder": {
+    "message": "확장할 콘텐츠 입력...",
+    "description": "확장 입력 플레이스홀더"
+  },
+  "tabSubmit": {
+    "message": "제출",
+    "description": "제출 단축키 힌트"
+  },
+  "tabResult": {
+    "message": "결과",
+    "description": "결과 레이블"
+  },
+  "settingsTitle": {
+    "message": "설정",
+    "description": "설정 패널 제목"
+  },
+  "settingsEngines": {
+    "message": "서비스 엔진",
+    "description": "엔진 설정 그룹 제목"
+  },
+  "settingsEngineReady": {
+    "message": "준비됨",
+    "description": "엔진 준비 상태"
+  },
+  "settingsEngineIdle": {
+    "message": "유휴",
+    "description": "엔진 유휴 상태"
+  },
+  "settingsEngineError": {
+    "message": "오류",
+    "description": "엔진 오류 상태"
+  },
+  "settingsApiConfig": {
+    "message": "API 설정",
+    "description": "API 설정 그룹 제목"
+  },
+  "settingsApiHint": {
+    "message": "클라우드 LLM 모델을 사용하려면 OpenRouter API 키를 설정하세요.",
+    "description": "API 설정 힌트"
+  },
+  "settingsSave": {
+    "message": "설정 저장",
+    "description": "저장 버튼"
+  },
+  "popupTitle": {
+    "message": "ProofDuck",
+    "description": "팝업 제목"
+  },
+  "popupButtonLabel": {
+    "message": "클릭하세요",
+    "description": "팝업 버튼 레이블"
+  },
+  "popupEditText": {
+    "message": "편집하여 저장하고 핫리로드를 테스트하세요",
+    "description": "편집 안내 텍스트"
+  },
+  "popupReadDocs": {
+    "message": "로고를 클릭하여 자세히 알아보기",
+    "description": "문서 링크 텍스트"
+  },
+  "backgroundHello": {
+    "message": "백그라운드 스크립트 안녕하세요!",
+    "description": "백그라운드 스크립트 인사"
+  },
+  "contentHello": {
+    "message": "콘텐츠 스크립트 안녕하세요.",
+    "description": "콘텐츠 스크립트 인사"
+  },
+  "close": {
+    "message": "닫기",
+    "description": "닫기 버튼"
+  },
+  "copy": {
+    "message": "복사",
+    "description": "복사 버튼"
+  },
+  "copied": {
+    "message": "복사됨",
+    "description": "복사 성공"
+  },
+  "speak": {
+    "message": "읽기",
+    "description": "읽기 버튼"
+  },
+  "speaking": {
+    "message": "읽는 중",
+    "description": "읽는 중 상태"
+  },
+  "retry": {
+    "message": "재시도",
+    "description": "재시도 버튼"
+  },
+  "openSidebar": {
+    "message": "사이드바",
+    "description": "사이드바 버튼"
+  }
+}

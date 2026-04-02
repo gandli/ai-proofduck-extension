@@ -7,7 +7,8 @@ import { GeminiAdapter } from '@/engines/gemini';
 
 // Mock chrome.storage
 const mockStorage: Record<string, unknown> = {};
-vi.stubGlobal('chrome', {
+
+const mockChrome = {
   storage: {
     local: {
       get: vi.fn((key: string) => Promise.resolve({ [key]: mockStorage[key] })),
@@ -21,6 +22,15 @@ vi.stubGlobal('chrome', {
       }),
     },
   },
+};
+
+// Set up global mock before tests
+beforeEach(() => {
+  Object.defineProperty(globalThis, 'chrome', {
+    value: mockChrome,
+    writable: true,
+    configurable: true,
+  });
 });
 
 // Mock settings store

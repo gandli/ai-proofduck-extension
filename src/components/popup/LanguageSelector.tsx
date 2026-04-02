@@ -1,5 +1,6 @@
 /**
  * LanguageSelector 组件 - 语言选择器
+ * 支持无障碍访问
  */
 import { useState } from 'react';
 
@@ -55,20 +56,24 @@ export function LanguageSelector({
   return (
     <div className="flex items-center gap-2">
       {/* 源语言 */}
-      <select
-        value={sourceLang}
-        onChange={(e) => onSourceChange(e.target.value)}
-        className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange/50 focus:border-brand-orange"
-      >
-        {showAutoDetect && (
-          <option value="auto">自动检测</option>
-        )}
-        {LANGUAGES.filter((l) => l.code !== 'auto').map((lang) => (
-          <option key={lang.code} value={lang.code}>
-            {lang.name}
-          </option>
-        ))}
-      </select>
+      <label className="flex-1">
+        <span className="sr-only">源语言</span>
+        <select
+          value={sourceLang}
+          onChange={(e) => onSourceChange(e.target.value)}
+          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange/50 focus:border-brand-orange"
+          aria-label="源语言"
+        >
+          {showAutoDetect && (
+            <option value="auto">自动检测</option>
+          )}
+          {LANGUAGES.filter((l) => l.code !== 'auto').map((lang) => (
+            <option key={lang.code} value={lang.code}>
+              {lang.name}
+            </option>
+          ))}
+        </select>
+      </label>
 
       {/* 交换按钮 */}
       <button
@@ -80,6 +85,8 @@ export function LanguageSelector({
           ${swapLoading ? 'animate-spin' : ''}
         `}
         title="交换语言"
+        aria-label="交换源语言和目标语言"
+        type="button"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -90,23 +97,28 @@ export function LanguageSelector({
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
+          aria-hidden="true"
         >
           <path d="M7 16V4M7 4L3 8M7 4l4 4M17 8v12M17 20l4-4M17 20l-4-4" />
         </svg>
       </button>
 
       {/* 目标语言 */}
-      <select
-        value={targetLang}
-        onChange={(e) => onTargetChange(e.target.value)}
-        className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange/50 focus:border-brand-orange"
-      >
-        {filteredTargetLangs.map((lang) => (
-          <option key={lang.code} value={lang.code}>
-            {lang.name}
-          </option>
-        ))}
-      </select>
+      <label className="flex-1">
+        <span className="sr-only">目标语言</span>
+        <select
+          value={targetLang}
+          onChange={(e) => onTargetChange(e.target.value)}
+          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange/50 focus:border-brand-orange"
+          aria-label="目标语言"
+        >
+          {filteredTargetLangs.map((lang) => (
+            <option key={lang.code} value={lang.code}>
+              {lang.name}
+            </option>
+          ))}
+        </select>
+      </label>
     </div>
   );
 }
