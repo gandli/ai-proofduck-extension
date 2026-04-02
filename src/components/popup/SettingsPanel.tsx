@@ -1,8 +1,8 @@
 /**
  * SettingsPanel 组件 - 设置面板
- * 服务引擎管理 UI
+ * 服务引擎管理 UI，支持无障碍访问
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { t } from '@/i18n';
 import { speechService, SpeechConfig, LANGUAGE_VOICE_MAP } from '@/services/SpeechService';
 
@@ -47,6 +47,36 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
 
   // 语音设置状态
   const [speechConfig, setSpeechConfig] = useState<SpeechConfig>(() => speechService.getConfig());
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  // 焦点管理
+  useEffect(() => {
+    if (visible) {
+      closeButtonRef.current?.focus();
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [visible]);
+
+  // ESC 键关闭
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && visible) {
+        onClose();
+      }
+    },
+    [visible, onClose]
+  );
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   const toggleEngine = (id: string) => {
     setEngines((prev) =>
@@ -71,7 +101,6 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
   // 监听语音服务状态变化
   useEffect(() => {
     const unsubscribe = speechService.subscribe(() => {
-      // 状态变化时更新配置（以防其他地方修改）
       setSpeechConfig(speechService.getConfig());
     });
     return unsubscribe;
@@ -80,17 +109,29 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
   if (!visible) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="settings-title"
+      onClick={onClose}
+    >
       <div
+        ref={panelRef}
         className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 标题栏 */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-800">{t('settingsTitle')}</h2>
+          <h2 id="settings-title" className="text-lg font-semibold text-gray-800">
+            {t('settingsTitle')}
+          </h2>
           <button
+            ref={closeButtonRef}
             onClick={onClose}
             className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+            aria-label={t('close') || '关闭'}
+            type="button"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -101,6 +142,7 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
+              aria-hidden="true"
             >
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
@@ -111,8 +153,10 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
         {/* 内容区域 */}
         <div className="flex-1 overflow-y-auto p-4">
           {/* 服务引擎管理 */}
-          <section className="mb-6">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">{t('settingsEngines')}</h3>
+          <section className="mb-6" aria-labelledby="engines-heading">
+            <h3 id="engines-heading" className="text-sm font-medium text-gray-700 mb-3">
+              {t('settingsEngines')}
+            </h3>
 
             {/* 按类别分组显示引擎 */}
             {(['local', 'llm', 'translation'] as const).map((category) => {
@@ -121,8 +165,10 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
 
               return (
                 <div key={category} className="mb-4">
-                  <div className="text-xs text-gray-500 mb-2">{CATEGORY_LABELS[category]}</div>
-                  <div className="space-y-2">
+                  <div className="text-xs text-gray-500 mb-2" aria-hidden="true">
+                    {CATEGORY_LABELS[category]}
+                  </div>
+                  <div className="space-y-2" role="group" aria-label={CATEGORY_LABELS[category]}>
                     {categoryEngines.map((engine) => (
                       <div
                         key={engine.id}
@@ -136,6 +182,10 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
                               relative w-10 h-6 rounded-full transition-colors
                               ${engine.enabled ? 'bg-brand-orange' : 'bg-gray-300'}
                             `}
+                            role="switch"
+                            aria-checked={engine.enabled}
+                            aria-label={`${engine.name} 开关`}
+                            type="button"
                           >
                             <span
                               className={`
@@ -151,6 +201,7 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
                             <div className="flex items-center gap-1.5 mt-0.5">
                               <span
                                 className={`w-1.5 h-1.5 rounded-full ${STATUS_COLORS[engine.status]}`}
+                                aria-hidden="true"
                               />
                               <span className="text-xs text-gray-500">
                                 {engine.status === 'ready' && (t('settingsEngineReady') || '就绪')}
@@ -169,9 +220,11 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
           </section>
 
           {/* API 配置提示 */}
-          <section className="mb-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">{t('settingsApiConfig')}</h3>
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <section className="mb-4" aria-labelledby="api-config-heading">
+            <h3 id="api-config-heading" className="text-sm font-medium text-gray-700 mb-3">
+              {t('settingsApiConfig')}
+            </h3>
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg" role="note">
               <p className="text-xs text-amber-800">
                 {t('settingsApiHint') || '配置 OpenRouter API Key 以使用云端 LLM 模型。'}
               </p>
@@ -179,16 +232,21 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
           </section>
 
           {/* 语音设置 */}
-          <section className="mb-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">{t('settingsSpeech')}</h3>
+          <section className="mb-4" aria-labelledby="speech-heading">
+            <h3 id="speech-heading" className="text-sm font-medium text-gray-700 mb-3">
+              {t('settingsSpeech')}
+            </h3>
             <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg space-y-4">
               {/* 朗读语言 */}
               <div>
-                <label className="block text-xs text-gray-600 mb-1">{t('settingsSpeechLang')}</label>
+                <label id="speech-lang-label" className="block text-xs text-gray-600 mb-1">
+                  {t('settingsSpeechLang')}
+                </label>
                 <select
                   value={speechConfig.lang}
                   onChange={(e) => updateSpeechConfig('lang', e.target.value)}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
+                  aria-labelledby="speech-lang-label"
                 >
                   {Object.entries(LANGUAGE_VOICE_MAP).map(([code, name]) => (
                     <option key={code} value={name}>
@@ -200,7 +258,7 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
 
               {/* 语速 */}
               <div>
-                <label className="block text-xs text-gray-600 mb-1">
+                <label id="speech-rate-label" className="block text-xs text-gray-600 mb-1">
                   {t('settingsSpeechRate')}: {speechConfig.rate.toFixed(1)}
                 </label>
                 <input
@@ -211,12 +269,13 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
                   value={speechConfig.rate}
                   onChange={(e) => updateSpeechConfig('rate', parseFloat(e.target.value))}
                   className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-orange"
+                  aria-labelledby="speech-rate-label"
                 />
               </div>
 
               {/* 音调 */}
               <div>
-                <label className="block text-xs text-gray-600 mb-1">
+                <label id="speech-pitch-label" className="block text-xs text-gray-600 mb-1">
                   {t('settingsSpeechPitch')}: {speechConfig.pitch.toFixed(1)}
                 </label>
                 <input
@@ -227,12 +286,13 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
                   value={speechConfig.pitch}
                   onChange={(e) => updateSpeechConfig('pitch', parseFloat(e.target.value))}
                   className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-orange"
+                  aria-labelledby="speech-pitch-label"
                 />
               </div>
 
               {/* 音量 */}
               <div>
-                <label className="block text-xs text-gray-600 mb-1">
+                <label id="speech-volume-label" className="block text-xs text-gray-600 mb-1">
                   {t('settingsSpeechVolume')}: {Math.round(speechConfig.volume * 100)}%
                 </label>
                 <input
@@ -243,6 +303,7 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
                   value={speechConfig.volume}
                   onChange={(e) => updateSpeechConfig('volume', parseFloat(e.target.value))}
                   className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-orange"
+                  aria-labelledby="speech-volume-label"
                 />
               </div>
 
@@ -250,6 +311,7 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
               <button
                 onClick={handlePreview}
                 className="w-full py-2 px-4 bg-brand-orange text-white rounded-lg text-sm font-medium hover:bg-brand-orange/90 transition-colors"
+                type="button"
               >
                 {t('settingsSpeechPreview')}
               </button>
@@ -262,6 +324,7 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
           <button
             onClick={onClose}
             className="w-full py-2 bg-brand-orange text-white rounded-lg font-medium hover:bg-brand-orange/90 transition-colors"
+            type="button"
           >
             {t('settingsSave') || '保存设置'}
           </button>
