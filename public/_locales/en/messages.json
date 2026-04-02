@@ -7,8 +7,104 @@
     "message": "A browser extension for AI-powered proofreading",
     "description": "Extension description"
   },
+  "settings": {
+    "message": "Settings",
+    "description": "Settings button"
+  },
+  "tabTranslate": {
+    "message": "Translate",
+    "description": "Translate tab"
+  },
+  "tabProofread": {
+    "message": "Proofread",
+    "description": "Proofread tab"
+  },
+  "tabPolish": {
+    "message": "Polish",
+    "description": "Polish tab"
+  },
+  "tabExpand": {
+    "message": "Expand",
+    "description": "Expand tab"
+  },
+  "tabStartTranslate": {
+    "message": "Start Translate",
+    "description": "Translate button"
+  },
+  "tabStartProofread": {
+    "message": "Start Proofread",
+    "description": "Proofread button"
+  },
+  "tabStartPolish": {
+    "message": "Start Polish",
+    "description": "Polish button"
+  },
+  "tabStartExpand": {
+    "message": "Start Expand",
+    "description": "Expand button"
+  },
+  "tabProcessing": {
+    "message": "Processing...",
+    "description": "Processing status"
+  },
+  "tabInputPlaceholder": {
+    "message": "Enter text to translate...",
+    "description": "Translate input placeholder"
+  },
+  "tabProofreadPlaceholder": {
+    "message": "Enter text to proofread...",
+    "description": "Proofread input placeholder"
+  },
+  "tabPolishPlaceholder": {
+    "message": "Enter text to polish...",
+    "description": "Polish input placeholder"
+  },
+  "tabExpandPlaceholder": {
+    "message": "Enter content to expand...",
+    "description": "Expand input placeholder"
+  },
+  "tabSubmit": {
+    "message": "to submit",
+    "description": "Submit shortcut hint"
+  },
+  "tabResult": {
+    "message": "Result",
+    "description": "Result label"
+  },
+  "settingsTitle": {
+    "message": "Settings",
+    "description": "Settings panel title"
+  },
+  "settingsEngines": {
+    "message": "Service Engines",
+    "description": "Engine settings group title"
+  },
+  "settingsEngineReady": {
+    "message": "Ready",
+    "description": "Engine ready status"
+  },
+  "settingsEngineIdle": {
+    "message": "Idle",
+    "description": "Engine idle status"
+  },
+  "settingsEngineError": {
+    "message": "Error",
+    "description": "Engine error status"
+  },
+  "settingsApiConfig": {
+    "message": "API Configuration",
+    "description": "API config group title"
+  },
+  "settingsApiHint": {
+    "message": "Configure OpenRouter API Key to use cloud LLM models.",
+    "description": "API config hint"
+  },
+  "settingsSave": {
+    "message": "Save Settings",
+    "description": "Save button"
+  },
   "popupTitle": {
-    "message": "WXT + React",
+    "message": "ProofDuck",
     "description": "Popup title"
   },
   "popupButtonLabel": {
@@ -16,16 +112,11 @@
     "description": "Button label in popup"
   },
   "popupEditText": {
-    "message": "Edit <code>$FILE$</code> and save to test HMR",
-    "description": "Edit instruction text",
-    "placeholders": {
-      "file": {
-        "content": "src/App.tsx"
-      }
-    }
+    "message": "Edit and save to test HMR",
+    "description": "Edit instruction text"
   },
   "popupReadDocs": {
-    "message": "Click on the WXT and React logos to learn more",
+    "message": "Click the logo to learn more",
     "description": "Documentation link text"
   },
   "backgroundHello": {
@@ -35,5 +126,33 @@
   "contentHello": {
     "message": "Hello content.",
     "description": "Content script greeting"
+  },
+  "close": {
+    "message": "Close",
+    "description": "Close button"
+  },
+  "copy": {
+    "message": "Copy",
+    "description": "Copy button"
+  },
+  "copied": {
+    "message": "Copied",
+    "description": "Copied success"
+  },
+  "speak": {
+    "message": "Speak",
+    "description": "Speak button"
+  },
+  "speaking": {
+    "message": "Speaking",
+    "description": "Speaking status"
+  },
+  "retry": {
+    "message": "Retry",
+    "description": "Retry button"
+  },
+  "openSidebar": {
+    "message": "Sidebar",
+    "description": "Open sidebar button"
   }
 }

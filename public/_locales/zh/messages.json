@@ -7,8 +7,104 @@
     "message": "一个用于AI辅助校对的浏览器扩展",
     "description": "扩展描述"
   },
+  "settings": {
+    "message": "设置",
+    "description": "设置按钮"
+  },
+  "tabTranslate": {
+    "message": "翻译",
+    "description": "翻译 Tab"
+  },
+  "tabProofread": {
+    "message": "校对",
+    "description": "校对 Tab"
+  },
+  "tabPolish": {
+    "message": "润色",
+    "description": "润色 Tab"
+  },
+  "tabExpand": {
+    "message": "扩写",
+    "description": "扩写 Tab"
+  },
+  "tabStartTranslate": {
+    "message": "开始翻译",
+    "description": "翻译按钮"
+  },
+  "tabStartProofread": {
+    "message": "开始校对",
+    "description": "校对按钮"
+  },
+  "tabStartPolish": {
+    "message": "开始润色",
+    "description": "润色按钮"
+  },
+  "tabStartExpand": {
+    "message": "开始扩写",
+    "description": "扩写按钮"
+  },
+  "tabProcessing": {
+    "message": "处理中...",
+    "description": "处理中状态"
+  },
+  "tabInputPlaceholder": {
+    "message": "输入要翻译的文本...",
+    "description": "翻译输入框占位符"
+  },
+  "tabProofreadPlaceholder": {
+    "message": "输入要校对的文本...",
+    "description": "校对输入框占位符"
+  },
+  "tabPolishPlaceholder": {
+    "message": "输入要润色的文本...",
+    "description": "润色输入框占位符"
+  },
+  "tabExpandPlaceholder": {
+    "message": "输入要扩写的内容...",
+    "description": "扩写输入框占位符"
+  },
+  "tabSubmit": {
+    "message": "发送",
+    "description": "提交快捷键提示"
+  },
+  "tabResult": {
+    "message": "结果",
+    "description": "结果标签"
+  },
+  "settingsTitle": {
+    "message": "设置",
+    "description": "设置面板标题"
+  },
+  "settingsEngines": {
+    "message": "服务引擎",
+    "description": "引擎设置分组标题"
+  },
+  "settingsEngineReady": {
+    "message": "就绪",
+    "description": "引擎就绪状态"
+  },
+  "settingsEngineIdle": {
+    "message": "空闲",
+    "description": "引擎空闲状态"
+  },
+  "settingsEngineError": {
+    "message": "错误",
+    "description": "引擎错误状态"
+  },
+  "settingsApiConfig": {
+    "message": "API 配置",
+    "description": "API 配置分组标题"
+  },
+  "settingsApiHint": {
+    "message": "配置 OpenRouter API Key 以使用云端 LLM 模型。",
+    "description": "API 配置提示"
+  },
+  "settingsSave": {
+    "message": "保存设置",
+    "description": "保存按钮"
+  },
   "popupTitle": {
-    "message": "WXT + React",
+    "message": "ProofDuck",
     "description": "弹窗标题"
   },
   "popupButtonLabel": {
@@ -16,16 +112,11 @@
     "description": "弹窗按钮标签"
   },
   "popupEditText": {
-    "message": "编辑 <code>$FILE$</code> 并保存以测试热更新",
-    "description": "编辑说明文本",
-    "placeholders": {
-      "file": {
-        "content": "src/App.tsx"
-      }
-    }
+    "message": "编辑并保存以测试热更新",
+    "description": "编辑说明文本"
   },
   "popupReadDocs": {
-    "message": "点击 WXT 和 React 徽标了解更多",
+    "message": "点击徽标了解更多",
     "description": "文档链接文本"
   },
   "backgroundHello": {
@@ -35,5 +126,33 @@
   "contentHello": {
     "message": "你好内容脚本。",
     "description": "内容脚本问候语"
+  },
+  "close": {
+    "message": "关闭",
+    "description": "关闭按钮"
+  },
+  "copy": {
+    "message": "复制",
+    "description": "复制按钮"
+  },
+  "copied": {
+    "message": "已复制",
+    "description": "复制成功"
+  },
+  "speak": {
+    "message": "朗读",
+    "description": "朗读按钮"
+  },
+  "speaking": {
+    "message": "朗读中",
+    "description": "朗读中状态"
+  },
+  "retry": {
+    "message": "重试",
+    "description": "重试按钮"
+  },
+  "openSidebar": {
+    "message": "侧边栏",
+    "description": "打开侧边栏按钮"
   }
 }
