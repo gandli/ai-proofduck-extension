@@ -2,8 +2,9 @@
  * SettingsPanel 组件 - 设置面板
  * 服务引擎管理 UI
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { t } from '@/i18n';
+import { speechService, SpeechConfig, LANGUAGE_VOICE_MAP } from '@/services/SpeechService';
 
 type EngineCategory = 'translation' | 'local' | 'llm';
 type EngineStatus = 'idle' | 'ready' | 'error';
@@ -44,6 +45,9 @@ const STATUS_COLORS: Record<EngineStatus, string> = {
 export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
   const [engines, setEngines] = useState<Engine[]>(MOCK_ENGINES);
 
+  // 语音设置状态
+  const [speechConfig, setSpeechConfig] = useState<SpeechConfig>(() => speechService.getConfig());
+
   const toggleEngine = (id: string) => {
     setEngines((prev) =>
       prev.map((engine) =>
@@ -51,6 +55,27 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
       )
     );
   };
+
+  // 更新语音配置
+  const updateSpeechConfig = (key: keyof SpeechConfig, value: string | number) => {
+    const newConfig = { ...speechConfig, [key]: value };
+    setSpeechConfig(newConfig);
+    speechService.setConfig({ [key]: value });
+  };
+
+  // 预览语音
+  const handlePreview = () => {
+    speechService.speak(t('settingsSpeechPreviewText') || '这是一段测试朗读文本', speechConfig.lang);
+  };
+
+  // 监听语音服务状态变化
+  useEffect(() => {
+    const unsubscribe = speechService.subscribe(() => {
+      // 状态变化时更新配置（以防其他地方修改）
+      setSpeechConfig(speechService.getConfig());
+    });
+    return unsubscribe;
+  }, []);
 
   if (!visible) return null;
 
@@ -150,6 +175,84 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
               <p className="text-xs text-amber-800">
                 {t('settingsApiHint') || '配置 OpenRouter API Key 以使用云端 LLM 模型。'}
               </p>
+            </div>
+          </section>
+
+          {/* 语音设置 */}
+          <section className="mb-4">
+            <h3 className="text-sm font-medium text-gray-700 mb-3">{t('settingsSpeech')}</h3>
+            <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg space-y-4">
+              {/* 朗读语言 */}
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">{t('settingsSpeechLang')}</label>
+                <select
+                  value={speechConfig.lang}
+                  onChange={(e) => updateSpeechConfig('lang', e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
+                >
+                  {Object.entries(LANGUAGE_VOICE_MAP).map(([code, name]) => (
+                    <option key={code} value={name}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 语速 */}
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">
+                  {t('settingsSpeechRate')}: {speechConfig.rate.toFixed(1)}
+                </label>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="2.0"
+                  step="0.1"
+                  value={speechConfig.rate}
+                  onChange={(e) => updateSpeechConfig('rate', parseFloat(e.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-orange"
+                />
+              </div>
+
+              {/* 音调 */}
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">
+                  {t('settingsSpeechPitch')}: {speechConfig.pitch.toFixed(1)}
+                </label>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="2.0"
+                  step="0.1"
+                  value={speechConfig.pitch}
+                  onChange={(e) => updateSpeechConfig('pitch', parseFloat(e.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-orange"
+                />
+              </div>
+
+              {/* 音量 */}
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">
+                  {t('settingsSpeechVolume')}: {Math.round(speechConfig.volume * 100)}%
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={speechConfig.volume}
+                  onChange={(e) => updateSpeechConfig('volume', parseFloat(e.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-orange"
+                />
+              </div>
+
+              {/* 预览按钮 */}
+              <button
+                onClick={handlePreview}
+                className="w-full py-2 px-4 bg-brand-orange text-white rounded-lg text-sm font-medium hover:bg-brand-orange/90 transition-colors"
+              >
+                {t('settingsSpeechPreview')}
+              </button>
             </div>
           </section>
         </div>

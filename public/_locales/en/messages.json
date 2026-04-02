@@ -154,5 +154,33 @@
   "openSidebar": {
     "message": "Sidebar",
     "description": "Open sidebar button"
+  },
+  "settingsSpeech": {
+    "message": "Speech Settings",
+    "description": "Speech settings group title"
+  },
+  "settingsSpeechLang": {
+    "message": "Language",
+    "description": "Speech language setting"
+  },
+  "settingsSpeechRate": {
+    "message": "Rate",
+    "description": "Speech rate setting"
+  },
+  "settingsSpeechPitch": {
+    "message": "Pitch",
+    "description": "Speech pitch setting"
+  },
+  "settingsSpeechVolume": {
+    "message": "Volume",
+    "description": "Speech volume setting"
+  },
+  "settingsSpeechPreview": {
+    "message": "Preview",
+    "description": "Preview speech button"
+  },
+  "settingsSpeechPreviewText": {
+    "message": "This is a test speech text",
+    "description": "Preview speech text"
   }
 }

@@ -1,1 +1,3 @@
-// Custom React hooks will be implemented in M3
+// Hooks
+export { useFocusTrap } from './useFocusTrap';
+export { useSpeech } from './useSpeech';

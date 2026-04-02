@@ -154,5 +154,33 @@
   "openSidebar": {
     "message": "侧边栏",
     "description": "打开侧边栏按钮"
+  },
+  "settingsSpeech": {
+    "message": "语音设置",
+    "description": "Speech settings group title"
+  },
+  "settingsSpeechLang": {
+    "message": "朗读语言",
+    "description": "Speech language setting"
+  },
+  "settingsSpeechRate": {
+    "message": "语速",
+    "description": "Speech rate setting"
+  },
+  "settingsSpeechPitch": {
+    "message": "音调",
+    "description": "Speech pitch setting"
+  },
+  "settingsSpeechVolume": {
+    "message": "音量",
+    "description": "Speech volume setting"
+  },
+  "settingsSpeechPreview": {
+    "message": "预览",
+    "description": "Preview speech button"
+  },
+  "settingsSpeechPreviewText": {
+    "message": "这是一段测试朗读文本",
+    "description": "Preview speech text"
   }
 }

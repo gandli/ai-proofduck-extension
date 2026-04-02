@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { t } from '@/i18n';
+import { speechService } from '@/services/SpeechService';
 
 interface Props {
   /** 原始文本 */
@@ -142,28 +143,30 @@ export function TranslationResultLayer({
   // 朗读文本
   const handleSpeak = useCallback(() => {
     if (speaking) {
-      speechSynthesis.cancel();
+      speechService.cancel();
       setSpeaking(false);
       return;
     }
 
     const textToSpeak = displayedText || resultText;
-    const utterance = new SpeechSynthesisUtterance(textToSpeak);
-    utterance.lang = 'zh-CN';
-    utterance.rate = 1.0;
+    speechService.speak(textToSpeak);
 
-    utterance.onend = () => setSpeaking(false);
-    utterance.onerror = () => setSpeaking(false);
+    // 监听朗读状态变化
+    const unsubscribe = speechService.subscribe((status) => {
+      setSpeaking(status === 'speaking');
+    });
 
-    speechSynthesis.speak(utterance);
-    setSpeaking(true);
+    // 组件卸载时取消订阅
+    return () => {
+      unsubscribe();
+    };
   }, [speaking, displayedText, resultText]);
 
   // 处理关闭
   const handleClose = useCallback(() => {
     // 停止朗读
     if (speaking) {
-      speechSynthesis.cancel();
+      speechService.cancel();
     }
     onClose();
   }, [speaking, onClose]);
