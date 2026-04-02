@@ -366,6 +366,37 @@ public/
 
 ## 测试规范
 
+### TDD 开发流程
+
+每个功能开发遵循 **Red → Green → Refactor** 循环：
+
+```
+1. 编写失败测试 (Red)
+       ↓
+2. 编写最小实现 (Green)
+       ↓
+3. 重构优化 (Refactor)
+       ↓
+4. 重复
+```
+
+### BDD 特性文件 (Gherkin)
+
+```gherkin
+# tests/bdd/features/translation.feature
+Feature: 翻译功能
+
+  Scenario: 正常翻译流程
+    Given 用户在翻译模式
+    When 输入 "Hello"
+    Then 输出 "你好"
+
+  Scenario: 翻译引擎按优先级自动切换
+    Given Chrome AI 不可用
+    When 用户请求翻译
+    Then 系统使用下一个可用引擎
+```
+
 ### 单元测试 (Vitest)
 
 ```typescript
@@ -380,6 +411,10 @@ describe('handleProofread', () => {
   it('should return proofread result', async () => {
     const result = await handleProofread('Hello world');
     expect(result).toBeDefined();
+  });
+  
+  it('should handle empty input', async () => {
+    await expect(handleProofread('')).rejects.toThrow();
   });
 });
 ```
