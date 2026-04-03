@@ -126,7 +126,8 @@ export function detectPageLanguage(): string {
   // 1. 检查 HTML lang 属性
   const htmlLang = document.documentElement.lang;
   if (htmlLang && htmlLang.length >= 2) {
-    return htmlLang.split('-')[0].toLowerCase();
+    const langPart = htmlLang.split('-')[0];
+    return langPart ? langPart.toLowerCase() : 'en';
   }
 
   // 2. 检查 Content-Language Meta 标签
@@ -134,7 +135,8 @@ export function detectPageLanguage(): string {
   if (contentLanguageMeta) {
     const content = contentLanguageMeta.getAttribute('content');
     if (content) {
-      return content.split('-')[0].toLowerCase();
+      const langPart = content.split('-')[0];
+      return langPart ? langPart.toLowerCase() : 'en';
     }
   }
 
@@ -152,7 +154,8 @@ export function detectPageLanguage(): string {
   // 4. 使用 navigator.language
   const navLang = navigator.language || (navigator as unknown as { userLanguage?: string }).userLanguage;
   if (navLang) {
-    return navLang.split('-')[0].toLowerCase();
+    const langPart = navLang.split('-')[0];
+    return langPart ? langPart.toLowerCase() : 'en';
   }
 
   // 默认返回 'en'

@@ -96,9 +96,9 @@ function getEdgeVoice(lang: string): EdgeVoice {
   let voice = EDGE_VOICES.find(v => v.lang.toLowerCase() === langCode.toLowerCase());
   if (voice) return voice;
   // 其次查找前缀匹配
-  const prefix = langCode.split('-')[0];
+  const prefix = langCode.split('-')[0] || '';
   voice = EDGE_VOICES.find(v => v.lang.toLowerCase().startsWith(prefix.toLowerCase()));
-  return voice || EDGE_VOICES[0]; // 默认返回第一个（中文晓晓）
+  return voice ?? EDGE_VOICES[0]; // 默认返回第一个（中文晓晓）
 }
 
 // 朗读状态
@@ -254,10 +254,16 @@ class EdgeTTSProvider {
 
             // 合并所有音频片段
             const totalLength = this.audioBuffer.reduce((acc, buf) => acc + buf.length, 0);
+            const firstBuffer = this.audioBuffer[0];
+            if (!firstBuffer) {
+              onEnd?.();
+              resolve();
+              return;
+            }
             const combinedBuffer = this.audioContext!.createBuffer(
               1, // mono
               totalLength,
-              this.audioBuffer[0].sampleRate
+              firstBuffer.sampleRate
             );
 
             let offset = 0;
@@ -361,7 +367,6 @@ class EdgeTTSProvider {
 // SpeechService 类
 class SpeechService {
   private config: SpeechConfig;
-  private _currentUtterance: SpeechSynthesisUtterance | null = null;
   private status: SpeechStatus = 'idle';
   private listeners: Set<(status: SpeechStatus) => void> = new Set();
   private voices: SpeechSynthesisVoice[] = [];
@@ -432,13 +437,13 @@ class SpeechService {
 
     // 如果没有完全匹配，查找语言前缀匹配
     if (!bestVoice) {
-      const langPrefix = targetLang.split('-')[0];
+      const langPrefix = targetLang.split('-')[0] || '';
       bestVoice = this.voices.find(
         (voice) => voice.lang.toLowerCase().startsWith(langPrefix.toLowerCase())
       );
     }
 
-    return bestVoice;
+    return bestVoice ?? null;
   }
 
   // 开始朗读
@@ -484,18 +489,15 @@ class SpeechService {
 
     utterance.onend = () => {
       this.status = 'idle';
-      this._currentUtterance = null;
       this.notifyStatusChange();
     };
 
     utterance.onerror = (event) => {
       console.error('Speech synthesis error:', event.error);
       this.status = 'idle';
-      this._currentUtterance = null;
       this.notifyStatusChange();
     };
 
-    this._currentUtterance = utterance;
     this.status = 'speaking';
     speechSynthesis.speak(utterance);
     this.notifyStatusChange();
@@ -572,7 +574,6 @@ class SpeechService {
       speechSynthesis.cancel();
     }
     this.status = 'idle';
-    this._currentUtterance = null;
     this.notifyStatusChange();
   }
 

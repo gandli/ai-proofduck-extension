@@ -6,11 +6,6 @@
 
 import type { TranslationEngine, TranslationResult, StreamChunk } from './index';
 
-// WebLLM module type (loaded dynamically)
-interface WebLLMModule {
-  CreateChatModule(options: { model: string }): Promise<WebLLMChat>;
-}
-
 interface GenerationConfig {
   temperature?: number;
   max_tokens?: number;

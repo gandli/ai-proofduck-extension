@@ -1,6 +1,37 @@
 import { render, screen, cleanup } from '@testing-library/react';
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { useState } from 'react';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
+import React, { useState } from 'react';
+
+// Mock chrome API for tests
+const mockChrome = {
+  runtime: {
+    id: 'test-extension-id',
+    getURL: (path: string) => `chrome-extension://test-extension-id/${path}`,
+    sendMessage: () => Promise.resolve({}),
+    onMessage: {
+      addListener: () => {},
+      removeListener: () => {},
+    },
+  },
+  i18n: {
+    t: (key: string) => key,
+    getUILanguage: () => 'en',
+  },
+  storage: {
+    local: {
+      get: () => Promise.resolve({}),
+      set: () => Promise.resolve(),
+    },
+  },
+};
+
+beforeEach(() => {
+  Object.defineProperty(globalThis, 'chrome', {
+    value: mockChrome,
+    writable: true,
+    configurable: true,
+  });
+});
 
 vi.mock('../../../src/i18n', () => ({
   t: (key: string) => key,

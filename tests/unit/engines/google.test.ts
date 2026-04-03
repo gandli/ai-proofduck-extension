@@ -75,7 +75,9 @@ describe('GoogleTranslateAdapter', () => {
 
       // 验证 fetch 调用参数
       expect(mockFetch).toHaveBeenCalledTimes(1);
-      const [url] = mockFetch.mock.calls[0];
+      const calls = mockFetch.mock.calls;
+      expect(calls[0]).toBeDefined();
+      const [url] = calls[0]!;
       expect(url).toContain('translate.googleapis.com/translate_a/single');
       expect(url).toContain('client=gtx');
       expect(url).toContain('sl=en');

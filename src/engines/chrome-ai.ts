@@ -6,37 +6,11 @@
 
 import type { TranslationEngine, TranslationResult, StreamChunk } from './index';
 
-// Chrome AI API types (built-in)
-interface ChromeAIInitialCapabilities {
-  languageModel?: {
-    create(): Promise<ChromeAILanguageModel>;
-  };
-}
-
-interface ChromeAILanguageModel {
-  prompt(text: string): Promise<string>;
-  promptStreaming(text: string): ReadableStream<string>;
-  destroy(): void;
-}
-
 // Prompt API session (newer Chrome AI API)
-interface AIGeneratedSession {
+export interface AIGeneratedSession {
   prompt(text: string): Promise<string>;
   promptStreaming(text: string): ReadableStream<string>;
   destroy(): void;
-}
-
-interface AIChromeAI {
-  languageModel?: {
-    create(options?: { systemPrompt?: string }): Promise<AIGeneratedSession>;
-  };
-}
-
-// Global window type augmentation
-declare global {
-  interface Window {
-    ai?: AIChromeAI;
-  }
 }
 
 // Prompt template for translation
@@ -101,11 +75,12 @@ export class ChromeAIAdapter implements TranslationEngine {
     }
 
     try {
-      this.session = await window.ai.languageModel.create({
+      const session = await window.ai.languageModel.create({
         systemPrompt: 'You are a professional, accurate translator. Only provide translations.',
-      });
+      }) as AIGeneratedSession;
+      this.session = session;
       this.isInitialized = true;
-      return this.session;
+      return session;
     } catch (error) {
       this.isInitialized = false;
       throw new Error(`Failed to initialize Chrome AI session: ${error instanceof Error ? error.message : 'Unknown error'}`);

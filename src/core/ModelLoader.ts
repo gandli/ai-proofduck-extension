@@ -3,8 +3,6 @@
  * Handles downloading and caching of local AI models for offline use
  */
 
-import { useSettingsStore } from '../stores/settings';
-
 // Model types
 export type LocalModelType = 'chrome-ai' | 'webgpu' | 'wasm';
 

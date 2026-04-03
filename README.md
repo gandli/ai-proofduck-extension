@@ -1,23 +1,33 @@
 # AI ProofDuck (校对鸭)
 
+<!-- TODO: Replace with actual repo URL -->
+<!--
+[![GitHub stars](https://img.shields.io/github/stars/your-repo/ai-proofduck-extension?style=social)](https://github.com/your-repo/ai-proofduck-extension)
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/stars)](https://chrome.google.com/webstore)
+-->
+
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)
 ![React](https://img.shields.io/badge/React-19-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
+![Bun](https://img.shields.io/badge/Bun-1.x-yellow)
 
-AI-powered proofreading and translation browser extension (Manifest V3).
+AI ProofDuck 是一款本地 WebGPU 加速的网页翻译 + 专业审阅校对工具。支持划词即时翻译、校对、润色、扩写等多种 AI 写作辅助功能。
 
-[English](./README.md) | [中文](./README.zh-CN.md)
+**English** | **中文**
+
+> 如果您觉得这个项目有帮助，请给我们一个 Star！
 
 ## 项目简介
 
 校对鸭 (AI ProofDuck) 是一款本地 WebGPU 加速的网页翻译 + 专业审阅校对工具。支持划词即时翻译、校对、润色、扩写等多种 AI 写作辅助功能。
 
 **核心特性**:
-- 翻译引擎优先级：Chrome 内置 AI (Gemini Nano) > 本地 WebGPU/WASM 模型 > OpenAI 兼容 API > 第三方免费翻译
-- 多模式写作辅助：翻译、摘要、纠错、润色、扩写
-- 本地优先隐私保护，文本优先在设备侧处理
-- 支持中英日三语界面
+
+- **翻译引擎优先级**: Chrome 内置 AI (Gemini Nano) > 本地 WebGPU/WASM 模型 > OpenAI 兼容 API > 第三方免费翻译
+- **多模式写作辅助**: 翻译、摘要、纠错、润色、扩写
+- **本地优先隐私保护**: 文本优先在设备侧处理
+- **支持中英日三语界面**: 随时切换语言
 
 ## Tech Stack
 
@@ -130,15 +140,7 @@ bun test:e2e:headed  # Playwright headed mode
 
 ---
 
-## 安装说明
-
-### 环境要求
-
-- [Bun](https://bun.sh/) >= 1.0 (推荐)
-- Node.js >= 18 (可选，使用 npm)
-- Chrome 128+ / Edge 128+ / Firefox 130+ (支持 Manifest V3)
-
-### 安装步骤
+## 快速开始
 
 ```bash
 # 克隆项目
@@ -150,7 +152,30 @@ bun install
 
 # 启动开发服务器
 bun dev
+
+# 加载扩展到 Chrome
+# 1. 打开 chrome://extensions/
+# 2. 开启开发者模式
+# 3. 点击"加载已解压的扩展程序"
+# 4. 选择 .output/chrome-mv3-dev/ 目录
 ```
+
+---
+
+## 安装说明
+
+### 环境要求
+
+- [Bun](https://bun.sh/) >= 1.0 (推荐)
+- Node.js >= 18 (可选，使用 npm)
+- Chrome 128+ / Edge 128+ / Firefox 130+ (支持 Manifest V3)
+
+### 安装步骤
+
+1. 克隆项目到本地
+2. 安装依赖：`bun install`
+3. 启动开发：`bun dev`
+4. 加载扩展到浏览器
 
 ### 加载扩展 (Chrome)
 
@@ -193,11 +218,14 @@ bun zip
 
 在扩展设置中配置您偏好的 AI 服务：
 
-- OpenAI (GPT-4, GPT-3.5)
-- Claude
-- DeepSeek
-- Gemini
-- 本地模型 (WebGPU/WASM)
+| 服务 | 说明 |
+|------|------|
+| Chrome AI | 优先使用 Chrome 内置 Gemini Nano |
+| OpenAI | GPT-4, GPT-3.5 |
+| Claude | Anthropic Claude |
+| DeepSeek | DeepSeek 模型 |
+| Gemini | Google Gemini |
+| 本地模型 | WebGPU/WASM 模式 |
 
 ---
 
@@ -241,13 +269,23 @@ bun zip
 
 ## 贡献指南
 
-详见 [CONTRIBUTING.md](./CONTRIBUTING.md)
+欢迎提交 Pull Request 和 Issue！详见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
 
 ---
 
 ## API 文档
 
-详见 [API.md](./API.md)
+详见 [API.md](./API.md)。
+
+---
+
+## 相关文档
+
+| 文档 | 说明 |
+|------|------|
+| [CLAUDE.md](./CLAUDE.md) | Claude Code 开发指南 |
+| [AGENTS.md](./AGENTS.md) | Agent 开发规范 |
+| [API.md](./API.md) | API 文档 |
 
 ---
 

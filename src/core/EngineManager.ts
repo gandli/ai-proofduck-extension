@@ -116,7 +116,7 @@ export class EngineManager {
         id: engine.id,
         name: engine.name,
         status,
-        error,
+        ...(error ? { error } : {}),
       });
     }
 
@@ -158,9 +158,7 @@ export class EngineManager {
     }
 
     try {
-      const startTime = Date.now();
       const result = await engine.translate(text, from, to);
-      const duration = Date.now() - startTime;
 
       return {
         translatedText: result.translatedText,

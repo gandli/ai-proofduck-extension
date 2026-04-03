@@ -1,20 +1,20 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ModelLoader, modelLoader, LocalModelType } from '@/core/ModelLoader';
 
 // Mock chrome.storage.local
 const mockStorage: Record<string, unknown> = {};
 
-vi.stubGlobal('chrome', {
+const mockChrome = {
   storage: {
     local: {
-      get: vi.fn((key) => Promise.resolve({ [key]: mockStorage[key] })),
-      set: vi.fn((items) => {
+      get: vi.fn((key: string) => Promise.resolve({ [key]: mockStorage[key] })),
+      set: vi.fn((items: Record<string, unknown>) => {
         Object.assign(mockStorage, items);
         return Promise.resolve();
       }),
     },
   },
-});
+};
 
 // Mock navigator.gpu
 const mockGPUAdapter = {
@@ -22,20 +22,40 @@ const mockGPUAdapter = {
   limits: {},
 };
 
-vi.stubGlobal('navigator', {
+const mockNavigator = {
   gpu: {
     requestAdapter: vi.fn().mockResolvedValue(mockGPUAdapter),
   },
-});
+};
 
 // Mock window.ai
-vi.stubGlobal('window', {
+const mockWindow = {
   ai: {
     languageModel: {
       capabilities: vi.fn().mockResolvedValue({ available: 'readily' }),
       create: vi.fn(),
     },
   },
+};
+
+// Set up globals before tests
+beforeEach(() => {
+  // Reset and set global mocks
+  Object.defineProperty(globalThis, 'chrome', {
+    value: mockChrome,
+    writable: true,
+    configurable: true,
+  });
+  Object.defineProperty(globalThis, 'navigator', {
+    value: mockNavigator,
+    writable: true,
+    configurable: true,
+  });
+  Object.defineProperty(globalThis, 'window', {
+    value: mockWindow,
+    writable: true,
+    configurable: true,
+  });
 });
 
 describe('ModelLoader', () => {

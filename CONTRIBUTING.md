@@ -32,8 +32,8 @@
 git clone https://github.com/your-username/ai-proofduck-extension.git
 cd ai-proofduck-extension
 
-# 添加上游仓库
-git remote add upstream https://github.com/original-owner/ai-proofduck-extension.git
+# 添加上游仓库（替换为实际仓库地址）
+git remote add upstream https://github.com/your-org/ai-proofduck-extension.git
 ```
 
 ### 创建分支
@@ -80,7 +80,7 @@ bun compile
 
 ### 1. 选择任务
 
-- 查看 [Issues](https://github.com/your-repo/ai-proofduck-extension/issues) 中标记为 `good first issue` 或 `help wanted` 的任务
+- 查看 Issues 中标记为 `good first issue` 或 `help wanted` 的任务
 - 在开始工作前，请先在 Issue 下评论，说明您打算如何解决
 
 ### 2. 开发步骤
@@ -103,6 +103,22 @@ bun compile
 2. 填写 PR 模板中的所有字段
 3. 确保 CI/CD 通过
 4. 等待代码审查
+
+### 分支命名规范
+
+```
+feature/<功能名称>     # 新功能
+fix/<问题编号>        # Bug 修复
+refactor/<模块>       # 重构
+docs/<模块>           # 文档更新
+test/<模块>           # 测试相关
+chore/<任务>          # 杂项
+```
+
+示例：
+- `feature/translation-engine`
+- `fix/popup-display-issue`
+- `docs/update-readme`
 
 ## 代码规范
 
@@ -208,6 +224,15 @@ Closes #123
 ```
 
 ## 测试规范
+
+### TDD 开发流程
+
+我们推荐遵循 **Red → Green → Refactor** 循环：
+
+1. **Red** - 先编写失败测试
+2. **Green** - 编写最小实现使测试通过
+3. **Refactor** - 重构优化代码
+4. 重复以上步骤
 
 ### 单元测试 (Vitest)
 
@@ -337,7 +362,7 @@ function estimateLength(text: string, from: string, to: string): number {
 
 - 查看 [AGENTS.md](./AGENTS.md) - 项目开发指南
 - 查看 [API.md](./API.md) - API 文档
-- 创建 [Issue](https://github.com/your-repo/ai-proofduck-extension/issues) 提问
+- 创建 Issue 提问
 
 ---
 

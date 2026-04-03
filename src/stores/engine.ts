@@ -11,7 +11,11 @@ import type { EngineInfo, EngineStatus } from '@/types';
 const chromeStorageAdapter = {
   getItem: async (name: string): Promise<string | null> => {
     const result = await chrome.storage.local.get(name);
-    return result[name] ?? null;
+    const value = result[name];
+    if (typeof value === 'string') {
+      return value;
+    }
+    return null;
   },
   setItem: async (name: string, value: string): Promise<void> => {
     await chrome.storage.local.set({ [name]: value });
@@ -87,7 +91,7 @@ const defaultEngineConfig = {
 
 export const useEngineStore = create<EngineState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       // Initial state
       ...defaultEngineConfig,
 

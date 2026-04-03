@@ -89,13 +89,16 @@ async function handleMenuClick(
   info: unknown,
   tab: unknown
 ): Promise<void> {
-  if (!tab?.id) {
+  const tabObj = tab as { id?: number };
+  const infoObj = info as { menuItemId?: string; selectionText?: string };
+
+  if (!tabObj?.id) {
     console.error('[ProofDuck] 无法获取标签页信息');
     return;
   }
 
-  const menuId = info.menuItemId as string;
-  const selectionText = info.selectionText?.trim() || '';
+  const menuId = infoObj.menuItemId as string;
+  const selectionText = infoObj.selectionText?.trim() || '';
 
   console.log('[ProofDuck] 菜单点击:', menuId, selectionText.substring(0, 50));
 
@@ -103,14 +106,14 @@ async function handleMenuClick(
     switch (menuId) {
       case MENU_IDS.TRANSLATE_PAGE:
         // 翻译整个页面
-        await browser.tabs.sendMessage(tab.id, {
+        await browser.tabs.sendMessage(tabObj.id!, {
           type: 'translatePage',
         });
         break;
 
       case MENU_IDS.TRANSLATE_SELECTION:
         if (selectionText) {
-          await browser.tabs.sendMessage(tab.id, {
+          await browser.tabs.sendMessage(tabObj.id!, {
             type: 'translate',
             text: selectionText,
             mode: 'translate' as AIMode,
@@ -120,7 +123,7 @@ async function handleMenuClick(
 
       case MENU_IDS.PROOFREAD_SELECTION:
         if (selectionText) {
-          await browser.tabs.sendMessage(tab.id, {
+          await browser.tabs.sendMessage(tabObj.id!, {
             type: 'proofread',
             text: selectionText,
             mode: 'proofread' as AIMode,
@@ -130,7 +133,7 @@ async function handleMenuClick(
 
       case MENU_IDS.POLISH_SELECTION:
         if (selectionText) {
-          await browser.tabs.sendMessage(tab.id, {
+          await browser.tabs.sendMessage(tabObj.id!, {
             type: 'polish',
             text: selectionText,
             mode: 'polish' as AIMode,
@@ -140,7 +143,7 @@ async function handleMenuClick(
 
       case MENU_IDS.EXPAND_SELECTION:
         if (selectionText) {
-          await browser.tabs.sendMessage(tab.id, {
+          await browser.tabs.sendMessage(tabObj.id!, {
             type: 'expand',
             text: selectionText,
             mode: 'expand' as AIMode,
