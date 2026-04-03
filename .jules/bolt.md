@@ -1,0 +1,3 @@
+## 2024-05-24 - [DOM Serialization in High-Frequency Events]
+**Learning:** Calling `window.getSelection().toString()` inside the `selectionchange` event listener defeats the purpose of the subsequent debounce. `selectionchange` fires at ~60fps during text selection dragging. Forcing the browser to serialize the DOM selection into a string on every frame causes main thread jank and unnecessary memory allocation, especially on large pages.
+**Action:** Always defer expensive DOM read/serialization operations (like `selection.toString()`) until *after* the debounce timer has fired, not inside the event listener itself.
