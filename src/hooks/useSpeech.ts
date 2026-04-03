@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { speechService, SpeechConfig, SpeechStatus } from '../services/SpeechService';
+import { speechService, SpeechConfig, SpeechStatus } from '@/services/SpeechService';
 
 interface UseSpeechOptions {
   /** 默认语言 */

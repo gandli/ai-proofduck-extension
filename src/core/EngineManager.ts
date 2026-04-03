@@ -3,7 +3,7 @@
  * 负责引擎注册、优先级调度、自动降级
  */
 
-import type { TranslationEngine, EngineInfo, EngineStatus, StreamChunk } from '../types';
+import type { TranslationEngine, EngineInfo, EngineStatus, StreamChunk } from '@/types';
 
 /**
  * 引擎运行错误

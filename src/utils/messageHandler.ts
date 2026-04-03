@@ -3,8 +3,8 @@
  * 处理内容脚本与后台脚本之间的消息通信
  */
 
-import type { ContentToBackgroundMessage, BackgroundToContentMessage } from '../types/content';
-import type { TranslationResult, ProofreadResult } from '../types';
+import type { ContentToBackgroundMessage, BackgroundToContentMessage } from '@/types/content';
+import type { TranslationResult, ProofreadResult } from '@/types';
 
 /**
  * 发送消息到后台脚本

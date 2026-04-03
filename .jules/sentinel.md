@@ -1,4 +1,4 @@
 ## 2026-04-03 - [Insecure Math.random Usage for GUIDs]
 **Vulnerability:** A custom implementation of GUID generation in `SpeechService.ts` was using `Math.random()`. This is not cryptographically secure, and the values are predictable.
-**Learning:** Shared service files like `SpeechService` can be injected via content scripts into HTTP pages where `crypto.randomUUID()` is undefined. Relying strictly on `crypto.randomUUID()` breaks functionality on these sites.
-**Prevention:** Always implement a fallback for `crypto.randomUUID()` utilizing `crypto.getRandomValues()` to support environments lacking secure context APIs when making random generation secure in browser extensions.
+**Learning:** Shared service files like `SpeechService` can be injected via content scripts into HTTP pages where `crypto.randomUUID()` is undefined. Relying strictly on `crypto.randomUUID()` breaks functionality on these sites. Additionally, `crypto.getRandomValues` may also be undefined depending on the environment, requiring a thorough fallback chain.
+**Prevention:** Always implement a fallback for `crypto.randomUUID()` utilizing `crypto.getRandomValues()` and explicitly check for the existence of the `crypto` object and its methods (e.g. `typeof crypto !== 'undefined' && crypto.getRandomValues`) to support environments lacking secure context APIs.

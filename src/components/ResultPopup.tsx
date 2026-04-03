@@ -4,7 +4,7 @@
  */
 
 import { TranslationResultLayer } from './TranslationResultLayer';
-import type { Correction } from '../types';
+import type { Correction } from '@/types';
 
 interface Props {
   /** 原始文本 */
