@@ -154,5 +154,53 @@
   "openSidebar": {
     "message": "사이드바",
     "description": "사이드바 버튼"
+  },
+  "settingsSpeech": {
+    "message": "음성 설정",
+    "description": "Speech settings group title"
+  },
+  "settingsSpeechLang": {
+    "message": "언어",
+    "description": "Speech language setting"
+  },
+  "settingsSpeechRate": {
+    "message": "속도",
+    "description": "Speech rate setting"
+  },
+  "settingsSpeechPitch": {
+    "message": "음높이",
+    "description": "Speech pitch setting"
+  },
+  "settingsSpeechVolume": {
+    "message": "음량",
+    "description": "Speech volume setting"
+  },
+  "settingsSpeechPreview": {
+    "message": "미리보기",
+    "description": "Preview speech button"
+  },
+  "settingsSpeechPreviewText": {
+    "message": "이것은 테스트 음성 텍스트입니다",
+    "description": "Preview speech text"
+  },
+  "menuTranslatePage": {
+    "message": "페이지 번역",
+    "description": "Context menu to translate entire page"
+  },
+  "menuTranslateSelection": {
+    "message": "선택 영역 번역",
+    "description": "Context menu to translate selected text"
+  },
+  "menuProofreadSelection": {
+    "message": "선택 영역 교정",
+    "description": "Context menu to proofread selected text"
+  },
+  "menuPolishSelection": {
+    "message": "선택 영역 윤문",
+    "description": "Context menu to polish selected text"
+  },
+  "menuExpandSelection": {
+    "message": "선택 영역 확장",
+    "description": "Context menu to expand selected text"
   }
 }

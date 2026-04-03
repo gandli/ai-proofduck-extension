@@ -154,5 +154,53 @@
   "openSidebar": {
     "message": "サイドバー",
     "description": "サイドバーボタン"
+  },
+  "settingsSpeech": {
+    "message": "音声設定",
+    "description": "Speech settings group title"
+  },
+  "settingsSpeechLang": {
+    "message": "言語",
+    "description": "Speech language setting"
+  },
+  "settingsSpeechRate": {
+    "message": "速度",
+    "description": "Speech rate setting"
+  },
+  "settingsSpeechPitch": {
+    "message": "音程",
+    "description": "Speech pitch setting"
+  },
+  "settingsSpeechVolume": {
+    "message": "音量",
+    "description": "Speech volume setting"
+  },
+  "settingsSpeechPreview": {
+    "message": "プレビュー",
+    "description": "Preview speech button"
+  },
+  "settingsSpeechPreviewText": {
+    "message": "これはテスト朗読テキストです",
+    "description": "Preview speech text"
+  },
+  "menuTranslatePage": {
+    "message": "ページを翻訳",
+    "description": "Context menu to translate entire page"
+  },
+  "menuTranslateSelection": {
+    "message": "選択範囲を翻訳",
+    "description": "Context menu to translate selected text"
+  },
+  "menuProofreadSelection": {
+    "message": "選択範囲を校正",
+    "description": "Context menu to proofread selected text"
+  },
+  "menuPolishSelection": {
+    "message": "選択範囲を潤色",
+    "description": "Context menu to polish selected text"
+  },
+  "menuExpandSelection": {
+    "message": "選択範囲を拡張",
+    "description": "Context menu to expand selected text"
   }
 }

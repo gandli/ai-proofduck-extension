@@ -4,6 +4,7 @@
  */
 import { useCallback, useRef } from 'react';
 import type { AIMode } from '@/types';
+import { t } from '@/i18n';
 
 interface TabBarProps {
   activeTab: AIMode;
@@ -87,8 +88,8 @@ export function TabBar({ activeTab, onTabChange }: TabBarProps) {
               }
             `}
           >
-            <span>{tab.icon}</span>
-            <span>{tab.labelKey}</span>
+            <span aria-hidden="true">{tab.icon}</span>
+            <span>{t(tab.labelKey)}</span>
           </button>
         );
       })}

@@ -2,7 +2,7 @@
  * LanguageSelector 组件 - 语言选择器
  * 支持无障碍访问
  */
-import { useState } from 'react';
+import { useState, useId } from 'react';
 
 export interface Language {
   code: string;
@@ -39,6 +39,8 @@ export function LanguageSelector({
   showAutoDetect = true,
 }: LanguageSelectorProps) {
   const [swapLoading, setSwapLoading] = useState(false);
+  const sourceSelectId = useId();
+  const targetSelectId = useId();
 
   // 交换源语言和目标语言
   const handleSwap = () => {
@@ -54,11 +56,14 @@ export function LanguageSelector({
   );
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2" role="group" aria-label="语言选择">
       {/* 源语言 */}
-      <label className="flex-1">
-        <span className="sr-only">源语言</span>
+      <div className="flex-1">
+        <label htmlFor={sourceSelectId} className="sr-only">
+          源语言
+        </label>
         <select
+          id={sourceSelectId}
           value={sourceLang}
           onChange={(e) => onSourceChange(e.target.value)}
           className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange/50 focus:border-brand-orange"
@@ -73,7 +78,7 @@ export function LanguageSelector({
             </option>
           ))}
         </select>
-      </label>
+      </div>
 
       {/* 交换按钮 */}
       <button
@@ -86,6 +91,7 @@ export function LanguageSelector({
         `}
         title="交换语言"
         aria-label="交换源语言和目标语言"
+        aria-disabled={sourceLang === 'auto'}
         type="button"
       >
         <svg
@@ -104,9 +110,12 @@ export function LanguageSelector({
       </button>
 
       {/* 目标语言 */}
-      <label className="flex-1">
-        <span className="sr-only">目标语言</span>
+      <div className="flex-1">
+        <label htmlFor={targetSelectId} className="sr-only">
+          目标语言
+        </label>
         <select
+          id={targetSelectId}
           value={targetLang}
           onChange={(e) => onTargetChange(e.target.value)}
           className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange/50 focus:border-brand-orange"
@@ -118,7 +127,7 @@ export function LanguageSelector({
             </option>
           ))}
         </select>
-      </label>
+      </div>
     </div>
   );
 }

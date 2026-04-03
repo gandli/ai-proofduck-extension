@@ -154,5 +154,53 @@
   "openSidebar": {
     "message": "Barra lateral",
     "description": "Botón Abrir barra lateral"
+  },
+  "settingsSpeech": {
+    "message": "Configuración de voz",
+    "description": "Speech settings group title"
+  },
+  "settingsSpeechLang": {
+    "message": "Idioma",
+    "description": "Speech language setting"
+  },
+  "settingsSpeechRate": {
+    "message": "Velocidad",
+    "description": "Speech rate setting"
+  },
+  "settingsSpeechPitch": {
+    "message": "Tono",
+    "description": "Speech pitch setting"
+  },
+  "settingsSpeechVolume": {
+    "message": "Volumen",
+    "description": "Speech volume setting"
+  },
+  "settingsSpeechPreview": {
+    "message": "Vista previa",
+    "description": "Preview speech button"
+  },
+  "settingsSpeechPreviewText": {
+    "message": "Este es un texto de prueba de voz",
+    "description": "Preview speech text"
+  },
+  "menuTranslatePage": {
+    "message": "Traducir página",
+    "description": "Context menu to translate entire page"
+  },
+  "menuTranslateSelection": {
+    "message": "Traducir selección",
+    "description": "Context menu to translate selected text"
+  },
+  "menuProofreadSelection": {
+    "message": "Corregir selección",
+    "description": "Context menu to proofread selected text"
+  },
+  "menuPolishSelection": {
+    "message": "Perfeccionar selección",
+    "description": "Context menu to polish selected text"
+  },
+  "menuExpandSelection": {
+    "message": "Expandir selección",
+    "description": "Context menu to expand selected text"
   }
 }

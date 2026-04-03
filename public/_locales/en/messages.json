@@ -182,5 +182,25 @@
   "settingsSpeechPreviewText": {
     "message": "This is a test speech text",
     "description": "Preview speech text"
+  },
+  "menuTranslatePage": {
+    "message": "Translate Page",
+    "description": "Context menu to translate entire page"
+  },
+  "menuTranslateSelection": {
+    "message": "Translate Selection",
+    "description": "Context menu to translate selected text"
+  },
+  "menuProofreadSelection": {
+    "message": "Proofread Selection",
+    "description": "Context menu to proofread selected text"
+  },
+  "menuPolishSelection": {
+    "message": "Polish Selection",
+    "description": "Context menu to polish selected text"
+  },
+  "menuExpandSelection": {
+    "message": "Expand Selection",
+    "description": "Context menu to expand selected text"
   }
 }

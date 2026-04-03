@@ -182,5 +182,25 @@
   "settingsSpeechPreviewText": {
     "message": "这是一段测试朗读文本",
     "description": "Preview speech text"
+  },
+  "menuTranslatePage": {
+    "message": "翻译页面",
+    "description": "翻译整个页面的右键菜单"
+  },
+  "menuTranslateSelection": {
+    "message": "翻译选中文字",
+    "description": "翻译选中文字的右键菜单"
+  },
+  "menuProofreadSelection": {
+    "message": "校对选中文字",
+    "description": "校对选中文字的右键菜单"
+  },
+  "menuPolishSelection": {
+    "message": "润色选中文字",
+    "description": "润色选中文字的右键菜单"
+  },
+  "menuExpandSelection": {
+    "message": "扩写选中文字",
+    "description": "扩写选中文字的右键菜单"
   }
 }

@@ -154,5 +154,53 @@
   "openSidebar": {
     "message": "Seitenleiste",
     "description": "Seitenleiste-Öffnen-Schaltfläche"
+  },
+  "settingsSpeech": {
+    "message": "Spracheinstellungen",
+    "description": "Speech settings group title"
+  },
+  "settingsSpeechLang": {
+    "message": "Sprache",
+    "description": "Speech language setting"
+  },
+  "settingsSpeechRate": {
+    "message": "Geschwindigkeit",
+    "description": "Speech rate setting"
+  },
+  "settingsSpeechPitch": {
+    "message": "Tonhöhe",
+    "description": "Speech pitch setting"
+  },
+  "settingsSpeechVolume": {
+    "message": "Lautstärke",
+    "description": "Speech volume setting"
+  },
+  "settingsSpeechPreview": {
+    "message": "Vorschau",
+    "description": "Preview speech button"
+  },
+  "settingsSpeechPreviewText": {
+    "message": "Dies ist ein Test-Sprachteext",
+    "description": "Preview speech text"
+  },
+  "menuTranslatePage": {
+    "message": "Seite übersetzen",
+    "description": "Context menu to translate entire page"
+  },
+  "menuTranslateSelection": {
+    "message": "Auswahl übersetzen",
+    "description": "Context menu to translate selected text"
+  },
+  "menuProofreadSelection": {
+    "message": "Auswahl korrigieren",
+    "description": "Context menu to proofread selected text"
+  },
+  "menuPolishSelection": {
+    "message": "Auswahl polieren",
+    "description": "Context menu to polish selected text"
+  },
+  "menuExpandSelection": {
+    "message": "Auswahl erweitern",
+    "description": "Context menu to expand selected text"
   }
 }
