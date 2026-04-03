@@ -1,16 +1,23 @@
 # AI ProofDuck (校对鸭)
 
-<!-- TODO: Replace with actual repo URL -->
-<!--
-[![GitHub stars](https://img.shields.io/github/stars/your-repo/ai-proofduck-extension?style=social)](https://github.com/your-repo/ai-proofduck-extension)
-[![Chrome Web Store](https://img.shields.io/chrome-web-store/stars)](https://chrome.google.com/webstore)
--->
+[![GitHub stars](https://img.shields.io/github/stars/gandli/ai-proofduck-extension?style=social)](https://github.com/gandli/ai-proofduck-extension)
+[![Version](https://img.shields.io/badge/version-v1.0.0--phase1-orange)](https://github.com/gandli/ai-proofduck-extension/releases)
+[![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue)](https://developer.chrome.com/docs/extensions/mv3/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-blue)](https://react.dev/)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![Bun](https://img.shields.io/badge/Bun-1.x-yellow)](https://bun.sh/)
 
-![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)
-![React](https://img.shields.io/badge/React-19-blue)
-![License](https://img.shields.io/badge/License-MIT-green)
-![Bun](https://img.shields.io/badge/Bun-1.x-yellow)
+## 🚀 Quick Release
+
+**Release:** v1.0.0-phase1 (2026-04-03)
+
+| Milestone | Status |
+|-----------|--------|
+| M1-M6 Core Features | ✅ Complete |
+| M7-M13 Enhanced Features | ✅ Complete |
+| CI/CD | ✅ Configured |
+| Documentation | ✅ Complete |
 
 AI ProofDuck 是一款本地 WebGPU 加速的网页翻译 + 专业审阅校对工具。支持划词即时翻译、校对、润色、扩写等多种 AI 写作辅助功能。
 

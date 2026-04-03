@@ -1,0 +1,112 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'bun'
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Generate Changelog
+        id: changelog
+        run: |
+          # Get tag name
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          
+          # Generate changelog using git log
+          CHANGELOG="## What's Changed\n\n"
+          CHANGELOG+="**Release:** $TAG_NAME\n\n"
+          CHANGELOG+="### Commits\n\n"
+          
+          # Get commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            COMMITS=$(git log $LAST_TAG..HEAD --oneline --format="* %s (%h)" 2>/dev/null)
+          else
+            COMMITS=$(git log --oneline --format="* %s (%h)" -20)
+          fi
+          
+          CHANGELOG+="$COMMITS\n\n"
+          
+          # Group by type
+          CHANGELOG+="### Summary\n\n"
+          CHANGELOG+="- Features: $(echo "$COMMITS" | grep -c "feat:" || echo 0)\n"
+          CHANGELOG+="- Bug Fixes: $(echo "$COMMITS" | grep -c "fix:" || echo 0)\n"
+          CHANGELOG+="- Documentation: $(echo "$COMMITS" | grep -c "docs:" || echo 0)\n"
+          CHANGELOG+="- Tests: $(echo "$COMMITS" | grep -c "test:" || echo 0)\n"
+          CHANGELOG+="- Refactoring: $(echo "$COMMITS" | grep -c "refactor:" || echo 0)\n"
+          CHANGELOG+="- Chores: $(echo "$COMMITS" | grep -c "chore:" || echo 0)\n"
+          
+          echo "$CHANGELOG" > CHANGELOG.md
+          cat CHANGELOG.md
+          
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          cat CHANGELOG.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHELOG_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.changelog.outputs.tag_name }}
+          name: Release ${{ steps.changelog.outputs.tag_name }}
+          body: ${{ steps.changelog.outputs.changelog }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update CHANGELOG.md
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "docs: update changelog for ${{ steps.changelog.outputs.tag_name }}" || true
+          git push || true
+
+  update-readme:
+    runs-on: ubuntu-latest
+    needs: release
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Update README with latest release
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          RELEASE_DATE=$(date +%Y-%m-%d)
+          
+          # Update version badge in README
+          sed -i "s/\(badge\/v---\)\[.*\]/\1$TAG_NAME\]/g" README.md || true
+          
+          # Update release info section
+          if grep -q "## 🚀 Quick Release" README.md; then
+            sed -i "s/Release:.*/Release: **$TAG_NAME** ($RELEASE_DATE)/g" README.md || true
+          fi
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "docs: update README for $TAG_NAME" || true
+          git push || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
