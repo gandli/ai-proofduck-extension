@@ -1,3 +1,4 @@
-## 2024-05-24 - [DOM Serialization in High-Frequency Events]
-**Learning:** Calling `window.getSelection().toString()` inside the `selectionchange` event listener defeats the purpose of the subsequent debounce. `selectionchange` fires at ~60fps during text selection dragging. Forcing the browser to serialize the DOM selection into a string on every frame causes main thread jank and unnecessary memory allocation, especially on large pages.
-**Action:** Always defer expensive DOM read/serialization operations (like `selection.toString()`) until *after* the debounce timer has fired, not inside the event listener itself.
+
+## 2024-05-24 - [React Render Loop Dependencies in Streaming UIs]
+**Learning:** Components that render streaming text (like `TranslationResultLayer.tsx`) using `setInterval` or `requestAnimationFrame` update their state every ~30ms. Unmemoized synchronous DOM size computations (like `window.innerWidth/innerHeight`) inside the component body are unnecessarily evaluated on every single render frame, which causes noticeable layout thrashing or CPU overhead during streams.
+**Action:** Always wrap coordinate calculations or derived state involving heavy DOM reads (or layout properties) in `useMemo` when they are inside components that will stream output or animate via rapid React re-renders.

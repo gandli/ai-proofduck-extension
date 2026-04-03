@@ -182,9 +182,7 @@ function registerSelectionListener(): void {
   // 监听选区变化（兼容多种浏览器）
   document.addEventListener('selectionchange', () => {
     const selection = window.getSelection();
-    // ⚡ Bolt: Defer expensive DOM text serialization (selection.toString())
-    // until the debounced handler to prevent main-thread jank during 60fps selection dragging
-    if (selection && !selection.isCollapsed) {
+    if (selection && !selection.isCollapsed && selection.toString().trim()) {
       onSelectionChange();
     }
   });
