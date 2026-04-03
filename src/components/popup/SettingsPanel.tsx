@@ -3,8 +3,8 @@
  * 服务引擎管理 UI，支持无障碍访问
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { t } from '@/i18n';
-import { speechService, SpeechConfig, LANGUAGE_VOICE_MAP } from '@/services/SpeechService';
+import { t } from '../../i18n';
+import { speechService, SpeechConfig, LANGUAGE_VOICE_MAP } from '../../services/SpeechService';
 
 type EngineCategory = 'translation' | 'local' | 'llm';
 type EngineStatus = 'idle' | 'ready' | 'error';
