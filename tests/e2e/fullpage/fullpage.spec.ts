@@ -236,7 +236,8 @@ test.describe('Speak Functionality', () => {
       </div>
     `);
 
-    const _speakBtn = page.locator('#speak-btn');
+    const speakBtn = page.locator('#speak-btn');
+    void speakBtn; // Reserved for future use
     const speakText = page.locator('#speak-text');
 
     await expect(speakText).toContainText('This text will be spoken');

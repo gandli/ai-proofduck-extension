@@ -97,7 +97,7 @@ describe('Engine Store', () => {
   describe('setEngineInfos', () => {
     it('should set engine infos', () => {
       const { setEngineInfos } = useEngineStore.getState();
-      const infos = [
+      const infos: Array<{ id: string; name: string; status: 'idle' | 'translating' | 'ready' | 'error'; error?: string }> = [
         { id: 'openai', name: 'OpenAI', status: 'ready' },
         { id: 'google', name: 'Google', status: 'error', error: 'API error' },
       ];
@@ -115,8 +115,8 @@ describe('Engine Store', () => {
       ]);
       updateEngineInfo('openai', { status: 'ready' });
       const state = useEngineStore.getState();
-      expect(state.engineInfos[0].status).toBe('ready');
-      expect(state.engineInfos[1].status).toBe('idle');
+      expect(state.engineInfos[0]?.status).toBe('ready');
+      expect(state.engineInfos[1]?.status).toBe('idle');
     });
   });
 
@@ -201,15 +201,16 @@ describe('isSelectedEngineEnabled', () => {
 
 describe('getEngineStatus', () => {
   it('should return engine status', async () => {
-    const { getEngineStatus, setEngineInfos } = useEngineStore.getState();
+    const { setEngineInfos } = useEngineStore.getState();
+    const { getEngineStatus } = await import('@/stores/engine');
     setEngineInfos([
-      { id: 'openai', name: 'OpenAI', status: 'ready' },
+      { id: 'openai', name: 'OpenAI', status: 'ready' as const },
     ]);
     expect(getEngineStatus('openai')).toBe('ready');
   });
 
-  it('should return idle for unknown engine', () => {
-    const { getEngineStatus } = useEngineStore.getState();
+  it('should return idle for unknown engine', async () => {
+    const { getEngineStatus } = await import('@/stores/engine');
     expect(getEngineStatus('unknown')).toBe('idle');
   });
 });

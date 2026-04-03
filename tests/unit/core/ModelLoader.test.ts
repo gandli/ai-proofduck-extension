@@ -179,6 +179,7 @@ describe('ModelLoader', () => {
 
     it('should return false when WebGPU is not available', async () => {
       const loader = new ModelLoader();
+      // @ts-expect-error - navigator.gpu is mocked in beforeEach
       (navigator.gpu.requestAdapter as ReturnType<typeof vi.fn>).mockResolvedValueOnce(null);
 
       const result = await loader.checkModel('webgpu');

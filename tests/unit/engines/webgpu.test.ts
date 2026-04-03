@@ -32,13 +32,14 @@ describe('WebGPUAdapter', () => {
   });
 
   afterEach(() => {
-    delete navigator.gpu;
+    // Reset navigator.gpu to undefined instead of deleting
+    Object.defineProperty(navigator, 'gpu', { value: undefined, configurable: true });
   });
 
   describe('checkWebGPUSupport', () => {
     it('should detect WebGPU support', async () => {
       const adapter = new WebGPUAdapter();
-      const result = await adapter.checkAvailability();
+      await adapter.checkAvailability();
 
       expect(mockGPU.requestAdapter).toHaveBeenCalled();
     });

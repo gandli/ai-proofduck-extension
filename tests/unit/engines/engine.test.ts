@@ -75,6 +75,6 @@ describe('EngineManager (placeholder)', () => {
     ];
 
     const sorted = [...engines].sort((a, b) => a.priority - b.priority);
-    expect(sorted[0].id).toBe('google');
+    expect(sorted[0]?.id).toBe('google');
   });
 });

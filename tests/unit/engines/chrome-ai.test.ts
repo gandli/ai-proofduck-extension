@@ -18,12 +18,14 @@ describe('ChromeAIAdapter', () => {
     vi.clearAllMocks();
     // Setup global window.ai
     window.ai = {
-      languageModel: mockLanguageModel as unknown as typeof window.ai.languageModel,
+      languageModel: mockLanguageModel,
     };
   });
 
   afterEach(() => {
-    delete window.ai;
+    // Reset window.ai to undefined using direct assignment instead of delete
+    // @ts-expect-error - testing mock setup
+    window.ai = undefined;
   });
 
   describe('checkAvailability', () => {
@@ -56,7 +58,8 @@ describe('ChromeAIAdapter', () => {
     });
 
     it('should return false when window.ai is not defined', async () => {
-      delete window.ai;
+      // @ts-expect-error - testing mock setup
+      window.ai = undefined;
 
       const adapter = new ChromeAIAdapter();
       const result = await adapter.checkAvailability();
@@ -65,7 +68,8 @@ describe('ChromeAIAdapter', () => {
     });
 
     it('should return false when languageModel is not available', async () => {
-      window.ai = undefined as unknown as typeof window.ai;
+      // @ts-expect-error - testing mock setup
+      window.ai = undefined;
 
       const adapter = new ChromeAIAdapter();
       const result = await adapter.checkAvailability();

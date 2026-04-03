@@ -98,7 +98,9 @@ function getEdgeVoice(lang: string): EdgeVoice {
   // 其次查找前缀匹配
   const prefix = langCode.split('-')[0] || '';
   voice = EDGE_VOICES.find(v => v.lang.toLowerCase().startsWith(prefix.toLowerCase()));
-  return voice ?? EDGE_VOICES[0]; // 默认返回第一个（中文晓晓）
+  if (voice) return voice;
+  // 默认返回第一个 (中文晓晓)
+  return EDGE_VOICES[0]!;
 }
 
 // 朗读状态

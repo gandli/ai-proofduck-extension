@@ -39,7 +39,7 @@ export function ResultPopup({
       resultText={resultText}
       position={position}
       onClose={onClose}
-      onCopy={onCopy ?? undefined}
+      {...(onCopy && { onCopy })}
       isStreaming={false}
     />
   );

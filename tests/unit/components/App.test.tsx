@@ -1,6 +1,7 @@
-import { render, screen, cleanup } from '@testing-library/react';
-import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
-import React, { useState } from 'react';
+import '@testing-library/jest-dom';
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useState } from 'react';
 
 // Mock chrome API for tests
 const mockChrome = {
@@ -42,10 +43,6 @@ vi.mock('@/assets/react.svg', () => ({ default: '/mock-react.svg' }));
 vi.mock('/wxt.svg', () => ({ default: '/mock-wxt.svg' }));
 
 vi.mock('../../../entrypoints/popup/App.css', () => ({}));
-
-afterEach(() => {
-  cleanup();
-});
 
 function TestCounter() {
   const [count, setCount] = useState(0);
