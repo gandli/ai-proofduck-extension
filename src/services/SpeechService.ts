@@ -165,7 +165,7 @@ class EdgeTTSProvider {
       if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
         const array = new Uint8Array(1);
         crypto.getRandomValues(array);
-        r = array[0] % 16;
+        r = (array[0] ?? 0) % 16;
       } else {
         r = Math.random() * 16 | 0;
       }
