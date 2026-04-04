@@ -1,0 +1,3 @@
+## 2024-03-24 - Layout Thrashing in Streaming Components
+**Learning:** In React components that render streaming text (like `TranslationResultLayer.tsx`), synchronous DOM size computations (e.g., `window.innerWidth`/`innerHeight`) or complex layout calculations inside the render path cause severe layout thrashing and CPU overhead during frequent re-renders (e.g., every ~30ms via `setInterval`).
+**Action:** Wrap layout calculations involving synchronous DOM reads in `useMemo` and rely on prop dependencies (like `position.x`, `position.y`) to prevent redundant execution during high-frequency text updates.

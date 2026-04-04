@@ -3,7 +3,7 @@
  * 支持流式输出显示、复制、朗读、关闭等功能
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { t } from '@/i18n';
 import { speechService } from '@/services/SpeechService';
 
@@ -56,8 +56,12 @@ export function TranslationResultLayer({
   // ref for streaming interval
   const streamingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // ⚡ Bolt Optimization:
+  // Use useMemo instead of useCallback + immediate invocation to prevent synchronous layout
+  // thrashing (window.innerWidth/innerHeight reads) on every 30ms render during streaming.
+  // Impact: Reduces main thread CPU time significantly by skipping layout calcs when position hasn't changed.
   // 计算浮层位置（确保在可视区域内）
-  const calculatePosition = useCallback(() => {
+  const calculatePosition = useMemo(() => {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
@@ -85,9 +89,9 @@ export function TranslationResultLayer({
     }
 
     return { x, y };
-  }, [position]);
+  }, [position.x, position.y]);
 
-  const { x, y } = calculatePosition();
+  const { x, y } = calculatePosition;
 
   // 流式输出效果
   useEffect(() => {
