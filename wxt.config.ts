@@ -1,7 +1,15 @@
 import { defineConfig } from 'wxt';
+import path from 'node:path';
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
+  vite: () => ({
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
+    },
+  }),
   modules: ['@wxt-dev/module-react'],
   manifest: {
     default_locale: 'en',
