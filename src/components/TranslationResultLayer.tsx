@@ -237,7 +237,9 @@ export function TranslationResultLayer({
             lineHeight: 1,
             opacity: 0.8,
           }}
+          className="focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
           title={t('close') || '关闭'}
+          aria-label={t('close') || '关闭'}
         >
           ×
         </button>
@@ -299,6 +301,9 @@ export function TranslationResultLayer({
               fontSize: '12px',
               transition: 'all 0.2s',
             }}
+            className="focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-1 focus-visible:ring-offset-[#fafafa]"
+            title={copied ? (t('copied') || '已复制') : t('copy') || '复制'}
+            aria-label={copied ? (t('copied') || '已复制') : t('copy') || '复制'}
           >
             📋 {copied ? (t('copied') || '已复制') : t('copy') || '复制'}
           </button>
@@ -319,6 +324,9 @@ export function TranslationResultLayer({
               fontSize: '12px',
               transition: 'all 0.2s',
             }}
+            className="focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-1 focus-visible:ring-offset-[#fafafa]"
+            title={speaking ? (t('speaking') || '朗读中') : t('speak') || '朗读'}
+            aria-label={speaking ? (t('speaking') || '朗读中') : t('speak') || '朗读'}
           >
             🔊 {speaking ? (t('speaking') || '朗读中') : t('speak') || '朗读'}
           </button>
@@ -340,6 +348,9 @@ export function TranslationResultLayer({
                 fontSize: '12px',
                 transition: 'all 0.2s',
               }}
+              className="focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-1 focus-visible:ring-offset-[#fafafa]"
+              title={t('retry') || '重试'}
+              aria-label={t('retry') || '重试'}
             >
               ↻ {t('retry') || '重试'}
             </button>
@@ -363,6 +374,9 @@ export function TranslationResultLayer({
               fontSize: '12px',
               transition: 'all 0.2s',
             }}
+            className="focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-1 focus-visible:ring-offset-[#fafafa]"
+            title={t('openSidebar') || '侧边栏'}
+            aria-label={t('openSidebar') || '侧边栏'}
           >
             📖 {t('openSidebar') || '侧边栏'}
           </button>
