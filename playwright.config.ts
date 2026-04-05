@@ -17,7 +17,7 @@ export default defineConfig({
   ],
   webServer: {
     command: 'npx http-server .output/chrome-mv3 -p 3000',
-    url: 'http://localhost:3000/popup.html',
+    url: 'http://127.0.0.1:3000/popup.html',
     reuseExistingServer: !process.env.CI,
     timeout: 30000,
   },
