@@ -1,0 +1,3 @@
+## 2024-05-24 - Parallelize engine availability checks
+**Learning:** Sequential `await` in loops (`for (const engine of this.engines.values()) { await engine.checkAvailability(); }`) creates a significant performance bottleneck when checking multiple translation engines, as each check waits for the previous one to complete. This is a common codebase-specific architectural pattern when managing multiple translation engines.
+**Action:** Use `Promise.all` with `Array.from(...).map(async () => ...)` to parallelize independent asynchronous operations like engine availability checks, significantly reducing the total waiting time when multiple engines are registered (e.g., ~5x speedup for 5 engines).
