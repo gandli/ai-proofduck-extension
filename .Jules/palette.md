@@ -1,0 +1,3 @@
+## 2024-04-07 - The Accessibility Trio for Icon-only Buttons
+**Learning:** Icon-only buttons and custom switches (like those in the Settings panel) lack native text to act as accessible names and native visual structure for keyboard focus. When using Tailwind's `focus:outline-none` (which strips default browser outlines), interactive elements can become invisible to keyboard users.
+**Action:** Always ensure the 'accessibility trio' is present for these elements: 1) `title` attribute for native mouse hover tooltips, 2) `aria-label` for screen readers, and 3) explicit `focus-visible:ring-2` (with offsets if needed) to provide a clear visual indicator for keyboard navigation.
