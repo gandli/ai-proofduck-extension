@@ -1,0 +1,3 @@
+## 2024-04-08 - Added focus styles to icon-only buttons
+**Learning:** In the ProofDuck popup UI, several custom interactive elements (like the language swap button, close button, and engine toggle switch) lacked explicit `focus-visible` indicators, making keyboard navigation difficult. It is important to always pair Tailwind's `focus:outline-none` with `focus-visible:ring-2` for custom interactive elements to ensure accessibility.
+**Action:** Add `focus:outline-none focus-visible:ring-2` to all icon-only buttons and custom switches, along with explicit `title` attributes for native tooltips where missing.
