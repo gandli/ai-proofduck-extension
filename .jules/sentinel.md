@@ -1,0 +1,4 @@
+## 2026-04-08 - Insecure Randomness in GUID Generation
+**Vulnerability:** The `generateGuid` function in `src/services/SpeechService.ts` was using `Math.random()` to generate UUIDs.
+**Learning:** `Math.random()` is not a cryptographically secure pseudo-random number generator (CSPRNG). UUIDs generated this way are predictable and vulnerable to collision or prediction attacks. The context might be an extension running on unsecure contexts (HTTP), which requires a fallback implementation.
+**Prevention:** Always use `crypto.randomUUID()` where supported, and fallback to `crypto.getRandomValues()` (e.g., using `Uint8Array(1)` and nullish coalescing to safely extract a random value) for unsecure or older contexts. Avoid using `Math.random()` for any security-related or unique identifier generation.
