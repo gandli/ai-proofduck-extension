@@ -166,6 +166,11 @@ function onSelectionChange(): void {
 
   // 延迟执行，等待选区稳定
   selectionDebounceTimer = setTimeout(() => {
+    // ⚡ Bolt: Defer full text extraction to avoid processing empty whitespace selections triggered by the loose check in the listener.
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed || !selection.toString().trim()) {
+      return;
+    }
     handleSelectionChange();
   }, 300);
 }
@@ -182,7 +187,8 @@ function registerSelectionListener(): void {
   // 监听选区变化（兼容多种浏览器）
   document.addEventListener('selectionchange', () => {
     const selection = window.getSelection();
-    if (selection && !selection.isCollapsed && selection.toString().trim()) {
+    // ⚡ Bolt: Removed expensive selection.toString() to avoid jank on high-frequency events.
+    if (selection && !selection.isCollapsed) {
       onSelectionChange();
     }
   });
