@@ -238,6 +238,8 @@ export function TranslationResultLayer({
             opacity: 0.8,
           }}
           title={t('close') || '关闭'}
+          aria-label={t('close') || '关闭'}
+          type="button"
         >
           ×
         </button>

@@ -1,0 +1,3 @@
+## 2024-04-09 - Accessible purely visual iconic buttons
+**Learning:** Components created for custom DOM overlays (like `TranslationResultLayer.tsx`) often bypass standard design system components. This leads to missing accessibility features like `aria-label` or `type="button"` on purely visual buttons (e.g. the literal `×` text close button), even when standard tooltip features like `title` are present.
+**Action:** When adding or auditing purely visual or iconic interactive buttons inside injected overlays or standalone components, explicitly verify and add `aria-label` attributes to ensure screen reader users aren't left with an unpronounceable symbol or a lack of context.
