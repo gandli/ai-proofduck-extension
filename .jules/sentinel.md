@@ -1,0 +1,4 @@
+## 2025-04-10 - Secure GUID Generation
+**Vulnerability:** The application used an insecure fallback `Math.random()` to generate GUIDs (e.g. for WebSockets) in `src/services/SpeechService.ts`. `Math.random()` is cryptographically weak and predictable, creating an attack vector for things like session hijacking or id-based tracking if these GUIDs are exposed.
+**Learning:** Found custom ID generators instead of standard `crypto.randomUUID()`. Web Crypto APIs should always be preferred in browser extensions and web apps, including a secondary check `crypto.getRandomValues()` as an interim fallback before settling on predictable pseudorandom functions.
+**Prevention:** In browser contexts, explicitly utilize `crypto.randomUUID()` or `crypto.getRandomValues()`. Fall back to `Math.random()` solely as a last resort where standard environment support is unconfirmed.
