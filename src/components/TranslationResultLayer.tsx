@@ -227,6 +227,7 @@ export function TranslationResultLayer({
         </div>
         <button
           onClick={handleClose}
+          type="button"
           style={{
             background: 'none',
             border: 'none',
@@ -238,6 +239,7 @@ export function TranslationResultLayer({
             opacity: 0.8,
           }}
           title={t('close') || '关闭'}
+          aria-label={t('close') || '关闭'}
         >
           ×
         </button>
@@ -286,6 +288,7 @@ export function TranslationResultLayer({
           {/* 复制按钮 */}
           <button
             onClick={handleCopy}
+            type="button"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -306,6 +309,7 @@ export function TranslationResultLayer({
           {/* 朗读按钮 */}
           <button
             onClick={handleSpeak}
+            type="button"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -327,6 +331,7 @@ export function TranslationResultLayer({
           {onRetry && (
             <button
               onClick={onRetry}
+              type="button"
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -350,6 +355,7 @@ export function TranslationResultLayer({
         {onOpenSidebar && (
           <button
             onClick={onOpenSidebar}
+            type="button"
             style={{
               display: 'flex',
               alignItems: 'center',

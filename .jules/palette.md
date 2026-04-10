@@ -1,0 +1,3 @@
+## 2024-04-10 - Explicit Accessibility in Custom Overlays
+**Learning:** Custom injected DOM overlays (like `TranslationResultLayer.tsx` floating over host pages) frequently bypass standard design systems, leading to native `<button>` elements missing critical context. Notably, icon-only buttons (like `×` for close) become completely invisible to screen readers without an `aria-label`. Furthermore, buttons lacking `type="button"` can inadvertently trigger form submissions if the overlay happens to be injected inside a host page's `<form>` tag.
+**Action:** Always add explicit `aria-label`s to icon-only buttons and `type="button"` to all interactive buttons when creating custom injected DOM layers that don't use standard UI libraries.
