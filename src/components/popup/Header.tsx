@@ -19,7 +19,7 @@ export function Header({ onSettingsClick }: HeaderProps) {
       {/* 设置按钮 */}
       <button
         onClick={onSettingsClick}
-        className="p-2 rounded-lg hover:bg-white/20 transition-colors"
+        className="p-2 rounded-lg hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-orange"
         title={t('settings') || '设置'}
         aria-label={t('settings') || '设置'}
         type="button"
