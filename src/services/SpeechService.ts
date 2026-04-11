@@ -155,8 +155,25 @@ class EdgeTTSProvider {
 
   /**
    * 生成 GUID
+   * Security: Use crypto.randomUUID() for secure UUID generation.
+   * Fallback to crypto.getRandomValues() or Math.random() if crypto is unavailable in the environment.
    */
   private generateGuid(): string {
+    if (typeof crypto !== 'undefined') {
+      if (typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+      }
+      if (typeof crypto.getRandomValues === 'function') {
+        return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (c) =>
+          (
+            Number(c) ^
+            ((crypto.getRandomValues(new Uint8Array(1))[0] ?? 0) & 15) >> (Number(c) / 4)
+          ).toString(16)
+        );
+      }
+    }
+
+    // Ultimate fallback for environments without crypto
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
       const r = Math.random() * 16 | 0;
       const v = c === 'x' ? r : (r & 0x3 | 0x8);
