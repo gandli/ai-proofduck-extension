@@ -1,0 +1,3 @@
+## 2026-04-11 - Parallelize Independent Async Operations in Loops
+**Learning:** In `EngineManager.ts`, independent async operations (like checking translation engine availability `engine.checkAvailability()`) were being executed sequentially in a `for...of` loop. This architecture causes a performance bottleneck because the total latency becomes the sum of all individual engine checks.
+**Action:** Replace sequential `await` calls in loops with `Promise.all()` to parallelize independent async operations. This pattern is the repository's convention for managing multiple translation engines and provides significant performance improvements (e.g., ~5x speedup for 5 engines).
