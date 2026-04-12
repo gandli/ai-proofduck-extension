@@ -1,0 +1,3 @@
+## 2024-04-12 - Accessibility trio for custom interactive elements
+**Learning:** When building custom interactive elements (like custom switches or icon-only buttons) that bypass standard design systems, it's easy to miss basic accessibility features. A crucial learning is to consistently apply the "accessibility trio": `title` (for native tooltips), `aria-label` (for screen readers), and explicit keyboard focus indicators like `focus-visible` (especially when standard outlines are removed or not visible). This ensures the component is accessible to all users.
+**Action:** Always check custom buttons and switches for the presence of `title`, `aria-label` (or equivalent text content), and `focus-visible` styles. Add them if missing.

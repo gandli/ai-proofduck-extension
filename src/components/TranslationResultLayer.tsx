@@ -227,6 +227,7 @@ export function TranslationResultLayer({
         </div>
         <button
           onClick={handleClose}
+          className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
           style={{
             background: 'none',
             border: 'none',
@@ -236,10 +237,13 @@ export function TranslationResultLayer({
             fontSize: '16px',
             lineHeight: 1,
             opacity: 0.8,
+            outlineOffset: '2px',
           }}
           title={t('close') || '关闭'}
+          aria-label={t('close') || '关闭'}
+          type="button"
         >
-          ×
+          <span aria-hidden="true">×</span>
         </button>
       </div>
 
