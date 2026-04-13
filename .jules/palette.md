@@ -1,0 +1,3 @@
+## 2026-04-13 - Custom Interactive Elements Accessibility
+**Learning:** When building custom interactive elements like custom switches or icon-only buttons, just an `aria-label` and standard Tailwind `focus:outline-none` is often not enough. `aria-label` helps screen readers, but native mouse tooltips (`title`) are missing, and removing the default outline without replacing it with an explicit focus indicator (like `focus-visible:ring-2`) harms keyboard accessibility.
+**Action:** Always ensure the trio of `title` (for mouse), `aria-label` (for screen readers), and explicit `focus-visible` rings (for keyboard users) are present on custom interactive elements.
