@@ -1,0 +1,4 @@
+## 2025-02-14 - Fix insecure random GUID generation in SpeechService
+**Vulnerability:** The Edge TTS provider in `SpeechService.ts` was using `Math.random()` to generate GUIDs (`X-RequestId` headers).
+**Learning:** `Math.random()` is cryptographically weak, predictable, and prone to collisions, which could theoretically allow attackers to guess request IDs or hijack active TTS WebSockets. Extensions frequently execute in content scripts (insecure contexts HTTP) as well as the sidepanel (secure context).
+**Prevention:** Always use `crypto.randomUUID()` when available. Because extensions can inject into HTTP pages where `randomUUID` might not exist, ensure a robust fallback sequence: `crypto.randomUUID()` -> `crypto.getRandomValues()` (with manual UUID v4 bit-twiddling) -> `Math.random()` (absolute worst-case fallback).
