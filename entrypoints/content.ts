@@ -142,8 +142,8 @@ async function handleSelectionChange(): Promise<void> {
   // 获取选区文本
   const selectedText = getSelectedText();
 
-  // 忽略过短的选区（可能是意外选择）
-  if (selectedText.length < 2) {
+  // 忽略空白或过短的选区（可能是意外选择）
+  if (!selectedText || selectedText.length < 2) {
     return;
   }
 
@@ -182,7 +182,8 @@ function registerSelectionListener(): void {
   // 监听选区变化（兼容多种浏览器）
   document.addEventListener('selectionchange', () => {
     const selection = window.getSelection();
-    if (selection && !selection.isCollapsed && selection.toString().trim()) {
+    // Performance optimization: Avoid expensive selection.toString() during high-frequency selectionchange events
+    if (selection && !selection.isCollapsed) {
       onSelectionChange();
     }
   });

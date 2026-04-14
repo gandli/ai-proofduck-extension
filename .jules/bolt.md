@@ -1,0 +1,3 @@
+## 2023-10-27 - Defer DOM text serialization in high-frequency event listeners
+**Learning:** Calling `selection.toString()` (which serializes the DOM selection into text) synchronously inside a high-frequency event listener like `selectionchange` can cause severe main-thread jank, especially for large selections or complex DOM structures. The `selectionchange` event can fire dozens of times per second as the user drags their mouse.
+**Action:** Remove expensive DOM serialization and validation checks from the synchronous `selectionchange` event listener. Instead, rely on a simple `selection.isCollapsed` check and delegate the expensive `selection.toString()` operation to a delayed/debounced handler (`handleSelectionChange`).
