@@ -1,0 +1,3 @@
+## 2024-04-16 - Ensure accessibility in custom injected DOM overlays
+**Learning:** When building custom injected DOM overlays (like `TranslationResultLayer.tsx`) that bypass standard design systems, it's easy to overlook standard accessibility attributes. Interactive elements often lack `type="button"`, and purely visual icons/emojis can be redundantly announced by screen readers.
+**Action:** Always verify that interactive buttons in custom overlays have `type="button"` to prevent accidental form submissions, and explicitly wrap visual characters or emojis in `<span aria-hidden="true">` to improve the screen reader experience.
