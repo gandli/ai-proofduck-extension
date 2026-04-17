@@ -1,0 +1,4 @@
+## 2024-05-24 - [Secure GUID Generation]
+**Vulnerability:** Weak, predictable random number generation was used for GUID creation (`Math.random()`) in `src/services/SpeechService.ts`. This logic could run in non-secure HTTP pages (content scripts).
+**Learning:** `crypto.randomUUID()` is generally preferred but may be undefined if the environment does not provide the `crypto` object (e.g. content scripts running in HTTP contexts). `Math.random` is weak but acts as a fallback when Web Crypto API isn't present.
+**Prevention:** In client-side logic that might run outside secure contexts (like `chrome-extension://`), always use Web Crypto (`crypto.randomUUID()` or `crypto.getRandomValues()`) defensively with type checks (`typeof crypto !== 'undefined'`) and provide a `Math.random()` fallback for environments where cryptography primitives are stripped out.
