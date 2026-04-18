@@ -157,6 +157,23 @@ class EdgeTTSProvider {
    * 生成 GUID
    */
   private generateGuid(): string {
+    // 优先使用 crypto.randomUUID (需要安全上下文)
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+
+    // 次选使用 crypto.getRandomValues (内容脚本等无 randomUUID 的环境)
+    if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+        const array = new Uint8Array(1);
+        crypto.getRandomValues(array);
+        const r = (array[0] ?? 0) % 16;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    // 最后的 fallback (不安全环境下的后备)
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
       const r = Math.random() * 16 | 0;
       const v = c === 'x' ? r : (r & 0x3 | 0x8);
