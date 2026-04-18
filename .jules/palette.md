@@ -1,0 +1,3 @@
+## 2024-05-24 - [Title and Focus Rings on Interactive Elements]
+**Learning:** When building custom interactive elements (e.g., custom switches or icon-only buttons in sidepanel/popup components), always ensure the trio of `title` (for native mouse tooltips), `aria-label` (for screen readers), and explicit keyboard focus indicators like `focus-visible:ring-2` (when Tailwind's `focus:outline-none` is used) are present to support comprehensive accessibility.
+**Action:** When implementing keyboard focus states with Tailwind CSS in this repository, combine `focus:outline-none` with `focus-visible:ring-2` and a context-appropriate color (e.g., `focus-visible:ring-brand-orange` on light backgrounds or `focus-visible:ring-white` on colored/dark backgrounds like the header).
