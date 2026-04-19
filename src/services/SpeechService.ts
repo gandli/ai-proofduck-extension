@@ -155,8 +155,28 @@ class EdgeTTSProvider {
 
   /**
    * 生成 GUID
+   * Security Enhancement: Replaced insecure Math.random() with
+   * cryptographically secure randomUUID or getRandomValues
+   * to prevent predictable identifiers.
    */
   private generateGuid(): string {
+    // Primary secure method
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+
+    // Fallback secure method
+    if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+        const array = new Uint8Array(1);
+        crypto.getRandomValues(array);
+        const r = (array[0] ?? 0) & 15;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    // Ultimate fallback for environments without crypto
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
       const r = Math.random() * 16 | 0;
       const v = c === 'x' ? r : (r & 0x3 | 0x8);
