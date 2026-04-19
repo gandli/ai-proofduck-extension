@@ -1,0 +1,3 @@
+## 2024-05-15 - Accessible Custom Overlays
+**Learning:** When building custom DOM overlays (like `TranslationResultLayer`) that bypass standard UI frameworks, purely visual elements (like emojis or `×` for close) inside icon-only buttons often lack proper accessibility contexts. Screen readers might misread them or announce them redundantly if not properly hidden.
+**Action:** Always add `type="button"` and `aria-label` to icon-only interactive elements in custom overlays, and wrap purely visual elements (like emojis/symbols) in `<span aria-hidden="true">` to ensure clean screen reader announcements.
