@@ -1,0 +1,4 @@
+## 2026-04-03 - [Insecure Randomness in SpeechService]
+**Vulnerability:** The `generateGuid()` method in `src/services/SpeechService.ts` used `Math.random()` to generate UUIDs. This is not cryptographically secure and results in predictable GUIDs, which is problematic when creating WebSocket connections (like for Edge TTS), as it can lead to session spoofing.
+**Learning:** `Math.random()` is inherently predictable. For sensitive identifiers used in network connections, secure random generation is necessary. In browser extension contexts, we also need to account for instances where `crypto` might be missing on some pages.
+**Prevention:** Always use `crypto.randomUUID()` when available, or `crypto.getRandomValues()` as a fallback to generate secure random tokens. Only fall back to `Math.random()` as a final resort for environments where `crypto` is not defined.
