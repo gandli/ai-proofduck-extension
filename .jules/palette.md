@@ -1,0 +1,3 @@
+## 2024-05-14 - Button Accessibility in Overlays
+**Learning:** Purely visual icon-only buttons (like `×` for close) can cause redundant or incorrect screen reader announcements if the visual character isn't explicitly hidden. Furthermore, all interactive buttons in custom DOM overlays (like `TranslationResultLayer`) should explicitly define `type="button"` to avoid acting as default submit buttons if the overlay is dynamically injected into a host page's `<form>` context.
+**Action:** When auditing or adding buttons to custom UI overlays, always add `type="button"` to non-submit buttons. For icon-only buttons with visual text characters, wrap the character in `<span aria-hidden="true">` and provide context via `aria-label`.
