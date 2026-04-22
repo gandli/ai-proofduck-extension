@@ -1,0 +1,3 @@
+## 2024-04-22 - Add explicit keyboard focus states to custom interactive elements
+**Learning:** Custom interactive elements (buttons, switches, tabs) that use Tailwind CSS often lack clear focus states when the default browser outline is removed (e.g., implicitly or explicitly). Combining `focus:outline-none` with `focus-visible:ring-2` and context-appropriate colors (like `focus-visible:ring-brand-orange` or `focus-visible:ring-white`) ensures a highly visible, accessible focus ring that only appears for keyboard users, providing a seamless micro-UX for keyboard accessibility.
+**Action:** Always ensure that any custom interactive component includes explicit `focus-visible` ring styles, especially when default outlines are stripped or don't fit the design language.

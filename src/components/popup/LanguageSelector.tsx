@@ -88,6 +88,7 @@ export function LanguageSelector({
           p-2 rounded-lg border border-gray-300 transition-all
           ${sourceLang === 'auto' ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 hover:border-brand-orange'}
           ${swapLoading ? 'animate-spin' : ''}
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange
         `}
         title="交换语言"
         aria-label="交换源语言和目标语言"
