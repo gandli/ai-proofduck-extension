@@ -74,18 +74,25 @@ export class EngineManager {
    * 获取所有可用引擎（按优先级排序）
    */
   async getAvailableEngines(): Promise<TranslationEngine[]> {
-    const available: TranslationEngine[] = [];
+    const enginesArray = Array.from(this.engines.values());
 
-    for (const engine of this.engines.values()) {
-      try {
-        const isAvailable = await engine.checkAvailability();
-        if (isAvailable) {
-          available.push(engine);
+    // ⚡ Bolt Performance Optimization:
+    // Parallelize independent availability checks to reduce overall latency
+    const results = await Promise.all(
+      enginesArray.map(async (engine) => {
+        try {
+          const isAvailable = await engine.checkAvailability();
+          return { engine, isAvailable };
+        } catch (error) {
+          console.warn(`[EngineManager] Engine "${engine.id}" availability check failed:`, error);
+          return { engine, isAvailable: false };
         }
-      } catch (error) {
-        console.warn(`[EngineManager] Engine "${engine.id}" availability check failed:`, error);
-      }
-    }
+      })
+    );
+
+    const available = results
+      .filter(result => result.isAvailable)
+      .map(result => result.engine);
 
     // 按优先级降序排序（优先级高的在前）
     return available.sort((a, b) => b.priority - a.priority);
