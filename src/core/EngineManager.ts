@@ -76,15 +76,20 @@ export class EngineManager {
   async getAvailableEngines(): Promise<TranslationEngine[]> {
     const available: TranslationEngine[] = [];
 
-    for (const engine of this.engines.values()) {
-      try {
-        const isAvailable = await engine.checkAvailability();
-        if (isAvailable) {
-          available.push(engine);
+    const results = await Promise.all(
+      Array.from(this.engines.values()).map(async (engine) => {
+        try {
+          const isAvailable = await engine.checkAvailability();
+          return isAvailable ? engine : null;
+        } catch (error) {
+          console.warn(`[EngineManager] Engine "${engine.id}" availability check failed:`, error);
+          return null;
         }
-      } catch (error) {
-        console.warn(`[EngineManager] Engine "${engine.id}" availability check failed:`, error);
-      }
+      })
+    );
+
+    for (const engine of results) {
+      if (engine) available.push(engine);
     }
 
     // 按优先级降序排序（优先级高的在前）
@@ -97,28 +102,32 @@ export class EngineManager {
   async getEngineInfos(): Promise<EngineInfo[]> {
     const infos: EngineInfo[] = [];
 
-    for (const engine of this.engines.values()) {
-      let status: EngineStatus = 'idle';
-      let error: string | undefined;
+    const results = await Promise.all(
+      Array.from(this.engines.values()).map(async (engine) => {
+        let status: EngineStatus = 'idle';
+        let error: string | undefined;
 
-      try {
-        const isAvailable = await engine.checkAvailability();
-        status = isAvailable ? 'ready' : 'error';
-        if (!isAvailable) {
-          error = 'Engine not available';
+        try {
+          const isAvailable = await engine.checkAvailability();
+          status = isAvailable ? 'ready' : 'error';
+          if (!isAvailable) {
+            error = 'Engine not available';
+          }
+        } catch (err) {
+          status = 'error';
+          error = err instanceof Error ? err.message : 'Unknown error';
         }
-      } catch (err) {
-        status = 'error';
-        error = err instanceof Error ? err.message : 'Unknown error';
-      }
 
-      infos.push({
-        id: engine.id,
-        name: engine.name,
-        status,
-        ...(error ? { error } : {}),
-      });
-    }
+        return {
+          id: engine.id,
+          name: engine.name,
+          status,
+          ...(error ? { error } : {}),
+        };
+      })
+    );
+
+    infos.push(...results);
 
     return infos;
   }
