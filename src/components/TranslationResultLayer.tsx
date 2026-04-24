@@ -226,6 +226,8 @@ export function TranslationResultLayer({
           )}
         </div>
         <button
+          type="button"
+          aria-label={t('close') || '关闭'}
           onClick={handleClose}
           style={{
             background: 'none',
@@ -239,7 +241,7 @@ export function TranslationResultLayer({
           }}
           title={t('close') || '关闭'}
         >
-          ×
+          <span aria-hidden="true">×</span>
         </button>
       </div>
 
@@ -285,6 +287,7 @@ export function TranslationResultLayer({
         <div style={{ display: 'flex', gap: '8px' }}>
           {/* 复制按钮 */}
           <button
+            type="button"
             onClick={handleCopy}
             style={{
               display: 'flex',
@@ -305,6 +308,7 @@ export function TranslationResultLayer({
 
           {/* 朗读按钮 */}
           <button
+            type="button"
             onClick={handleSpeak}
             style={{
               display: 'flex',
@@ -326,6 +330,7 @@ export function TranslationResultLayer({
           {/* 重试按钮 */}
           {onRetry && (
             <button
+              type="button"
               onClick={onRetry}
               style={{
                 display: 'flex',
@@ -349,6 +354,7 @@ export function TranslationResultLayer({
         {/* 打开侧边栏按钮 */}
         {onOpenSidebar && (
           <button
+            type="button"
             onClick={onOpenSidebar}
             style={{
               display: 'flex',

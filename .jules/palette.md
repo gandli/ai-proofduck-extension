@@ -1,0 +1,3 @@
+## 2024-04-24 - Accessible Visual Characters in Custom Overlays
+**Learning:** When using purely visual characters (e.g., `×`) inside icon-only buttons that are injected directly into custom DOM overlays (like `TranslationResultLayer.tsx`), it's critical to add explicit `aria-label`s and wrap the visual characters in `<span aria-hidden="true">` to prevent screen readers from redundantly or incorrectly announcing them, as these overlays often bypass standard application design systems.
+**Action:** Always verify that interactive elements in custom injected overlays explicitly define `type="button"` and provide proper screen reader context for icon-only content.
