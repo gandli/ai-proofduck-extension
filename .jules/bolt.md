@@ -1,0 +1,3 @@
+## 2024-04-24 - Parallelizing Independent Asynchronous Array Mappings
+**Learning:** In `EngineManager.ts`, independent asynchronous engine operations like `checkAvailability` were executed sequentially using a `for...of` loop, leading to performance bottlenecks when multiple engines need checking.
+**Action:** Always parallelize independent asynchronous operations using `Promise.all` with `Array.map`. To prevent `Promise.all` from fast-failing, wrap individual operations in `try...catch` blocks inside the map callback. Furthermore, to maintain deterministic order and avoid race conditions, do not mutate an external array (e.g., via `.push()`) inside the async callbacks; instead, return values from the callbacks and filter the resulting array.
