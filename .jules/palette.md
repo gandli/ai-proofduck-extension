@@ -1,0 +1,3 @@
+## 2024-04-25 - Explicit Type for Action Buttons in Custom DOM Overlays
+**Learning:** When building custom injected DOM overlays (like TranslationResultLayer.tsx) that bypass standard design systems, purely visual or utility buttons often lack explicit attributes. Since they might be inadvertently wrapped or treated as form submits in specific contexts, adding explicit `type="button"` and ensuring visual-only icons have proper aria-labels or `aria-hidden="true"` wrappers is crucial for robust accessibility.
+**Action:** Always verify and enforce `type="button"` and `aria-hidden` wrappers for decorative text/icons on interactive buttons inside custom DOM layer components.
