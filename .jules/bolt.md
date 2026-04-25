@@ -1,0 +1,3 @@
+## 2024-05-18 - [EngineManager Availability Check Optimization]
+**Learning:** EngineManager's `getAvailableEngines` and `getEngineInfos` methods use sequential `await` in `for...of` loops when checking engine availability. With multiple translation engines (Google, OpenAI, Claude, DeepSeek, etc.), this creates an (N)$ network/IO bottleneck that stalls availability resolution. As noted in memory, the repository pattern is to parallelize these checks using `Promise.all`.
+**Action:** When working with multiple asynchronous independent operations (like engine availability checks), always use `Promise.all` with `Array.map` wrapped in try-catch to resolve them in parallel. This changes the latency from (N)$ to (1)$ relative to engine count.
