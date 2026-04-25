@@ -1,0 +1,4 @@
+## 2024-05-30 - Fix weak random GUID generation in SpeechService
+**Vulnerability:** Used `Math.random()` to generate GUIDs in `EdgeTTSProvider`. `Math.random()` is not a cryptographically secure pseudorandom number generator (CSPRNG), leading to predictable values and weak GUID uniqueness.
+**Learning:** Shared services like `SpeechService` in browser extensions can be injected into non-secure HTTP context via content scripts where `crypto.randomUUID()` is unavailable, relying on less secure defaults unless handled.
+**Prevention:** Implement a layered fallback: prefer `crypto.randomUUID()`, fallback to `crypto.getRandomValues()` for non-secure contexts with the Web Crypto API, and finally `Math.random()` as an ultimate fallback if Web Crypto is entirely missing. Also, use nullish coalescing `(array[0] ?? 0)` when accessing typed arrays in strict TS configurations.
