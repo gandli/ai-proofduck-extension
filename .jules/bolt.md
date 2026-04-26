@@ -1,0 +1,3 @@
+## 2024-06-25 - Parallelizing asynchronous engine operations
+**Learning:** Sequential await calls in a loop cause significant performance bottlenecks when checking availability across multiple translation engines.
+**Action:** When performing independent asynchronous operations (like `checkAvailability`) across multiple engines, always parallelize them using `Promise.all` with `Array.map`. To prevent `Promise.all` from fast-failing if one engine throws an error, wrap individual operations in a `try...catch` block inside the map callback. Return the value or `null`, await the `Promise.all`, and then process the resulting array to preserve order and type safety.
