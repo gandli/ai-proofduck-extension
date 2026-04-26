@@ -1,0 +1,3 @@
+## 2024-05-20 - [Accessibility in Custom Injected Overlays]
+**Learning:** Custom injected DOM overlays (like `TranslationResultLayer.tsx`) often bypass standard design systems, leading to missing `aria-label` and `type="button"` attributes on icon-only interactive buttons, which leaves screen readers without context. Furthermore, visual characters like `×` can be redundantly or incorrectly announced.
+**Action:** When creating or auditing custom DOM overlays, explicitly enforce `type="button"`, `aria-label` on icon-only buttons, and wrap visual symbols in `<span aria-hidden="true">` to ensure full screen reader compatibility outside the main app context.
