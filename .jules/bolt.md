@@ -1,0 +1,3 @@
+## 2024-03-20 - [Parallelizing Engine Availability Checks]
+**Learning:** Sequentially awaiting availability checks for multiple engines in a `for...of` loop can cause significant delays as the number of engines grows.
+**Action:** Always parallelize independent asynchronous array operations using `Promise.all` with `Array.map`, catching errors internally to avoid fast-failing and filtering `null` results after awaiting, ensuring deterministic order and reducing total execution time to the slowest individual check.
