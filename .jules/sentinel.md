@@ -1,0 +1,4 @@
+## 2024-05-30 - [Data Privacy] Exposed user data in background/content script logs
+**Vulnerability:** User-selected text and full message contents were being logged to browser console via `console.log` in `entrypoints/background.ts` and `entrypoints/content.ts`. Even though some instances truncated the text to 50 characters, it still leaks user privacy data to local browser logs which can be extracted.
+**Learning:** Logging user-provided text directly to console, especially in extension background/content scripts where many operations happen, exposes sensitive information locally. Truncation doesn't fully mitigate the risk as part of the data is still logged.
+**Prevention:** Avoid logging user-selected text, messages, or translation payloads. Only log operational metadata like event type, content length, or success/failure status.
