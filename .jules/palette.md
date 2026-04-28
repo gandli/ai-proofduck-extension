@@ -1,0 +1,3 @@
+## YYYY-MM-DD - [Ensure `type="button"` on Custom Component Buttons]
+**Learning:** Even inside React portals or absolute positioned layers like `TranslationResultLayer`, interactive buttons without an explicit `type="button"` can unintentionally trigger forms if the component is later embedded within a `<form>` tree. Also, icon-only visual characters like `×` inside an `aria-label`led button should be wrapped in `<span aria-hidden="true">` to avoid redundant or weird screen reader announcements.
+**Action:** Always add `type="button"` to non-submit buttons during initial creation, and use `aria-hidden="true"` on raw text visual icons.
