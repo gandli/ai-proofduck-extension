@@ -1,0 +1,5 @@
+## 2024-05-24 - Accessibility improvements for custom interactive overlays
+
+**Learning:** When creating standalone visual components or floating layers (like `TranslationResultLayer`) outside standard form contexts or component libraries, developers often neglect default HTML button behaviors. Missing `type="button"` can lead to unintended form submissions if the floating layer is ever nested within a form element later. Furthermore, simple textual or icon buttons using bare visual characters (e.g., `×`) often lack sufficient context for screen readers if an explicit `aria-label` is missing, and the visual character itself needs to be explicitly hidden using `aria-hidden="true"` to avoid confusing/redundant readouts.
+
+**Action:** Always add an explicit `type="button"` to interactive non-submit buttons, especially in isolated DOM injections. Add `aria-label` to icon-only buttons. Wrap purely visual icon characters (e.g., '×', '☰') in `<span aria-hidden="true">` when the button itself has an accessible `aria-label`.
