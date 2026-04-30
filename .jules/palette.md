@@ -1,0 +1,3 @@
+## 2024-06-25 - TranslationResultLayer Buttons Accessibility
+**Learning:** Custom injected DOM overlays (like `TranslationResultLayer.tsx`) often bypass standard design systems, leading to buttons missing crucial accessibility attributes. Specifically, pure visual characters (like `×` in the close button) need `<span aria-hidden="true">` to prevent screen reader redundancy, and interactive elements must have `type="button"` and explicit `aria-label`s to provide context when native `<form>` context is absent or when screen readers interpret injected content.
+**Action:** Always ensure that purely visual or iconic interactive buttons inside custom injected DOM overlays have `aria-label` and `type="button"` attributes.
