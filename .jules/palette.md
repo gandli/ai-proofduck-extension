@@ -1,0 +1,3 @@
+## 2026-05-01 - Add type and aria attributes to injected interactive elements
+**Learning:** When injecting custom DOM overlays (e.g. TranslationResultLayer) that bypass standard design systems, interactive buttons might miss essential attributes like `type="button"` and `aria-label`. Additionally, purely visual characters inside icon-only buttons need to be wrapped in `<span aria-hidden="true">` to prevent redundant or confusing screen reader announcements.
+**Action:** Explicitly add `type="button"`, `aria-label`, and `aria-hidden` where necessary when implementing custom interactive overlays outside of core design components.
