@@ -1,0 +1,4 @@
+## 2025-05-01 - [Cryptographically Insecure Randomness]
+**Vulnerability:** Weak random number generation (`Math.random()`) used for UUID generation in `SpeechService.ts`. This makes the generated identifiers predictable and could be exploited if they are used in security contexts.
+**Learning:** `Math.random()` provides pseudorandomness and is not cryptographically secure. While the extension sidepanel is a secure context, shared services (like `SpeechService`) may run in content scripts injected into non-secure HTTP pages.
+**Prevention:** Always include a fallback using `crypto.getRandomValues()` when using `crypto.randomUUID()` for GUID generation. Explicitly check `typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function'` before invoking the fallback, and provide an ultimate fallback (like `Math.random()`) to prevent `ReferenceError`s if `crypto` is completely undefined.
