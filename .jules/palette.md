@@ -1,0 +1,3 @@
+## 2026-05-02 - [Add ARIA labels and button types to injected DOM overlays]
+**Learning:** Custom injected DOM overlays (like `TranslationResultLayer.tsx`) often bypass standard design systems, leading to a lack of basic button semantics (`type="button"`) and ARIA context. Visually distinct elements like `×` need to be hidden from screen readers when an `aria-label` is present to avoid redundant or confusing announcements.
+**Action:** Always verify that interactive elements in custom injected overlays explicitly include `type="button"`, proper `aria-label` attributes, and use `aria-hidden="true"` on purely visual characters within icon-only buttons.
