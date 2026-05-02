@@ -1,0 +1,3 @@
+## 2026-05-02 - Optimize EngineManager async loops
+**Learning:** Sequential `for...of` loops over async operations (like engine availability checks) can severely bottleneck performance when scaling the number of engines. Using `Promise.all` with `Array.map` allows these checks to run in parallel, significantly reducing wait times. Note: external arrays should not be mutated within the async map callback, instead return results and filter after awaiting `Promise.all` to preserve deterministic behavior and correctness.
+**Action:** Always prefer `Promise.all` combined with `Array.map` and individual `try/catch` wrappers when processing independent asynchronous operations across a collection.
