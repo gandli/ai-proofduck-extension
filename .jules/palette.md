@@ -1,0 +1,3 @@
+## 2026-05-03 - Accessibility: Custom DOM overlay buttons need explicit attributes
+**Learning:** Purely visual characters/emojis inside buttons should be wrapped in `<span aria-hidden="true">` to prevent redundant or incorrect screen reader announcements. Additionally, buttons in custom injected DOM overlays (which bypass standard design systems) often lack `type="button"` and `aria-label`, posing accessibility risks if ever wrapped in a form or focused by a screen reader.
+**Action:** Always explicitly verify and add `type="button"`, `aria-label` (for icon-only buttons), and `aria-hidden` wrappers for decorative text/icons to all interactive elements, especially in standalone floating layers or overlays.
