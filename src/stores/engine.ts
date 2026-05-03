@@ -5,7 +5,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { EngineInfo, EngineStatus } from '@/types';
+import type { EngineInfo, EngineStatus } from '../types';
 
 // Chrome storage adapter for Zustand persist
 const chromeStorageAdapter = {

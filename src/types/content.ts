@@ -2,7 +2,7 @@
  * Content Script 类型定义
  */
 
-import type { AIMode, TranslationResult, ProofreadResult } from '@/types';
+import type { AIMode, TranslationResult, ProofreadResult } from './types';
 
 /**
  * 内容脚本到后台的消息类型
