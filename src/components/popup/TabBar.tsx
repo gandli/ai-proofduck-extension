@@ -4,7 +4,7 @@
  */
 import { useCallback, useRef } from 'react';
 import type { AIMode } from '@/types';
-import { t } from '@/i18n';
+import { t } from '../../i18n';
 
 interface TabBarProps {
   activeTab: AIMode;
