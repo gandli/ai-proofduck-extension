@@ -4,7 +4,7 @@
  */
 import { useState, useCallback, useId } from 'react';
 import type { AIMode } from '@/types';
-import { t } from '@/i18n';
+import { t } from '../../i18n';
 import { LanguageSelector } from './LanguageSelector';
 
 interface TranslationTabProps {

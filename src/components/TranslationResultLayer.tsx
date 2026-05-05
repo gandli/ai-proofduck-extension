@@ -4,8 +4,8 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { t } from '@/i18n';
-import { speechService } from '@/services/SpeechService';
+import { t } from '../i18n';
+import { speechService } from '../services/SpeechService';
 
 interface Props {
   /** 原始文本 */
