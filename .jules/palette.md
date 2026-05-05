@@ -1,0 +1,3 @@
+## 2026-05-05 - Prevent screen readers from redundantly announcing visual emojis/icons
+**Learning:** When using purely visual characters (e.g., `×`) or emojis (`🌐`, `📋`) inside buttons or headers that already have text labels or an `aria-label`, screen readers may redundantly or incorrectly announce the character/emoji.
+**Action:** Always wrap these visual-only elements in `<span aria-hidden="true">` to prevent redundant/incorrect reading while maintaining the visual presentation. Additionally, ensure all interactive elements explicitly specify `type="button"` to avoid accidentally submitting forms if placed inside one.
