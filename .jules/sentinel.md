@@ -1,0 +1,4 @@
+## 2024-05-05 - Privacy Leakage in Background & Content Script Logging
+**Vulnerability:** Background and content scripts were logging sensitive user-provided data, specifically selected text and message contents via `console.log`, potentially leaking private user text into browser extensions logs or developer console.
+**Learning:** Even if truncated (e.g. `substring(0, 50)`), any exposure of user text (such as highlighted text on web pages, which could contain passwords, PII, or internal docs) in a production extension violates data privacy and CWE-532 (Insertion of Sensitive Information into Log File). Extension code runs in varied web contexts, so logging must be strictly limited to operational metadata.
+**Prevention:** Avoid logging user inputs such as `selectedText` and `message.text`. When logging events, stick to logging lengths, boolean statuses, or event types, rather than raw text contents.

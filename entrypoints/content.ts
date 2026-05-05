@@ -147,7 +147,7 @@ async function handleSelectionChange(): Promise<void> {
     return;
   }
 
-  console.log('[ProofDuck] 检测到选区:', selectedText.substring(0, 50) + (selectedText.length > 50 ? '...' : ''));
+  console.log('[ProofDuck] 检测到选区, 长度:', selectedText.length);
 
   // 使用缓存和翻译处理
   await handleTranslation(selectedText);
@@ -195,7 +195,7 @@ function registerSelectionListener(): void {
  * @param message 后台发送的消息
  */
 function handleBackgroundMessage(message: unknown): void {
-  console.log('[ProofDuck] 收到后台消息:', message);
+  console.log('[ProofDuck] 收到后台消息 type:', (message as any)?.type);
 }
 
 /**
