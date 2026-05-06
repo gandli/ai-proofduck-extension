@@ -1,0 +1,3 @@
+## 2026-05-06 - Screen reader noise reduction and React button defaults
+**Learning:** Purely visual characters/emojis inside buttons with text labels can be redundantly or incorrectly announced by screen readers. Also, omitting `type="button"` on interactive elements in React components can cause them to inadvertently act as submit buttons if placed inside a form.
+**Action:** Consistently wrap visual-only elements (like `×`, `📋`) in `<span aria-hidden="true">` when the button already has an accessible name (either via inner text or `aria-label`). Always explicitly define `type="button"` on all non-submit interactive buttons in React.
