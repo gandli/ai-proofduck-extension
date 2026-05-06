@@ -1,0 +1,4 @@
+## 2024-05-06 - Weak random number generation in SpeechService
+**Vulnerability:** The `generateGuid` function in `src/services/SpeechService.ts` uses `Math.random()` to generate UUIDs, which is not cryptographically secure.
+**Learning:** `Math.random()` is not suitable for generating security-sensitive IDs, tokens, or GUIDs because its output is predictable. This is a common security issue in JavaScript. Even though it's used for an edge TTS request, predictable IDs can lead to session hijacking or replay attacks in some contexts.
+**Prevention:** Always use `crypto.randomUUID()` or `crypto.getRandomValues()` for generating random IDs or tokens in secure contexts. If `crypto.randomUUID()` is not available, use a polyfill based on `crypto.getRandomValues()`, and only fall back to `Math.random()` as a last resort in non-secure environments where `crypto` is undefined.
