@@ -225,9 +225,11 @@ export class ModelLoader {
    * Check availability of all models
    */
   async checkAllModels(): Promise<void> {
-    for (const modelId of Object.keys(MODEL_REGISTRY) as LocalModelType[]) {
-      await this.checkModel(modelId);
-    }
+    await Promise.all(
+      (Object.keys(MODEL_REGISTRY) as LocalModelType[]).map((modelId) =>
+        this.checkModel(modelId)
+      )
+    );
   }
 
   /**
