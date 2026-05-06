@@ -225,6 +225,7 @@ export class ModelLoader {
    * Check availability of all models
    */
   async checkAllModels(): Promise<void> {
+    // ⚡ Bolt: Parallelize model availability checks to accelerate startup
     await Promise.all(
       (Object.keys(MODEL_REGISTRY) as LocalModelType[]).map((modelId) =>
         this.checkModel(modelId)

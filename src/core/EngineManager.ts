@@ -74,6 +74,7 @@ export class EngineManager {
    * 获取所有可用引擎（按优先级排序）
    */
   async getAvailableEngines(): Promise<TranslationEngine[]> {
+    // ⚡ Bolt: Parallelize independent availability checks using Promise.all to reduce initialization time
     const engineResults = await Promise.all(
       Array.from(this.engines.values()).map(async (engine) => {
         try {
@@ -96,6 +97,7 @@ export class EngineManager {
    * 获取引擎信息列表
    */
   async getEngineInfos(): Promise<EngineInfo[]> {
+    // ⚡ Bolt: Parallelize independent availability checks to reduce overall latency
     const infos = await Promise.all(
       Array.from(this.engines.values()).map(async (engine) => {
         let status: EngineStatus = 'idle';
