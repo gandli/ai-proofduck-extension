@@ -3,6 +3,13 @@ import { defineConfig } from 'wxt';
 // See https://wxt.dev/api/config.html
 export default defineConfig({
   modules: ['@wxt-dev/module-react'],
+  vite: () => ({
+    resolve: {
+      alias: {
+        '@/': new URL('./src/', import.meta.url).pathname
+      }
+    }
+  }),
   manifest: {
     default_locale: 'en',
     name: 'AI ProofDuck',
