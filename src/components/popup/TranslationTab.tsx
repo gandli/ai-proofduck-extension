@@ -100,14 +100,14 @@ export function TranslationTab({
 
   return (
     <div
-      className="flex flex-col h-full"
+      className="flex h-full flex-col"
       role="tabpanel"
       id={`panel-${mode}`}
       aria-labelledby={`tab-${mode}`}
     >
       {/* 语言选择器 - 仅翻译模式显示 */}
       {showLanguageSelector && (
-        <div className="px-4 py-3 border-b border-gray-200">
+        <div className="border-b border-gray-200 px-4 py-3">
           <LanguageSelector
             sourceLang={sourceLang}
             targetLang={targetLang}
@@ -119,15 +119,15 @@ export function TranslationTab({
       )}
 
       {/* 原文输入框 */}
-      <div className="flex-1 p-4 flex flex-col min-h-0">
-        <div className="flex-1 relative">
+      <div className="flex min-h-0 flex-1 flex-col p-4">
+        <div className="relative flex-1">
           <textarea
             id={textareaId}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={t(getPlaceholder(mode))}
-            className="w-full h-full resize-none rounded-lg border border-gray-300 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 focus:border-brand-orange"
+            className="h-full w-full resize-none rounded-lg border border-gray-300 p-3 text-sm focus:border-brand-orange focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
             disabled={loading}
             aria-label={getAriaLabel(mode)}
             aria-invalid={!!error}
@@ -137,7 +137,7 @@ export function TranslationTab({
         </div>
 
         {/* 字符数显示 */}
-        <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
+        <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
           <span aria-live="polite">{charCount} 字符</span>
           <span>⌘ + Enter {t('tabSubmit')}</span>
         </div>
@@ -147,7 +147,7 @@ export function TranslationTab({
       {error && (
         <div
           id={errorId}
-          className="mx-4 mb-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600"
+          className="mx-4 mb-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600"
           role="alert"
           aria-live="assertive"
         >
@@ -159,10 +159,10 @@ export function TranslationTab({
       {result && (
         <div
           id={resultId}
-          className="mx-4 mb-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 max-h-32 overflow-y-auto"
+          className="mx-4 mb-2 max-h-32 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700"
           aria-live="polite"
         >
-          <div className="font-medium text-xs text-gray-500 mb-1">{t('tabResult')}</div>
+          <div className="mb-1 text-xs font-medium text-gray-500">{t('tabResult')}</div>
           <div className="whitespace-pre-wrap">{result}</div>
         </div>
       )}
@@ -172,23 +172,19 @@ export function TranslationTab({
         <button
           onClick={handleSubmit}
           disabled={!inputText.trim() || loading}
-          className={`
-            w-full py-3 rounded-lg font-medium text-white transition-all
-            flex items-center justify-center gap-2
-            ${
-              loading
-                ? 'bg-brand-orange/70 cursor-wait'
-                : inputText.trim()
+          className={`flex w-full items-center justify-center gap-2 rounded-lg py-3 font-medium text-white transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2 ${
+            loading
+              ? 'cursor-wait bg-brand-orange/70'
+              : inputText.trim()
                 ? 'bg-brand-orange hover:bg-brand-orange/90 active:scale-[0.98]'
-                : 'bg-gray-300 cursor-not-allowed'
-            }
-          `}
+                : 'cursor-not-allowed bg-gray-300'
+          } `}
           aria-busy={loading}
           type="button"
         >
           {loading ? (
             <>
-              <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
+              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" aria-hidden="true">
                 <circle
                   className="opacity-25"
                   cx="12"
