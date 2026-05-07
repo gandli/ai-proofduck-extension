@@ -88,7 +88,7 @@ test.describe('Translation Result Layer', () => {
 
   test('should close on close button click', async ({ page }) => {
     await page.setContent(`
-      <div id="test-container"></div>
+      <div id="test-container" style="height: 100px; width: 100px;">Test Content</div>
     `);
 
     // 简单验证页面正常
