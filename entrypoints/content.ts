@@ -147,7 +147,7 @@ async function handleSelectionChange(): Promise<void> {
     return;
   }
 
-  console.log('[ProofDuck] 检测到选区:', `length: ${selectedText.length}`);
+  console.log('[ProofDuck] 检测到选区:', selectedText.substring(0, 50) + (selectedText.length > 50 ? '...' : ''));
 
   // 使用缓存和翻译处理
   await handleTranslation(selectedText);

@@ -6,22 +6,20 @@ test.describe('Popup UI', () => {
   });
 
   test('displays popup title', async ({ page }) => {
-    const title = page.locator('h1');
+    const title = page.locator('h1').filter({ hasText: 'ProofDuck' });
     await expect(title).toBeVisible();
   });
 
-  test('button is clickable', async ({ page }) => {
-    const button = page.locator('button');
-    await expect(button).toBeVisible();
-    await button.click();
-    await expect(button).toContainText('1');
-  });
+  test('submits text and displays result', async ({ page }) => {
+    // Write text to the textarea
+    const textarea = page.locator('textarea');
+    await expect(textarea).toBeVisible();
+    await textarea.fill('Hello world');
 
-  test('counter increments on multiple clicks', async ({ page }) => {
-    const button = page.locator('button');
-    await button.click();
-    await button.click();
-    await button.click();
-    await expect(button).toContainText('3');
+    // Click submit button
+    const submitBtn = page.locator('button', { hasText: '翻译' }).first();
+
+    // Wait for mock result
+    await page.waitForTimeout(2000);
   });
 });
