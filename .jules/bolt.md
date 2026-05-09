@@ -1,0 +1,3 @@
+## 2026-05-09 - Cached Synchronous Layout Operations in DOM Traversal
+**Learning:** The `extractTextNodes` function in `src/utils/pageContentExtractor.ts` processes potentially thousands of text nodes. Calling `window.getComputedStyle` and `getBoundingClientRect` for every single text node caused severe layout thrashing and redundant computations because many text nodes share the same parent element.
+**Action:** Used a `Map` keyed by the parent `Element` to cache the results of `getComputedStyle` and `getBoundingClientRect` during the DOM traversal loop. This prevents redundant synchronous layout recalculations for sibling text nodes, drastically improving extraction performance.
