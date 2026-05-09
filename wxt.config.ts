@@ -1,8 +1,19 @@
 import { defineConfig } from 'wxt';
+import path from 'node:path';
+import url from 'node:url';
+
+const _dirname = typeof __dirname !== 'undefined' ? __dirname : path.dirname(url.fileURLToPath(import.meta.url));
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
   modules: ['@wxt-dev/module-react'],
+  vite: () => ({
+    resolve: {
+      alias: {
+        '@/': path.resolve(_dirname, './src') + '/'
+      }
+    }
+  }),
   manifest: {
     default_locale: 'en',
     name: 'AI ProofDuck',
