@@ -74,18 +74,18 @@ export class EngineManager {
    * 获取所有可用引擎（按优先级排序）
    */
   async getAvailableEngines(): Promise<TranslationEngine[]> {
-    const available: TranslationEngine[] = [];
-
-    for (const engine of this.engines.values()) {
+    const promises = Array.from(this.engines.values()).map(async (engine) => {
       try {
         const isAvailable = await engine.checkAvailability();
-        if (isAvailable) {
-          available.push(engine);
-        }
+        return isAvailable ? engine : null;
       } catch (error) {
         console.warn(`[EngineManager] Engine "${engine.id}" availability check failed:`, error);
+        return null;
       }
-    }
+    });
+
+    const results = await Promise.all(promises);
+    const available = results.filter((engine): engine is TranslationEngine => engine !== null);
 
     // 按优先级降序排序（优先级高的在前）
     return available.sort((a, b) => b.priority - a.priority);
@@ -95,9 +95,7 @@ export class EngineManager {
    * 获取引擎信息列表
    */
   async getEngineInfos(): Promise<EngineInfo[]> {
-    const infos: EngineInfo[] = [];
-
-    for (const engine of this.engines.values()) {
+    const promises = Array.from(this.engines.values()).map(async (engine) => {
       let status: EngineStatus = 'idle';
       let error: string | undefined;
 
@@ -112,15 +110,15 @@ export class EngineManager {
         error = err instanceof Error ? err.message : 'Unknown error';
       }
 
-      infos.push({
+      return {
         id: engine.id,
         name: engine.name,
         status,
         ...(error ? { error } : {}),
-      });
-    }
+      };
+    });
 
-    return infos;
+    return await Promise.all(promises);
   }
 
   /**
