@@ -6,22 +6,12 @@ test.describe('Popup UI', () => {
   });
 
   test('displays popup title', async ({ page }) => {
-    const title = page.locator('h1');
+    const title = page.locator('h1').filter({ hasText: 'ProofDuck' });
     await expect(title).toBeVisible();
   });
 
-  test('button is clickable', async ({ page }) => {
-    const button = page.locator('button');
-    await expect(button).toBeVisible();
-    await button.click();
-    await expect(button).toContainText('1');
-  });
-
-  test('counter increments on multiple clicks', async ({ page }) => {
-    const button = page.locator('button');
-    await button.click();
-    await button.click();
-    await button.click();
-    await expect(button).toContainText('3');
+  test('displays navigation tabs', async ({ page }) => {
+    const tablist = page.locator('[role="tablist"]');
+    await expect(tablist).toBeVisible();
   });
 });
