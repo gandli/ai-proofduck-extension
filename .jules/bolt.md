@@ -1,0 +1,3 @@
+## 2026-05-12 - DOM Thrashing in pageContentExtractor
+**Learning:** The `extractTextNodes` function performs extensive DOM traversal using `TreeWalker`. In loops, it repeatedly calls `window.getComputedStyle` and `getBoundingClientRect` on parent elements of text nodes. This causes severe layout thrashing and redundant synchronous layout recalculations for every text node, even if multiple text nodes share the same parent element.
+**Action:** Always cache the results of `window.getComputedStyle` and `getBoundingClientRect` using a `Map` keyed by the parent `Element` during extensive DOM traversal to prevent redundant layout recalculations.
