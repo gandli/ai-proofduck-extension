@@ -188,6 +188,7 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
                             type="button"
                           >
                             <span
+                              aria-hidden="true"
                               className={`
                                 absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform
                                 ${engine.enabled ? 'left-0.5 translate-x-4' : 'left-0.5'}
