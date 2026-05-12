@@ -1,5 +1,6 @@
 import { defineConfig } from 'wxt';
 
+// See https://wxt.dev/api/config.html
 export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   manifest: {
@@ -14,11 +15,4 @@ export default defineConfig({
       '128': 'icon/icon-128.png',
     },
   },
-  vite: () => ({
-    resolve: {
-      alias: {
-        '@/': new URL('./src/', import.meta.url).pathname,
-      },
-    },
-  }),
 });
