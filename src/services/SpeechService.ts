@@ -166,7 +166,7 @@ class EdgeTTSProvider {
       if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
         const bytes = new Uint8Array(1);
         crypto.getRandomValues(bytes);
-        r = bytes[0] % 16;
+        r = bytes[0]! % 16;
       }
       const v = c === 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
