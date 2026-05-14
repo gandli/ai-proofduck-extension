@@ -219,7 +219,7 @@ export function TranslationResultLayer({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span>🌐</span>
+          <span aria-hidden="true">🌐</span>
           <span style={{ fontSize: '13px', fontWeight: 500 }}>{engineName}</span>
           {duration !== undefined && (
             <span style={{ fontSize: '11px', opacity: 0.8 }}>{duration.toFixed(1)}s</span>
@@ -238,8 +238,9 @@ export function TranslationResultLayer({
             opacity: 0.8,
           }}
           title={t('close') || '关闭'}
+          aria-label={t('close') || '关闭'}
         >
-          ×
+          <span aria-hidden="true">×</span>
         </button>
       </div>
 
@@ -300,7 +301,7 @@ export function TranslationResultLayer({
               transition: 'all 0.2s',
             }}
           >
-            📋 {copied ? (t('copied') || '已复制') : t('copy') || '复制'}
+            <span aria-hidden="true">📋</span> {copied ? (t('copied') || '已复制') : t('copy') || '复制'}
           </button>
 
           {/* 朗读按钮 */}
@@ -320,7 +321,7 @@ export function TranslationResultLayer({
               transition: 'all 0.2s',
             }}
           >
-            🔊 {speaking ? (t('speaking') || '朗读中') : t('speak') || '朗读'}
+            <span aria-hidden="true">🔊</span> {speaking ? (t('speaking') || '朗读中') : t('speak') || '朗读'}
           </button>
 
           {/* 重试按钮 */}
@@ -341,7 +342,7 @@ export function TranslationResultLayer({
                 transition: 'all 0.2s',
               }}
             >
-              ↻ {t('retry') || '重试'}
+              <span aria-hidden="true">↻</span> {t('retry') || '重试'}
             </button>
           )}
         </div>
@@ -364,7 +365,7 @@ export function TranslationResultLayer({
               transition: 'all 0.2s',
             }}
           >
-            📖 {t('openSidebar') || '侧边栏'}
+            <span aria-hidden="true">📖</span> {t('openSidebar') || '侧边栏'}
           </button>
         )}
       </div>
