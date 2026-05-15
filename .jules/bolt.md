@@ -1,0 +1,3 @@
+## 2026-05-15 - Optimize DOM Traversal in pageContentExtractor
+**Learning:** During extensive DOM traversal using TreeWalker, window.getComputedStyle and getBoundingClientRect are called excessively for each text node. These calls trigger synchronous layout recalculations and cause layout thrashing, significantly impacting performance, especially when multiple text nodes share the same parent element.
+**Action:** Cache the results of window.getComputedStyle and getBoundingClientRect using a Map keyed by the parent Element during the DOM traversal loop to prevent redundant synchronous layout recalculations.
