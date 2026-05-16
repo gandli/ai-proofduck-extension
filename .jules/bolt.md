@@ -1,0 +1,3 @@
+## 2024-05-16 - Parallelize Independent Async Operations
+**Learning:** In core services like `EngineManager.ts` and `ModelLoader.ts`, independent asynchronous operations (e.g., availability checks for multiple models or engines) should be parallelized to significantly improve initialization and scanning performance.
+**Action:** Use `Promise.all` combined with `Array.map` instead of sequential `for...of` loops. To prevent `Promise.all` from fast-failing if one operation throws an error, ensure individual calls are wrapped in a `try...catch` block (either inside the map callback or within the sub-function being called) to return a safe fallback value or error state.
