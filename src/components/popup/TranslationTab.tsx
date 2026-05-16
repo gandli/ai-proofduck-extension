@@ -173,7 +173,7 @@ export function TranslationTab({
           onClick={handleSubmit}
           disabled={!inputText.trim() || loading}
           className={`
-            w-full py-3 rounded-lg font-medium text-white transition-all
+            w-full py-3 rounded-lg font-medium text-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 focus-visible:ring-offset-2
             flex items-center justify-center gap-2
             ${
               loading

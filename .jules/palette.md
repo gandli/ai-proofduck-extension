@@ -1,0 +1,3 @@
+## 2024-05-16 - Consistent Keyboard Focus Indicators
+**Learning:** When implementing keyboard accessibility focus states for interactive elements (like buttons) using Tailwind CSS, combine `focus-visible:outline-none` with custom project ring colors (e.g., `focus-visible:ring-2 focus-visible:ring-brand-orange/50` or `focus-visible:ring-white/50` depending on the background) to ensure consistent visual feedback.
+**Action:** Always apply `focus-visible:outline-none` combined with appropriate `focus-visible:ring-*` utilities to buttons and interactive elements, avoiding default browser outlines while maintaining clear visual indicators for keyboard users.
