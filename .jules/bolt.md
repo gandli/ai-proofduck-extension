@@ -1,3 +1,6 @@
 ## 2024-05-18 - Engine & Model Loading Parallelization
 **Learning:** EngineManager and ModelLoader contained functions that sequentially awaited multiple independent async tasks (`engine.checkAvailability()`, `this.checkModel(modelId)`), creating an artificial performance bottleneck. Refactoring these loops to use `Promise.all(array.map(...))` dramatically reduces the total wait time, taking it from `O(N)` to `O(1)` bound by the longest individual request. To prevent one failing promise from breaking the entire batch, operations within the map must be wrapped in `try/catch`.
 **Action:** When iterating over engines, models, or any array of resources to perform network/async availability checks, always default to `Promise.all` with robust error catching inside the map callback.
+## 2024-05-18 - Vite/WXT Path Aliases
+**Learning:** WXT projects may have path aliases (like `@/` pointing to `src/`) configured implicitly or via tsconfig, but build processes running through Vite under WXT might still fail with `[UNLOADABLE_DEPENDENCY]` if the alias isn't explicitly defined in `wxt.config.ts`.
+**Action:** When build steps fail due to unresolvable internal project aliases (`@/`), explicitly add them to the `wxt.config.ts` via the `vite.resolve.alias` configuration (e.g., mapping `'@/'` to `fileURLToPath(new URL('./src/', import.meta.url))`).
