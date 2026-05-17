@@ -225,9 +225,9 @@ export class ModelLoader {
    * Check availability of all models
    */
   async checkAllModels(): Promise<void> {
-    for (const modelId of Object.keys(MODEL_REGISTRY) as LocalModelType[]) {
-      await this.checkModel(modelId);
-    }
+    const modelIds = Object.keys(MODEL_REGISTRY) as LocalModelType[];
+    // ⚡ Bolt: Check model availability in parallel rather than blocking sequentially
+    await Promise.all(modelIds.map(modelId => this.checkModel(modelId)));
   }
 
   /**
