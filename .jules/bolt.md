@@ -4,3 +4,6 @@
 ## 2024-05-18 - Vite/WXT Path Aliases
 **Learning:** WXT projects may have path aliases (like `@/` pointing to `src/`) configured implicitly or via tsconfig, but build processes running through Vite under WXT might still fail with `[UNLOADABLE_DEPENDENCY]` if the alias isn't explicitly defined in `wxt.config.ts`.
 **Action:** When build steps fail due to unresolvable internal project aliases (`@/`), explicitly add them to the `wxt.config.ts` via the `vite.resolve.alias` configuration (e.g., mapping `'@/'` to `fileURLToPath(new URL('./src/', import.meta.url))`).
+## 2024-05-18 - CI Artifact Paths
+**Learning:** WXT projects output their chrome-mv3 build artifacts to `.output/chrome-mv3/` by default. Using incorrect paths like `.output/chrome-mv3-prod/` in GitHub Actions will lead to `Artifact not found` errors during `upload-artifact` and `download-artifact` steps.
+**Action:** When configuring GitHub Actions CI pipelines for WXT extensions, always explicitly set the artifact paths to exactly match `.output/chrome-mv3/` to avoid failing jobs.
