@@ -100,7 +100,8 @@ async function handleMenuClick(
   const menuId = infoObj.menuItemId as string;
   const selectionText = infoObj.selectionText?.trim() || '';
 
-  console.log('[ProofDuck] 菜单点击:', menuId, selectionText.substring(0, 50));
+  // Prevent logging user-provided text to avoid sensitive data exposure
+  console.log('[ProofDuck] 菜单点击:', menuId, '文本长度:', selectionText.length);
 
   try {
     switch (menuId) {
@@ -166,7 +167,8 @@ async function handleMessage(
   message: ContentToBackgroundMessage,
   _sender: unknown
 ): Promise<unknown> {
-  console.log('[ProofDuck] 收到消息:', message.type, message.text?.substring(0, 50));
+  // Prevent logging user-provided text to avoid sensitive data exposure
+  console.log('[ProofDuck] 收到消息:', message.type, '文本长度:', message.text?.length);
 
   // TODO: 调用翻译引擎处理
   // 目前只是返回测试结果
