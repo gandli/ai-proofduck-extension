@@ -7,3 +7,6 @@
 ## 2024-05-18 - CI Artifact Paths
 **Learning:** WXT projects output their chrome-mv3 build artifacts to `.output/chrome-mv3/` by default. Using incorrect paths like `.output/chrome-mv3-prod/` in GitHub Actions will lead to `Artifact not found` errors during `upload-artifact` and `download-artifact` steps.
 **Action:** When configuring GitHub Actions CI pipelines for WXT extensions, always explicitly set the artifact paths to exactly match `.output/chrome-mv3/` to avoid failing jobs.
+## 2024-05-18 - Playwright Test Visibility & Mocks
+**Learning:** `toBeVisible()` assertions in Playwright tests on elements injected via `page.setContent()` (like empty divs) will fail if the element has 0 height/width since it's considered hidden. Furthermore, E2E tests against extension popups served via localhost without the extension environment or build will timeout if they expect specific HTML or logic.
+**Action:** Always give mocked DOM containers explicit styles (e.g. `style="height: 100px; width: 100px;"`) if testing visibility. For extension popup tests, inject the required mocked HTML using `page.setContent` if a local dev server serving the popup isn't available or reliable.
