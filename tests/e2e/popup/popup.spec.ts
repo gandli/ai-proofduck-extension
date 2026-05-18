@@ -2,26 +2,40 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Popup UI', () => {
   test.beforeEach(async ({ page }) => {
+    // Inject mock implementations for required extension APIs
+    await page.addInitScript(() => {
+      window.chrome = {
+        runtime: {
+          getURL: (path) => path,
+          id: 'test-extension-id',
+        },
+        storage: {
+          local: {
+            get: async () => ({}),
+            set: async () => {},
+            onChanged: {
+              addListener: () => {},
+              removeListener: () => {}
+            }
+          }
+        },
+        i18n: {
+          getMessage: (key) => key
+        }
+      };
+    });
     await page.goto('http://localhost:3000/popup.html');
   });
 
-  test('displays popup title', async ({ page }) => {
-    const title = page.locator('h1');
-    await expect(title).toBeVisible();
+  test('displays popup header', async ({ page }) => {
+    // The proofduck app header actually contains an h1 with the title
+    const header = page.locator('h1');
+    await expect(header).toContainText('ProofDuck');
   });
 
-  test('button is clickable', async ({ page }) => {
-    const button = page.locator('button');
-    await expect(button).toBeVisible();
-    await button.click();
-    await expect(button).toContainText('1');
-  });
-
-  test('counter increments on multiple clicks', async ({ page }) => {
-    const button = page.locator('button');
-    await button.click();
-    await button.click();
-    await button.click();
-    await expect(button).toContainText('3');
+  test('displays tab navigation', async ({ page }) => {
+    // Verify the tablist is visible
+    const tablist = page.locator('[role="tablist"]');
+    await expect(tablist).toBeVisible();
   });
 });
