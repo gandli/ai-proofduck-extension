@@ -4,3 +4,4 @@ Add a `WeakMap` cache to `extractTextNodes` to cache visibility styles per paren
 
 Fix wxt.config.ts resolve path
 Fix CI artifact pathing
+Fix E2E tests
