@@ -88,7 +88,7 @@ test.describe('Translation Result Layer', () => {
 
   test('should close on close button click', async ({ page }) => {
     await page.setContent(`
-      <div id="test-container"></div>
+      <div id="test-container" style="height: 100px; width: 100px; background: red;"></div>
     `);
 
     // 简单验证页面正常
@@ -286,7 +286,7 @@ test.describe('Language Detection', () => {
 test.describe('Translation Progress', () => {
   test('should show progress bar during translation', async ({ page }) => {
     await page.setContent(`
-      <div id="progress-bar" style="width: 0%;">0%</div>
+      <div id="progress-bar" style="width: 0%; min-height: 10px;">0%</div>
       <button id="start-btn">Start</button>
     `);
 
