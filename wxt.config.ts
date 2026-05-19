@@ -1,4 +1,5 @@
 import { defineConfig } from 'wxt';
+import { fileURLToPath } from 'url';
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
@@ -15,4 +16,11 @@ export default defineConfig({
       '128': 'icon/icon-128.png',
     },
   },
+  vite: () => ({
+    resolve: {
+      alias: {
+        '@/': fileURLToPath(new URL('./src/', import.meta.url)),
+      },
+    },
+  }),
 });
