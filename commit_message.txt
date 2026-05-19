@@ -1,0 +1,5 @@
+perf: cache computed styles in TreeWalker
+
+Add a `WeakMap` cache to `extractTextNodes` to cache visibility styles per parent element. This prevents severe layout thrashing (synchronous style recalculations) caused by calling `window.getComputedStyle` on every single text node, since multiple text nodes often share the same parent element.
+
+Fix wxt.config.ts resolve path
