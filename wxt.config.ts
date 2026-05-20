@@ -1,15 +1,7 @@
 import { defineConfig } from 'wxt';
-import { fileURLToPath } from 'url';
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
-  vite: () => ({
-    resolve: {
-      alias: {
-        '@/': fileURLToPath(new URL('./src/', import.meta.url)),
-      },
-    },
-  }),
   modules: ['@wxt-dev/module-react'],
   manifest: {
     default_locale: 'en',
