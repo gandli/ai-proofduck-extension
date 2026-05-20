@@ -47,6 +47,7 @@ export interface TextNodeInfo {
  */
 export function extractTextNodes(root: ParentNode = document.body): TextNodeInfo[] {
   const textNodes: TextNodeInfo[] = [];
+  const styleCache = new WeakMap<Element, boolean>();
 
   const walker = document.createTreeWalker(
     root,
@@ -77,8 +78,14 @@ export function extractTextNodes(root: ParentNode = document.body): TextNodeInfo
         }
 
         // 跳过 display: none 或 visibility: hidden 的元素
-        const style = window.getComputedStyle(parent);
-        if (style.display === 'none' || style.visibility === 'hidden') {
+        let isHidden = styleCache.get(parent);
+        if (isHidden === undefined) {
+          const style = window.getComputedStyle(parent);
+          isHidden = style.display === 'none' || style.visibility === 'hidden';
+          styleCache.set(parent, isHidden);
+        }
+
+        if (isHidden) {
           return NodeFilter.FILTER_REJECT;
         }
 
