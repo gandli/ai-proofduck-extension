@@ -129,7 +129,7 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
           <button
             ref={closeButtonRef}
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300"
             aria-label={t('close') || '关闭'}
             type="button"
           >
@@ -179,7 +179,7 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
                           <button
                             onClick={() => toggleEngine(engine.id)}
                             className={`
-                              relative w-10 h-6 rounded-full transition-colors
+                              relative w-10 h-6 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 focus-visible:ring-offset-1
                               ${engine.enabled ? 'bg-brand-orange' : 'bg-gray-300'}
                             `}
                             role="switch"
