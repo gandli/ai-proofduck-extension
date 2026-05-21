@@ -225,9 +225,10 @@ export class ModelLoader {
    * Check availability of all models
    */
   async checkAllModels(): Promise<void> {
-    for (const modelId of Object.keys(MODEL_REGISTRY) as LocalModelType[]) {
-      await this.checkModel(modelId);
-    }
+    // Optimization: Parallelize checking all models to avoid sequential await bottleneck.
+    // Expected impact: Concurrent checks significantly reduce overall status polling time.
+    const modelIds = Object.keys(MODEL_REGISTRY) as LocalModelType[];
+    await Promise.all(modelIds.map(modelId => this.checkModel(modelId)));
   }
 
   /**

@@ -1,0 +1,3 @@
+## 2024-05-21 - Parallelize Async Iterations for Entities Availability Checking
+**Learning:** The codebase's core logic centers around managing AI translation engines (`src/core/EngineManager.ts`) and local AI models (`src/core/ModelLoader.ts`). Operations that iterate over these entities (like checking availability across all registered engines/models) must be parallelized with `Promise.all` to prevent sequential async bottlenecks.
+**Action:** Always check if loops containing `await`s on multiple entities can be safely parallelized. Replace `for...of` loops that use `await` inside them with `Promise.all(array.map(async item => await ...))` when the async operations are independent.
