@@ -4,13 +4,20 @@ test.describe('Popup UI', () => {
   test.beforeEach(async ({ page }) => {
     // Inject Chrome API mocks
     await page.addInitScript(() => {
-      window.chrome = window.chrome || {} as any;
-      window.chrome.runtime = window.chrome.runtime || {} as any;
-      window.chrome.runtime.id = 'test-extension-id';
-      window.chrome.runtime.getURL = (path: string) => `chrome-extension://test-extension-id/${path}`;
-      window.chrome.i18n = window.chrome.i18n || {} as any;
-      window.chrome.i18n.getMessage = (key: string) => key;
-      window.chrome.i18n.t = (key: string) => key;
+      // Create a full mock object for chrome to avoid read-only property errors
+      const mockChrome = {
+        runtime: {
+          id: 'test-extension-id',
+          getURL: (path: string) => `chrome-extension://test-extension-id/${path}`,
+        },
+        i18n: {
+          getMessage: (key: string) => key,
+          t: (key: string) => key,
+        }
+      };
+
+      // We use any casting to bypass TypeScript's readonly checks during the mock injection
+      (window as any).chrome = mockChrome;
     });
 
     await page.goto('http://localhost:3000/popup.html');
