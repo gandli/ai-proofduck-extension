@@ -1,0 +1,3 @@
+## 2023-10-25 - Standardize Keyboard Accessibility Focus States
+**Learning:** Reusable UX pattern discovered: `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50`. Contextual colors like `focus-visible:ring-white/50` are needed on dark/colored backgrounds like the brand orange header. `focus-visible:ring-offset-2` helps for solid buttons, and `focus-visible:ring-inset` helps for tabs to avoid clipping.
+**Action:** Always combine `outline-none` with `ring-2` and a matching brand-aware ring color for interactive elements to ensure consistent and accessible keyboard navigation feedback.
