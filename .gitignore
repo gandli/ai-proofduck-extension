@@ -27,3 +27,8 @@ web-ext.config.ts
 
 # Worktrees
 .worktrees/
+
+# Test artifacts
+playwright-report/
+test-results/
+test-coverage/
