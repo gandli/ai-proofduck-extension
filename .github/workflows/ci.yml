@@ -74,7 +74,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: chrome-build
-          path: .output/chrome-mv3/
+          path: .output/chrome-mv3-prod/
           retention-days: 7
 
   e2e-tests:
@@ -98,10 +98,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: chrome-build
-          path: .output/chrome-mv3
+          path: .output/chrome-mv3-prod
 
       - name: Install Playwright browsers
-        run: bun x playwright install chromium
+        run: bunx playwright install chromium
 
       - name: Run E2E tests
         run: bun run test:e2e
