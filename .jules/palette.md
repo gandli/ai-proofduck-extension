@@ -1,0 +1,3 @@
+## 2024-05-25 - Implement Keyboard Focus States
+**Learning:** The popup component initially lacked clear visual indicators for keyboard focus across interactive elements (buttons, tabs, toggles). Implementing custom Tailwind focus rings (using `focus-visible:ring-2` combined with `focus-visible:outline-none`) ensures that keyboard users can navigate effectively without disrupting the visual design for mouse users. For tab elements, adding `focus-visible:ring-inset` prevents the focus ring from clipping outside the element bounds.
+**Action:** Always include `focus-visible` utility classes when building new interactive elements or buttons in the application to ensure out-of-the-box keyboard accessibility.
