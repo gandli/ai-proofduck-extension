@@ -2,6 +2,26 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Popup UI', () => {
   test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      const mockChrome = {
+        i18n: {
+          getMessage: (key: string) => key,
+          getUILanguage: () => 'en',
+        },
+        runtime: {
+          id: 'mock-id',
+          getURL: (path: string) => path,
+          getManifest: () => ({ version: '1.0.0' })
+        },
+        storage: {
+          local: {
+            get: async () => ({}),
+            set: async () => {},
+          }
+        }
+      };
+      (window as any).chrome = mockChrome;
+    });
     await page.goto('http://localhost:3000/popup.html');
   });
 
@@ -10,18 +30,14 @@ test.describe('Popup UI', () => {
     await expect(title).toBeVisible();
   });
 
-  test('button is clickable', async ({ page }) => {
-    const button = page.locator('button');
+  test('displays settings button', async ({ page }) => {
+    const button = page.getByRole('button', { name: 'settings' });
     await expect(button).toBeVisible();
-    await button.click();
-    await expect(button).toContainText('1');
   });
 
-  test('counter increments on multiple clicks', async ({ page }) => {
-    const button = page.locator('button');
-    await button.click();
-    await button.click();
-    await button.click();
-    await expect(button).toContainText('3');
+  test('displays translation tab', async ({ page }) => {
+    const tab = page.getByRole('tab', { name: 'tabTranslate' });
+    await expect(tab).toBeVisible();
+    await expect(tab).toHaveAttribute('aria-selected', 'true');
   });
 });
