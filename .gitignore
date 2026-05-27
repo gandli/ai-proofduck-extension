@@ -27,3 +27,7 @@ web-ext.config.ts
 
 # Worktrees
 .worktrees/
+
+# Test results
+playwright-report/
+test-results/
