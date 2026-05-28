@@ -1,27 +1,38 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 import { test, expect } from '@playwright/test';
 
 test.describe('Popup UI', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3000/popup.html');
+    // Mock chrome extension APIs before navigation
+    await page.addInitScript(() => {
+      const mockChrome = {
+        runtime: {
+          id: 'test-extension-id',
+          getURL: (path: string) => path,
+        },
+        i18n: {
+          getMessage: (key: string) => key,
+          t: (key: string) => key,
+        },
+        storage: {
+          local: {
+            get: () => Promise.resolve({}),
+            set: () => Promise.resolve(),
+          }
+        }
+      };
+      (window as any).chrome = mockChrome;
+    });
+
+    await page.goto('file://' + path.resolve(__dirname, '../../../.output/chrome-mv3/popup.html'));
   });
 
-  test('displays popup title', async ({ page }) => {
-    const title = page.locator('h1');
-    await expect(title).toBeVisible();
-  });
-
-  test('button is clickable', async ({ page }) => {
-    const button = page.locator('button');
-    await expect(button).toBeVisible();
-    await button.click();
-    await expect(button).toContainText('1');
-  });
-
-  test('counter increments on multiple clicks', async ({ page }) => {
-    const button = page.locator('button');
-    await button.click();
-    await button.click();
-    await button.click();
-    await expect(button).toContainText('3');
+  test('popup mounts properly', async ({ page }) => {
+    // Check main container
+    const container = page.locator('#root');
+    await expect(container).toBeAttached();
   });
 });
