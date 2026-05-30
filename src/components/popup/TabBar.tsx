@@ -3,8 +3,8 @@
  * 支持键盘导航和 ARIA 属性
  */
 import { useCallback, useRef } from 'react';
-import type { AIMode } from '@/types';
-import { t } from '@/i18n';
+import type { AIMode } from '../../types';
+import { t } from '../../i18n';
 
 interface TabBarProps {
   activeTab: AIMode;
