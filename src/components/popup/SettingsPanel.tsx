@@ -129,7 +129,7 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
           <button
             ref={closeButtonRef}
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50"
             aria-label={t('close') || '关闭'}
             type="button"
           >
@@ -179,7 +179,7 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
                           <button
                             onClick={() => toggleEngine(engine.id)}
                             className={`
-                              relative w-10 h-6 rounded-full transition-colors
+                              relative w-10 h-6 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50
                               ${engine.enabled ? 'bg-brand-orange' : 'bg-gray-300'}
                             `}
                             role="switch"
@@ -310,7 +310,7 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
               {/* 预览按钮 */}
               <button
                 onClick={handlePreview}
-                className="w-full py-2 px-4 bg-brand-orange text-white rounded-lg text-sm font-medium hover:bg-brand-orange/90 transition-colors"
+                className="w-full py-2 px-4 bg-brand-orange text-white rounded-lg text-sm font-medium hover:bg-brand-orange/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 focus-visible:ring-offset-2"
                 type="button"
               >
                 {t('settingsSpeechPreview')}
@@ -323,7 +323,7 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
         <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
           <button
             onClick={onClose}
-            className="w-full py-2 bg-brand-orange text-white rounded-lg font-medium hover:bg-brand-orange/90 transition-colors"
+            className="w-full py-2 bg-brand-orange text-white rounded-lg font-medium hover:bg-brand-orange/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 focus-visible:ring-offset-2"
             type="button"
           >
             {t('settingsSave') || '保存设置'}

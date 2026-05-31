@@ -1,0 +1,3 @@
+## 2024-05-31 - Keyboard Accessibility Focus States
+**Learning:** When adding keyboard focus states to interactive elements using Tailwind CSS, it is critical to customize the `focus-visible:ring` color to match the application's branding (e.g., `ring-brand-orange/50` or `ring-white/50` depending on the background context) rather than relying on the default browser ring, ensuring both clear visibility and visual consistency.
+**Action:** Always combine `focus-visible:outline-none` with tailored ring colors (`focus-visible:ring-2 focus-visible:ring-[color]`) and use `focus-visible:ring-offset-2` or `focus-visible:ring-inset` appropriately to prevent focus rings from being clipped by neighboring elements or bounding boxes.
