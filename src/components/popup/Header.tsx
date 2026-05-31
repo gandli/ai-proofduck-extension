@@ -1,7 +1,7 @@
 /**
  * Header 组件 - Logo + 设置按钮
  */
-import { t } from '../../i18n';
+import { t } from '@/i18n';
 
 interface HeaderProps {
   onSettingsClick?: () => void;
@@ -19,7 +19,7 @@ export function Header({ onSettingsClick }: HeaderProps) {
       {/* 设置按钮 */}
       <button
         onClick={onSettingsClick}
-        className="p-2 rounded-lg hover:bg-white/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+        className="p-2 rounded-lg hover:bg-white/20 transition-colors"
         title={t('settings') || '设置'}
         aria-label={t('settings') || '设置'}
         type="button"

@@ -3,8 +3,8 @@
  * 支持键盘导航和 ARIA 属性
  */
 import { useState, useCallback, useId } from 'react';
-import type { AIMode } from '../../types';
-import { t } from '../../i18n';
+import type { AIMode } from '@/types';
+import { t } from '@/i18n';
 import { LanguageSelector } from './LanguageSelector';
 
 interface TranslationTabProps {
@@ -174,7 +174,7 @@ export function TranslationTab({
           disabled={!inputText.trim() || loading}
           className={`
             w-full py-3 rounded-lg font-medium text-white transition-all
-            flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 focus-visible:ring-offset-2
+            flex items-center justify-center gap-2
             ${
               loading
                 ? 'bg-brand-orange/70 cursor-wait'

@@ -4,8 +4,8 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { t } from '../i18n';
-import { speechService } from '../services/SpeechService';
+import { t } from '@/i18n';
+import { speechService } from '@/services/SpeechService';
 
 interface Props {
   /** 原始文本 */
@@ -226,6 +226,7 @@ export function TranslationResultLayer({
           )}
         </div>
         <button
+          className="proofduck-btn"
           onClick={handleClose}
           style={{
             background: 'none',
@@ -236,6 +237,7 @@ export function TranslationResultLayer({
             fontSize: '16px',
             lineHeight: 1,
             opacity: 0.8,
+            outline: 'none',
           }}
           title={t('close') || '关闭'}
         >
@@ -285,6 +287,7 @@ export function TranslationResultLayer({
         <div style={{ display: 'flex', gap: '8px' }}>
           {/* 复制按钮 */}
           <button
+            className="proofduck-btn"
             onClick={handleCopy}
             style={{
               display: 'flex',
@@ -298,6 +301,7 @@ export function TranslationResultLayer({
               cursor: 'pointer',
               fontSize: '12px',
               transition: 'all 0.2s',
+              outline: 'none',
             }}
           >
             📋 {copied ? (t('copied') || '已复制') : t('copy') || '复制'}
@@ -305,6 +309,7 @@ export function TranslationResultLayer({
 
           {/* 朗读按钮 */}
           <button
+            className="proofduck-btn"
             onClick={handleSpeak}
             style={{
               display: 'flex',
@@ -318,6 +323,7 @@ export function TranslationResultLayer({
               cursor: 'pointer',
               fontSize: '12px',
               transition: 'all 0.2s',
+              outline: 'none',
             }}
           >
             🔊 {speaking ? (t('speaking') || '朗读中') : t('speak') || '朗读'}
@@ -326,6 +332,7 @@ export function TranslationResultLayer({
           {/* 重试按钮 */}
           {onRetry && (
             <button
+              className="proofduck-btn"
               onClick={onRetry}
               style={{
                 display: 'flex',
@@ -339,6 +346,7 @@ export function TranslationResultLayer({
                 cursor: 'pointer',
                 fontSize: '12px',
                 transition: 'all 0.2s',
+                outline: 'none',
               }}
             >
               ↻ {t('retry') || '重试'}
@@ -349,6 +357,7 @@ export function TranslationResultLayer({
         {/* 打开侧边栏按钮 */}
         {onOpenSidebar && (
           <button
+            className="proofduck-btn"
             onClick={onOpenSidebar}
             style={{
               display: 'flex',
@@ -362,6 +371,7 @@ export function TranslationResultLayer({
               cursor: 'pointer',
               fontSize: '12px',
               transition: 'all 0.2s',
+              outline: 'none',
             }}
           >
             📖 {t('openSidebar') || '侧边栏'}
@@ -374,6 +384,10 @@ export function TranslationResultLayer({
         @keyframes blink {
           0%, 50% { opacity: 1; }
           51%, 100% { opacity: 0; }
+        }
+        .proofduck-btn:focus-visible {
+          outline: 2px solid #FF5A11 !important;
+          outline-offset: 2px !important;
         }
       `}</style>
     </div>
