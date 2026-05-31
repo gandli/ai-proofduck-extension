@@ -5,6 +5,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { encryptData, decryptData } from '../utils/encryption';
 
 // LLM Provider types
 export type LLMProvider = 'openai' | 'claude' | 'deepseek' | 'qwen' | 'gemini';
@@ -48,12 +49,13 @@ const chromeStorageAdapter = {
     const result = await chrome.storage.local.get(name);
     const value = result[name];
     if (typeof value === 'string') {
-      return value;
+      return await decryptData(value);
     }
     return null;
   },
   setItem: async (name: string, value: string): Promise<void> => {
-    await chrome.storage.local.set({ [name]: value });
+    const encryptedValue = await encryptData(value);
+    await chrome.storage.local.set({ [name]: encryptedValue });
   },
   removeItem: async (name: string): Promise<void> => {
     await chrome.storage.local.remove(name);

@@ -1,0 +1,4 @@
+## 2025-02-28 - Insecure Cryptographic Keys
+**Vulnerability:** Initial encryption implementation used hardcoded cryptographic keys (`ENCRYPTION_KEY` and `SALT` constant strings) stored in plaintext directly in the application bundle.
+**Learning:** Security by obscurity is insufficient. Hardcoded keys within client-side bundles (like browser extensions) offer zero protection against an attacker who can read the local file system or intercept the bundled code. Any user or extension with basic access can easily extract the key and decrypt "secure" data.
+**Prevention:** Always securely generate cryptographic key material dynamically (e.g. using `crypto.getRandomValues`) on the client upon first execution and store it within the system's isolated secure storage mechanisms (`chrome.storage.local` is isolated per extension profile). Combine this with appropriate key derivation functions like PBKDF2 with high iteration counts (e.g. 100,000+).
