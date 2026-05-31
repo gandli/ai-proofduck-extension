@@ -1,46 +1,37 @@
 /**
  * Advanced encryption utility for API keys using Web Crypto API.
- * Uses a unique, securely generated key stored in the extension's sync storage,
- * falling back to local storage, to ensure the encryption key isn't hardcoded.
+ * Uses a unique, securely generated key. In a production extension,
+ * you should use chrome.storage.session or OS-level keystore (e.g., via Native Messaging),
+ * but for this security boundary implementation, we use a randomly generated
+ * session-level key that isn't persisted to disk, avoiding local storage theater.
  */
 
-const KEY_STORAGE_KEY = 'proofduck_encryption_key_material';
-const SALT_STORAGE_KEY = 'proofduck_encryption_salt';
+// We generate a key strictly in memory when the module loads.
+// If the extension background process restarts, the user will need to re-enter
+// keys, or we accept that local API keys in a simple extension aren't truly
+// secure against local filesystem reads without a user password.
+// For the scope of this fix, we avoid hardcoding the key and avoid
+// storing the key right next to the data in local storage.
 
-// Generates a random cryptographic string to use as key material or salt
+let sessionKeyMaterial: string | null = null;
+let sessionSalt: string | null = null;
+
 function generateRandomString(length: number): string {
   const array = new Uint8Array(length);
   crypto.getRandomValues(array);
   return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
-// Retrieves or creates the encryption key material and salt
-async function getOrGenerateKeyMaterial(): Promise<{ keyMaterial: string; salt: string }> {
-  // We use standard promises to interact with chrome storage safely
-  return new Promise((resolve) => {
-    chrome.storage.local.get([KEY_STORAGE_KEY, SALT_STORAGE_KEY], (result) => {
-      let keyMaterial = result[KEY_STORAGE_KEY] as string | undefined;
-      let salt = result[SALT_STORAGE_KEY] as string | undefined;
-
-      if (!keyMaterial || !salt) {
-        const newKeyMaterial = generateRandomString(32);
-        const newSalt = generateRandomString(16);
-        // Save the generated material
-        chrome.storage.local.set({
-          [KEY_STORAGE_KEY]: newKeyMaterial,
-          [SALT_STORAGE_KEY]: newSalt
-        }, () => {
-          resolve({ keyMaterial: newKeyMaterial, salt: newSalt });
-        });
-      } else {
-        resolve({ keyMaterial, salt });
-      }
-    });
-  });
+function getSessionKeyMaterial() {
+  if (!sessionKeyMaterial || !sessionSalt) {
+    sessionKeyMaterial = generateRandomString(32);
+    sessionSalt = generateRandomString(16);
+  }
+  return { keyMaterial: sessionKeyMaterial, salt: sessionSalt };
 }
 
 async function getCryptoKey() {
-  const { keyMaterial: rawKeyMaterial, salt: rawSalt } = await getOrGenerateKeyMaterial();
+  const { keyMaterial: rawKeyMaterial, salt: rawSalt } = getSessionKeyMaterial();
   const enc = new TextEncoder();
 
   const keyMaterial = await crypto.subtle.importKey(
@@ -55,7 +46,7 @@ async function getCryptoKey() {
     {
       name: 'PBKDF2',
       salt: enc.encode(rawSalt),
-      iterations: 100000, // OWASP recommended minimum for PBKDF2
+      iterations: 100000,
       hash: 'SHA-256',
     },
     keyMaterial,
@@ -69,7 +60,7 @@ export async function encryptData(data: string): Promise<string> {
   if (!data) return data;
   try {
     const key = await getCryptoKey();
-    const iv = crypto.getRandomValues(new Uint8Array(12)); // 96-bit IV for GCM
+    const iv = crypto.getRandomValues(new Uint8Array(12));
     const enc = new TextEncoder();
     const encrypted = await crypto.subtle.encrypt(
       { name: 'AES-GCM', iv },
@@ -78,11 +69,9 @@ export async function encryptData(data: string): Promise<string> {
     );
     const encryptedArray = Array.from(new Uint8Array(encrypted));
     const ivArray = Array.from(iv);
-    // Base64 encode the JSON object containing IV and ciphertext
     return btoa(JSON.stringify({ i: ivArray, d: encryptedArray }));
   } catch (e) {
     console.error('Encryption failed:', e);
-    // Fail secure: don't return unencrypted data if encryption fails, return empty to avoid leak
     throw new Error('Encryption failed securely');
   }
 }
@@ -91,7 +80,7 @@ export async function decryptData(data: string): Promise<string> {
   if (!data) return data;
   try {
     const parsed = JSON.parse(atob(data));
-    if (!parsed.i || !parsed.d) return data; // Not encrypted or invalid format, return as-is
+    if (!parsed.i || !parsed.d) return data;
 
     const key = await getCryptoKey();
     const iv = new Uint8Array(parsed.i);
@@ -105,8 +94,6 @@ export async function decryptData(data: string): Promise<string> {
     const dec = new TextDecoder();
     return dec.decode(decrypted);
   } catch (e) {
-    // If it's not base64 encoded JSON, it's likely legacy plaintext, return as-is
-    // or if decryption fails due to key mismatch, we just return the data (which might be raw API key if migration hasn't happened)
     return data;
   }
 }
