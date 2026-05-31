@@ -4,7 +4,7 @@
  * 支持流式输出
  */
 
-import type { TranslationEngine, TranslationResult, StreamChunk } from '@/types';
+import type { TranslationEngine, TranslationResult, StreamChunk } from '../types';
 
 export class GoogleTranslateAdapter implements TranslationEngine {
   readonly id = 'google';
