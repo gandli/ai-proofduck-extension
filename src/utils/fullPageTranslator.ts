@@ -4,7 +4,7 @@
  */
 
 import { extractTextNodes, filterShortNodes, detectPageLanguage, type TextNodeInfo } from './pageContentExtractor';
-import type { TranslationResult } from '@/types';
+import type { TranslationResult } from '../types';
 
 /**
  * 翻译进度回调

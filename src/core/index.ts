@@ -19,4 +19,4 @@ export interface ServiceConfig {
 
 // Re-export
 export { EngineManager, EngineError, getEngineManager, createEngineManager } from './EngineManager';
-export type { TranslationEngine } from '@/types';
+export type { TranslationEngine } from '../types';

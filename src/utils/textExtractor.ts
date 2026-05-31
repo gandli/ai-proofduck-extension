@@ -3,7 +3,7 @@
  * 用于从网页中提取用户选择的文本及其位置信息
  */
 
-import type { SelectionInfo, TextPosition } from '@/types/content';
+import type { SelectionInfo, TextPosition } from '../types/content';
 
 /**
  * 获取当前选区信息
