@@ -1,0 +1,3 @@
+## 2025-05-31 - Parallelizing Core Engine/Model Initialization
+**Learning:** The codebase relies heavily on dynamic registration and runtime availability checks for its translation engines (`EngineManager`) and local LLM models (`ModelLoader`). Because many of these checks are asynchronous (e.g., verifying WebGPU capabilities or prompting window.ai), iterating over them sequentially using `for...of` loops creates a massive bottleneck during initialization and selection phases.
+**Action:** Operations that iterate over multiple engines or models and perform async checks must be parallelized using `Promise.all` and `.map()`. This pattern should be consistently applied wherever multiple independent engine/model promises can be resolved concurrently.
