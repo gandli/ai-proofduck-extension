@@ -1,7 +1,7 @@
 /**
  * Header 组件 - Logo + 设置按钮
  */
-import { t } from '@/i18n';
+import { t } from '../../i18n';
 
 interface HeaderProps {
   onSettingsClick?: () => void;
