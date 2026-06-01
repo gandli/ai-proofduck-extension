@@ -42,18 +42,47 @@ interface SettingsState {
   isConfigured: (provider: LLMProvider) => boolean;
 }
 
+const STORAGE_KEY = 'proofduck-secure-storage-key';
+
+function encryptData(data: string): string {
+  try {
+    const encoded = encodeURIComponent(data);
+    return btoa(
+      encoded.split('').map((c, i) =>
+        String.fromCharCode(c.charCodeAt(0) ^ STORAGE_KEY.charCodeAt(i % STORAGE_KEY.length))
+      ).join('')
+    );
+  } catch {
+    return data;
+  }
+}
+
+function decryptData(data: string): string {
+  try {
+    // If it looks like unencrypted JSON, return as-is for backward compatibility
+    if (data.trim().startsWith('{')) return data;
+
+    const decoded = atob(data).split('').map((c, i) =>
+      String.fromCharCode(c.charCodeAt(0) ^ STORAGE_KEY.charCodeAt(i % STORAGE_KEY.length))
+    ).join('');
+    return decodeURIComponent(decoded);
+  } catch {
+    return data;
+  }
+}
+
 // Chrome storage adapter for Zustand persist
 const chromeStorageAdapter = {
   getItem: async (name: string): Promise<string | null> => {
     const result = await chrome.storage.local.get(name);
     const value = result[name];
     if (typeof value === 'string') {
-      return value;
+      return decryptData(value);
     }
     return null;
   },
   setItem: async (name: string, value: string): Promise<void> => {
-    await chrome.storage.local.set({ [name]: value });
+    await chrome.storage.local.set({ [name]: encryptData(value) });
   },
   removeItem: async (name: string): Promise<void> => {
     await chrome.storage.local.remove(name);
