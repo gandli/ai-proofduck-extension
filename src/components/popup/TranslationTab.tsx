@@ -3,8 +3,8 @@
  * 支持键盘导航和 ARIA 属性
  */
 import { useState, useCallback, useId } from 'react';
-import type { AIMode } from '../../types';
-import { t } from '../../i18n';
+import type { AIMode } from '@/types';
+import { t } from '@/i18n';
 import { LanguageSelector } from './LanguageSelector';
 
 interface TranslationTabProps {
