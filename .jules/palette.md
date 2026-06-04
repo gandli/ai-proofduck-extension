@@ -1,0 +1,3 @@
+## 2024-06-04 - Improve keyboard navigation focus states for all interactive elements
+**Learning:** In Tailwind CSS, combining `focus-visible:outline-none` with project-specific ring colors (`focus-visible:ring-2 focus-visible:ring-brand-orange/50`) improves keyboard navigation accessibility by clearly outlining interactive elements while preventing outline overlap. Adding `focus-visible:ring-offset-2` on regular buttons and `focus-visible:ring-inset` on tabs ensures no clipping occurs.
+**Action:** Always implement `focus-visible` styles with `ring` alongside appropriate offsets or insets for all interactive elements to ensure clear visual feedback for keyboard users.
