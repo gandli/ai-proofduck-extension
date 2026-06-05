@@ -1,0 +1,3 @@
+## 2025-02-23 - DOM Query Caching Optimization
+**Learning:** In utility functions that traverse the DOM heavily (like `extractTextNodes` iterating over all text nodes on a page), repeatedly invoking synchronous layout operations (`getComputedStyle`, `getBoundingClientRect`) on parent nodes causes significant layout thrashing because multiple text nodes often share the exact same parent element.
+**Action:** Use a `WeakMap` or similar ephemeral cache (keyed by the DOM element) scoped to the traversal function to cache style and coordinate information and avoid redundant, expensive layout calculations.
