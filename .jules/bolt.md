@@ -1,0 +1,3 @@
+## 2024-06-06 - Optimize DOM querying in pageContentExtractor.ts
+**Learning:** During TreeWalker iteration for extracting text nodes on heavy pages, redundantly evaluating `window.getComputedStyle()` and `getBoundingClientRect()` on parent elements causes significant synchronous style recalculations and layout thrashing, as multiple text nodes often share the exact same parent element.
+**Action:** When iterating over deeply nested text nodes, always use a `WeakMap` or similar cache to memoize visibility and spatial boundaries per parent node to drastically reduce expensive DOM queries and layout recalculations.
