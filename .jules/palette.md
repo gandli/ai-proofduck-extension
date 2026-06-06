@@ -1,0 +1,3 @@
+## 2024-06-06 - Add Keyboard Focus Visibility for Interactive Elements
+**Learning:** Combining Tailwind's `focus-visible:outline-none` with custom project ring colors (`focus-visible:ring-2 focus-visible:ring-brand-orange/50` or `focus-visible:ring-white/50` depending on the background) creates a clear, branded focus indicator that improves keyboard navigation accessibility without relying on the browser's default outline.
+**Action:** Consistently apply this pattern to all interactive elements (buttons, tabs, selects) that lack explicit focus states to ensure keyboard users have clear visual feedback when navigating the UI.
