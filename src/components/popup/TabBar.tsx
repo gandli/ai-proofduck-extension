@@ -80,7 +80,7 @@ export function TabBar({ activeTab, onTabChange }: TabBarProps) {
             className={`
               flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2
               text-sm font-medium transition-colors
-              border-b-2 -mb-px
+              border-b-2 -mb-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-orange/50
               ${
                 isActive
                   ? 'border-brand-orange text-brand-orange'
