@@ -1,3 +1,0 @@
-## 2026-04-03 - Add clear button to textarea
-**Learning:** Found that when users are inputting text into the textarea for translation or other modes, they lack a quick way to clear the input field, which can be frustrating when dealing with long texts or making quick corrections.
-**Action:** Added a clear button with an 'X' icon inside the textarea container. Used absolute positioning (`absolute top-2 right-2`) to place it conveniently without overlapping text (added `pr-10` to textarea to prevent overlap). Ensured accessibility by adding `aria-label`, `title`, and proper keyboard focus states (`focus-visible:outline-none focus-visible:ring-2`).
