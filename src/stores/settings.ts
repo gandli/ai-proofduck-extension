@@ -48,12 +48,21 @@ const chromeStorageAdapter = {
     const result = await chrome.storage.local.get(name);
     const value = result[name];
     if (typeof value === 'string') {
-      return value;
+      try {
+        const decodedBinString = atob(value);
+        const decodedBytes = Uint8Array.from(decodedBinString, (m) => m.codePointAt(0) as number);
+        return new TextDecoder().decode(decodedBytes);
+      } catch (e) {
+        return value; // Fallback for plain-text backward compatibility
+      }
     }
     return null;
   },
   setItem: async (name: string, value: string): Promise<void> => {
-    await chrome.storage.local.set({ [name]: value });
+    const bytes = new TextEncoder().encode(value);
+    const binString = Array.from(bytes, (byte) => String.fromCodePoint(byte)).join('');
+    const encoded = btoa(binString);
+    await chrome.storage.local.set({ [name]: encoded });
   },
   removeItem: async (name: string): Promise<void> => {
     await chrome.storage.local.remove(name);
