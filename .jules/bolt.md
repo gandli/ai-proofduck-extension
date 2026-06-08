@@ -1,0 +1,3 @@
+## 2025-02-09 - Avoid layout thrashing in TreeWalker iteration
+**Learning:** When using `TreeWalker` to iterate over text nodes (e.g., for page translation or extraction), repeatedly calling `window.getComputedStyle(parent)` or `getBoundingClientRect()` on every node causes severe layout thrashing. Multiple text nodes often share the same parent element, leading to redundant synchronous style recalculations.
+**Action:** Always cache the visibility, computed style, or bounding rect results per parent element using a `Map` or `WeakMap` when iterating over text nodes to ensure optimal performance.
