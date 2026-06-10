@@ -2,7 +2,7 @@
  * TranslationTab 组件 - 翻译/校对/润色/扩写 Tab 内容
  * 支持键盘导航和 ARIA 属性
  */
-import { useState, useCallback, useId } from 'react';
+import { useState, useCallback, useId, useRef } from 'react';
 import type { AIMode } from '@/types';
 import { t } from '@/i18n';
 import { LanguageSelector } from './LanguageSelector';
@@ -82,11 +82,17 @@ export function TranslationTab({
   const textareaId = useId();
   const errorId = useId();
   const resultId = useId();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = useCallback(() => {
     if (!inputText.trim() || loading) return;
     onSubmit(inputText.trim());
   }, [inputText, loading, onSubmit]);
+
+  const handleClear = useCallback(() => {
+    setInputText('');
+    textareaRef.current?.focus();
+  }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -122,18 +128,43 @@ export function TranslationTab({
       <div className="flex-1 p-4 flex flex-col min-h-0">
         <div className="flex-1 relative">
           <textarea
+            ref={textareaRef}
             id={textareaId}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={t(getPlaceholder(mode))}
-            className="w-full h-full resize-none rounded-lg border border-gray-300 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 focus:border-brand-orange"
+            className="w-full h-full resize-none rounded-lg border border-gray-300 p-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 focus:border-brand-orange"
             disabled={loading}
             aria-label={getAriaLabel(mode)}
             aria-invalid={!!error}
             aria-describedby={error ? errorId : undefined}
             aria-readonly={loading}
           />
+          {inputText.length > 0 && !loading && (
+            <button
+              onClick={handleClear}
+              className="absolute top-2 right-2 p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus-visible:ring-2 focus:outline-none focus:ring-brand-orange/50 transition-colors"
+              aria-label="清空输入"
+              title="清空输入"
+              type="button"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-4 h-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          )}
         </div>
 
         {/* 字符数显示 */}
