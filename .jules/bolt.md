@@ -1,0 +1,3 @@
+## 2024-06-11 - Cache window.getComputedStyle and getBoundingClientRect in TreeWalker
+**Learning:** In `src/utils/pageContentExtractor.ts`, `TreeWalker` iterates over text nodes to extract page content. Repeatedly calling `window.getComputedStyle(parent)` and `parent.getBoundingClientRect()` on every text node causes severe layout thrashing and performance degradation, because multiple text nodes often share the same parent element, leading to redundant synchronous style recalculations.
+**Action:** Use a `Map` or `WeakMap` to cache the visibility, computed style, and bounding rect results per parent element during `TreeWalker` iteration to avoid redundant recalculations.
