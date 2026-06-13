@@ -136,7 +136,7 @@ export class ModelLoader {
         }
       }
     } catch (error) {
-      console.error('[ModelLoader] Failed to load statuses:', error);
+      console.error('[ModelLoader] Failed to load statuses:', error instanceof Error ? error.message : 'Unknown error');
     }
   }
 
@@ -149,7 +149,7 @@ export class ModelLoader {
         [STORAGE_KEYS.DOWNLOAD_STATUS]: this.state.statuses,
       });
     } catch (error) {
-      console.error('[ModelLoader] Failed to save statuses:', error);
+      console.error('[ModelLoader] Failed to save statuses:', error instanceof Error ? error.message : 'Unknown error');
     }
   }
 
@@ -204,7 +204,7 @@ export class ModelLoader {
       try {
         listener(statuses);
       } catch (error) {
-        console.error('[ModelLoader] Listener error:', error);
+        console.error('[ModelLoader] Listener error:', error instanceof Error ? error.message : 'Unknown error');
       }
     }
   }

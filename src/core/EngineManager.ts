@@ -165,7 +165,7 @@ export class EngineManager {
         engine: engine.id,
       };
     } catch (error) {
-      console.error(`[EngineManager] Engine "${engine.id}" translation failed:`, error);
+      console.error(`[EngineManager] Engine "${engine.id}" translation failed:`, error instanceof Error ? error.message : 'Unknown error');
 
       // 尝试降级到下一个引擎
       const fallbackEngine = await this.getNextFallbackEngine(engine.id);
@@ -216,7 +216,7 @@ export class EngineManager {
         yield { ...chunk, engine: engine.id };
       }
     } catch (error) {
-      console.error(`[EngineManager] Engine "${engine.id}" stream failed:`, error);
+      console.error(`[EngineManager] Engine "${engine.id}" stream failed:`, error instanceof Error ? error.message : 'Unknown error');
 
       // 尝试降级
       const fallbackEngine = await this.getNextFallbackEngine(engine.id);
