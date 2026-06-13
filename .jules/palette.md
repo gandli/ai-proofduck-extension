@@ -1,0 +1,3 @@
+## 2026-04-03 - Added Clear Button for Text Input
+**Learning:** For a translation or writing assistance tool, providing a quick way to clear the text input is crucial for user experience. Users often paste new text to replace old text, and manual deletion is tedious.
+**Action:** Always consider adding a dedicated 'Clear' button (with appropriate ARIA labels and focus states) for primary text inputs or textareas, ensuring it is only visible when there is text to clear and the component is not in a loading state. Also, ensure right padding is added to the input to prevent text from overlapping the absolute positioned button.
