@@ -2,7 +2,7 @@
  * LanguageSelector 组件 - 语言选择器
  * 支持无障碍访问
  */
-import { useState, useId } from 'react';
+import { useState, useId, memo } from 'react';
 
 export interface Language {
   code: string;
@@ -31,7 +31,7 @@ export const LANGUAGES: Language[] = [
   { code: 'ar', name: 'العربية' },
 ];
 
-export function LanguageSelector({
+export const LanguageSelector = memo(function LanguageSelector({
   sourceLang,
   targetLang,
   onSourceChange,
@@ -130,6 +130,6 @@ export function LanguageSelector({
       </div>
     </div>
   );
-}
+});
 
 export default LanguageSelector;
