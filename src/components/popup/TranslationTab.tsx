@@ -2,7 +2,7 @@
  * TranslationTab 组件 - 翻译/校对/润色/扩写 Tab 内容
  * 支持键盘导航和 ARIA 属性
  */
-import { useState, useCallback, useId } from 'react';
+import { useState, useCallback, useId, useRef } from 'react';
 import type { AIMode } from '@/types';
 import { t } from '@/i18n';
 import { LanguageSelector } from './LanguageSelector';
@@ -82,11 +82,17 @@ export function TranslationTab({
   const textareaId = useId();
   const errorId = useId();
   const resultId = useId();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = useCallback(() => {
     if (!inputText.trim() || loading) return;
     onSubmit(inputText.trim());
   }, [inputText, loading, onSubmit]);
+
+  const handleClear = useCallback(() => {
+    setInputText('');
+    textareaRef.current?.focus();
+  }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -122,18 +128,42 @@ export function TranslationTab({
       <div className="flex-1 p-4 flex flex-col min-h-0">
         <div className="flex-1 relative">
           <textarea
+            ref={textareaRef}
             id={textareaId}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={t(getPlaceholder(mode))}
-            className="w-full h-full resize-none rounded-lg border border-gray-300 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 focus:border-brand-orange"
+            className="w-full h-full resize-none rounded-lg border border-gray-300 p-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 focus:border-brand-orange"
             disabled={loading}
             aria-label={getAriaLabel(mode)}
             aria-invalid={!!error}
             aria-describedby={error ? errorId : undefined}
             aria-readonly={loading}
           />
+          {inputText && (
+            <button
+              onClick={handleClear}
+              className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+              aria-label={t('clear') || '清空输入框'}
+              title={t('clear') || '清空'}
+              type="button"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+          )}
         </div>
 
         {/* 字符数显示 */}
