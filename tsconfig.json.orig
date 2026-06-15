@@ -11,8 +11,7 @@
     "exactOptionalPropertyTypes": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "~/*": ["./src/*"],
+      "@/*": ["src/*"],
       "@entry/*": ["entrypoints/*"]
     }
   }
