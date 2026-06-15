@@ -2,7 +2,7 @@
  * TabBar 组件 - 功能切换
  * 支持键盘导航和 ARIA 属性
  */
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, memo } from 'react';
 import type { AIMode } from '@/types';
 import { t } from '@/i18n';
 
@@ -18,7 +18,7 @@ const TABS: { key: AIMode; icon: string; labelKey: string }[] = [
   { key: 'expand', icon: '📝', labelKey: 'tabExpand' },
 ];
 
-export function TabBar({ activeTab, onTabChange }: TabBarProps) {
+export const TabBar = memo(function TabBar({ activeTab, onTabChange }: TabBarProps) {
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   // 键盘导航处理
@@ -95,6 +95,6 @@ export function TabBar({ activeTab, onTabChange }: TabBarProps) {
       })}
     </div>
   );
-}
+});
 
 export default TabBar;
