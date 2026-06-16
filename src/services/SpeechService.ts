@@ -157,6 +157,8 @@ class EdgeTTSProvider {
    * 生成 GUID
    */
   private generateGuid(): string {
+    // ⚡ Bolt: 性能优化 - 使用原生的 crypto.randomUUID() 替代复杂的正则和 Math.random()
+    // 这不仅比字符串替换快得多，而且更安全。
     return crypto.randomUUID();
   }
 

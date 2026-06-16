@@ -76,6 +76,7 @@ export class EngineManager {
   async getAvailableEngines(): Promise<TranslationEngine[]> {
     const available: TranslationEngine[] = [];
 
+    // ⚡ Bolt: 性能优化 - 并发检查所有引擎的可用性状态，而不是顺序执行，可大幅减少网络或冷启动引起的总等待时间
     await Promise.all(
       Array.from(this.engines.values()).map(async (engine) => {
         try {
@@ -97,6 +98,7 @@ export class EngineManager {
    * 获取引擎信息列表
    */
   async getEngineInfos(): Promise<EngineInfo[]> {
+    // ⚡ Bolt: 性能优化 - 并发获取各引擎的状态，解决顺序 await 带来的页面加载/配置初始化瓶颈
     const infos = await Promise.all(
       Array.from(this.engines.values()).map(async (engine) => {
         let status: EngineStatus = 'idle';
