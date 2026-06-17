@@ -1,0 +1,3 @@
+## 2024-06-17 - Optimize DOM traversal to avoid layout thrashing
+**Learning:** During TreeWalker iteration, repeatedly calling `window.getComputedStyle(parent)` or `parent.getBoundingClientRect()` for every text node can cause layout thrashing and severe performance degradation on large pages. Because multiple text nodes often share the same parent element, these expensive layout calculations are unnecessarily repeated.
+**Action:** Use a `WeakMap<HTMLElement, T>` to cache the results of expensive layout properties (like visibility and bounding rectangles) tied to parent nodes. This ensures the layout is calculated only once per parent element, significantly improving the performance of DOM traversal and text extraction.

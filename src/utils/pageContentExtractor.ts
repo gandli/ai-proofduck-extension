@@ -48,6 +48,11 @@ export interface TextNodeInfo {
 export function extractTextNodes(root: ParentNode = document.body): TextNodeInfo[] {
   const textNodes: TextNodeInfo[] = [];
 
+  // Cache visibility state and bounding rects for parent elements
+  // to avoid redundant layout thrashing/reflows during TreeWalker iteration
+  const visibilityCache = new WeakMap<HTMLElement, boolean>();
+  const rectCache = new WeakMap<HTMLElement, DOMRect>();
+
   const walker = document.createTreeWalker(
     root,
     NodeFilter.SHOW_TEXT,
@@ -76,9 +81,17 @@ export function extractTextNodes(root: ParentNode = document.body): TextNodeInfo
           return NodeFilter.FILTER_REJECT;
         }
 
+        // Check cache for visibility
+        if (visibilityCache.has(parent)) {
+          return visibilityCache.get(parent) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        }
+
         // 跳过 display: none 或 visibility: hidden 的元素
         const style = window.getComputedStyle(parent);
-        if (style.display === 'none' || style.visibility === 'hidden') {
+        const isVisible = style.display !== 'none' && style.visibility !== 'hidden';
+        visibilityCache.set(parent, isVisible);
+
+        if (!isVisible) {
           return NodeFilter.FILTER_REJECT;
         }
 
@@ -90,7 +103,13 @@ export function extractTextNodes(root: ParentNode = document.body): TextNodeInfo
   while (walker.nextNode()) {
     const node = walker.currentNode as Text;
     const parent = node.parentElement!;
-    const rect = parent.getBoundingClientRect();
+
+    // Check cache for bounding rect
+    let rect = rectCache.get(parent);
+    if (!rect) {
+      rect = parent.getBoundingClientRect();
+      rectCache.set(parent, rect);
+    }
 
     // 跳过尺寸为 0 的元素
     if (rect.width === 0 || rect.height === 0) {
