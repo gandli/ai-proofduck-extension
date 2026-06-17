@@ -1,0 +1,3 @@
+## 2025-02-23 - Add Clear Text Button to Textarea
+**Learning:** For dynamic textareas like the one in `TranslationTab.tsx`, a small "clear text" button inside the input wrapper significantly reduces user friction when wiping long blocks of copied text.
+**Action:** When creating textareas or inputs intended for translation/paraphrasing, use a wrapper `div` with `relative` and add an absolutely positioned clear button. Apply right-padding (e.g., `pr-10`) to the textarea class to prevent text overlap, and attach a `ref` so focus returns to the textarea after clearing (`ref.current?.focus()`) for seamless keyboard usability.
