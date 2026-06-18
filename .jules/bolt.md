@@ -1,0 +1,3 @@
+## 2026-04-03 - Parallelize engine availability checks in EngineManager
+**Learning:** Sequential `await` calls in a loop (like `for (const engine of this.engines.values()) { await engine.checkAvailability(); }`) can significantly bottleneck initialization and UI updates when checking multiple engines, as each check adds to the total wait time (O(N) asynchronous time).
+**Action:** When executing multiple independent asynchronous checks or operations (like verifying configuration/availability across different engine instances), map the collection into an array of Promises and execute them concurrently using `Promise.all()` to reduce the total wait time to O(1) in terms of asynchronous execution (constrained by the slowest single check).
