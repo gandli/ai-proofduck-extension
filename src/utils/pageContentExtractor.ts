@@ -48,6 +48,9 @@ export interface TextNodeInfo {
 export function extractTextNodes(root: ParentNode = document.body): TextNodeInfo[] {
   const textNodes: TextNodeInfo[] = [];
 
+  // ⚡ Bolt: Cache computed styles for parent elements to avoid repetitive expensive lookups for sibling text nodes
+  const visibilityCache = new WeakMap<Element, boolean>();
+
   const walker = document.createTreeWalker(
     root,
     NodeFilter.SHOW_TEXT,
@@ -76,9 +79,16 @@ export function extractTextNodes(root: ParentNode = document.body): TextNodeInfo
           return NodeFilter.FILTER_REJECT;
         }
 
-        // 跳过 display: none 或 visibility: hidden 的元素
-        const style = window.getComputedStyle(parent);
-        if (style.display === 'none' || style.visibility === 'hidden') {
+        // ⚡ Bolt: Check cache before calling expensive getComputedStyle
+        let isVisible = visibilityCache.get(parent);
+        if (isVisible === undefined) {
+          // 跳过 display: none 或 visibility: hidden 的元素
+          const style = window.getComputedStyle(parent);
+          isVisible = style.display !== 'none' && style.visibility !== 'hidden';
+          visibilityCache.set(parent, isVisible);
+        }
+
+        if (!isVisible) {
           return NodeFilter.FILTER_REJECT;
         }
 
