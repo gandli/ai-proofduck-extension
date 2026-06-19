@@ -202,5 +202,9 @@
   "menuExpandSelection": {
     "message": "選択範囲を拡張",
     "description": "Context menu to expand selected text"
+  },
+  "tabClear": {
+    "message": "テキストをクリア",
+    "description": "テキストクリアボタンのラベル"
   }
 }

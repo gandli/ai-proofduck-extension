@@ -202,5 +202,9 @@
   "menuExpandSelection": {
     "message": "선택 영역 확장",
     "description": "Context menu to expand selected text"
+  },
+  "tabClear": {
+    "message": "텍스트 지우기",
+    "description": "텍스트 지우기 버튼의 레이블"
   }
 }

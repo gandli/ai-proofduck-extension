@@ -202,5 +202,9 @@
   "menuExpandSelection": {
     "message": "Auswahl erweitern",
     "description": "Context menu to expand selected text"
+  },
+  "tabClear": {
+    "message": "Text löschen",
+    "description": "Beschriftung für die Schaltfläche Text löschen"
   }
 }

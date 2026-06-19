@@ -145,8 +145,8 @@ export function TranslationTab({
             <button
               onClick={handleClear}
               className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-gray-600 rounded-md hover:bg-gray-100 transition-colors"
-              aria-label="清空文本"
-              title="清空文本"
+              aria-label={t('tabClear')}
+              title={t('tabClear')}
               type="button"
             >
               <svg

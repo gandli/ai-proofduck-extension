@@ -202,5 +202,9 @@
   "menuExpandSelection": {
     "message": "扩写选中文字",
     "description": "扩写选中文字的右键菜单"
+  },
+  "tabClear": {
+    "message": "清空文本",
+    "description": "清空文本按钮的标签"
   }
 }

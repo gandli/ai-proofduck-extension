@@ -202,5 +202,9 @@
   "menuExpandSelection": {
     "message": "Expandir selección",
     "description": "Context menu to expand selected text"
+  },
+  "tabClear": {
+    "message": "Borrar texto",
+    "description": "Etiqueta para el botón de borrar texto"
   }
 }
