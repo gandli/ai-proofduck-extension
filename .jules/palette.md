@@ -1,0 +1,3 @@
+## 2024-06-20 - Clear Text Button & Input Focus
+**Learning:** When adding interactable overlay elements (like a "Clear" button) over a textarea or input field using absolute positioning, the text content will underlap the button on long inputs. Also, clicking the button removes keyboard focus from the input, forcing the user to manually click back into the field.
+**Action:** Always add sufficient padding (e.g., `pr-10`) to the input element to reserve space for the absolutely positioned button. Always use a React `useRef` to programmatically return `.focus()` to the input element immediately after the clear action to maintain seamless keyboard accessibility.

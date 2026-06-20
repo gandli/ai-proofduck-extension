@@ -202,5 +202,9 @@
   "menuExpandSelection": {
     "message": "Auswahl erweitern",
     "description": "Context menu to expand selected text"
+  },
+  "clearText": {
+    "message": "Text löschen",
+    "description": "Clear text button"
   }
 }
