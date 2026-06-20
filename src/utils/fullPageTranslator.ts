@@ -212,12 +212,14 @@ export async function translateFullPage(options: TranslatePageOptions): Promise<
   document.body.appendChild(progressBar);
 
   try {
+    // 缓存页面语言检测结果，避免在循环中重复查询 DOM
+    const resolvedSourceLang = sourceLang === 'auto' ? detectPageLanguage() : sourceLang;
+
     for (const nodeInfo of filteredNodes) {
       current++;
 
       // 调用翻译
-      const langFrom = sourceLang === 'auto' ? detectPageLanguage() : sourceLang;
-      const translationResult = await translateFn(nodeInfo.text, langFrom, targetLang);
+      const translationResult = await translateFn(nodeInfo.text, resolvedSourceLang, targetLang);
 
       // 插入翻译块
       insertTranslationAfter(nodeInfo, translationResult.translatedText, bilingualMode && showOriginal);
