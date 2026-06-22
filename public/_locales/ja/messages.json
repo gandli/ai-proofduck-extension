@@ -202,5 +202,9 @@
   "menuExpandSelection": {
     "message": "選択範囲を拡張",
     "description": "Context menu to expand selected text"
+  },
+  "clearText": {
+    "message": "内容をクリア",
+    "description": "テキスト入力をクリア"
   }
 }

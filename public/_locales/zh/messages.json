@@ -202,5 +202,9 @@
   "menuExpandSelection": {
     "message": "扩写选中文字",
     "description": "扩写选中文字的右键菜单"
+  },
+  "clearText": {
+    "message": "清空内容",
+    "description": "清空输入框"
   }
 }

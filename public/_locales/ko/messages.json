@@ -202,5 +202,9 @@
   "menuExpandSelection": {
     "message": "선택 영역 확장",
     "description": "Context menu to expand selected text"
+  },
+  "clearText": {
+    "message": "내용 지우기",
+    "description": "입력 텍스트 지우기"
   }
 }
