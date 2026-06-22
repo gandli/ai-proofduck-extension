@@ -47,6 +47,7 @@ export interface TextNodeInfo {
  */
 export function extractTextNodes(root: ParentNode = document.body): TextNodeInfo[] {
   const textNodes: TextNodeInfo[] = [];
+  const visibilityCache = new WeakMap<Element, boolean>();
 
   const walker = document.createTreeWalker(
     root,
@@ -77,8 +78,14 @@ export function extractTextNodes(root: ParentNode = document.body): TextNodeInfo
         }
 
         // 跳过 display: none 或 visibility: hidden 的元素
-        const style = window.getComputedStyle(parent);
-        if (style.display === 'none' || style.visibility === 'hidden') {
+        let isHidden = visibilityCache.get(parent);
+        if (isHidden === undefined) {
+          const style = window.getComputedStyle(parent);
+          isHidden = style.display === 'none' || style.visibility === 'hidden';
+          visibilityCache.set(parent, isHidden);
+        }
+
+        if (isHidden) {
           return NodeFilter.FILTER_REJECT;
         }
 
@@ -87,10 +94,17 @@ export function extractTextNodes(root: ParentNode = document.body): TextNodeInfo
     }
   );
 
+  const rectCache = new WeakMap<Element, DOMRect>();
+
   while (walker.nextNode()) {
     const node = walker.currentNode as Text;
     const parent = node.parentElement!;
-    const rect = parent.getBoundingClientRect();
+
+    let rect = rectCache.get(parent);
+    if (!rect) {
+      rect = parent.getBoundingClientRect();
+      rectCache.set(parent, rect);
+    }
 
     // 跳过尺寸为 0 的元素
     if (rect.width === 0 || rect.height === 0) {
