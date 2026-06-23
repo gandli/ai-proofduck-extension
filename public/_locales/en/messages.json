@@ -202,5 +202,9 @@
   "menuExpandSelection": {
     "message": "Expand Selection",
     "description": "Context menu to expand selected text"
+  },
+  "tabClearText": {
+    "message": "Clear text",
+    "description": "Clear text button label"
   }
 }
