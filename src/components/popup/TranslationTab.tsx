@@ -97,6 +97,8 @@ export function TranslationTab({
 
   const charCount = inputText.length;
   const showLanguageSelector = mode === 'translate';
+  const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+  const modifierKey = isMac ? '⌘' : 'Ctrl';
 
   return (
     <div
@@ -139,7 +141,7 @@ export function TranslationTab({
         {/* 字符数显示 */}
         <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
           <span aria-live="polite">{charCount} 字符</span>
-          <span>⌘ + Enter {t('tabSubmit')}</span>
+          <span>{modifierKey} + Enter {t('tabSubmit')}</span>
         </div>
       </div>
 
