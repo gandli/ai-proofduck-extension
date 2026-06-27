@@ -2,7 +2,7 @@
  * TranslationTab 组件 - 翻译/校对/润色/扩写 Tab 内容
  * 支持键盘导航和 ARIA 属性
  */
-import { useState, useCallback, useId } from 'react';
+import { useState, useCallback, useId, useRef } from 'react';
 import type { AIMode } from '@/types';
 import { t } from '@/i18n';
 import { LanguageSelector } from './LanguageSelector';
@@ -82,6 +82,12 @@ export function TranslationTab({
   const textareaId = useId();
   const errorId = useId();
   const resultId = useId();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleClear = useCallback(() => {
+    setInputText('');
+    textareaRef.current?.focus();
+  }, []);
 
   const handleSubmit = useCallback(() => {
     if (!inputText.trim() || loading) return;
@@ -122,6 +128,7 @@ export function TranslationTab({
       <div className="flex-1 p-4 flex flex-col min-h-0">
         <div className="flex-1 relative">
           <textarea
+            ref={textareaRef}
             id={textareaId}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
@@ -134,6 +141,31 @@ export function TranslationTab({
             aria-describedby={error ? errorId : undefined}
             aria-readonly={loading}
           />
+          {/* 清空按钮 */}
+          {inputText.length > 0 && !loading && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+              aria-label={t('clearText')}
+              title={t('clearText')}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-4 h-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          )}
         </div>
 
         {/* 字符数显示 */}
