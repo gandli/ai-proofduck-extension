@@ -202,5 +202,9 @@
   "menuExpandSelection": {
     "message": "Expandir selección",
     "description": "Context menu to expand selected text"
+  },
+  "clearInput": {
+    "message": "Borrar entrada",
+    "description": "Botón para borrar entrada"
   }
 }
