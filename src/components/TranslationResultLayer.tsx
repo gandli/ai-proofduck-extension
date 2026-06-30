@@ -286,6 +286,7 @@ export function TranslationResultLayer({
           {/* 复制按钮 */}
           <button
             onClick={handleCopy}
+            aria-label={copied ? (t('copied') || '已复制') : (t('copy') || '复制')}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -306,6 +307,7 @@ export function TranslationResultLayer({
           {/* 朗读按钮 */}
           <button
             onClick={handleSpeak}
+            aria-label={speaking ? (t('speaking') || '朗读中') : (t('speak') || '朗读')}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -327,6 +329,7 @@ export function TranslationResultLayer({
           {onRetry && (
             <button
               onClick={onRetry}
+              aria-label={t('retry') || '重试'}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -350,6 +353,7 @@ export function TranslationResultLayer({
         {onOpenSidebar && (
           <button
             onClick={onOpenSidebar}
+            aria-label={t('openSidebar') || '侧边栏'}
             style={{
               display: 'flex',
               alignItems: 'center',
