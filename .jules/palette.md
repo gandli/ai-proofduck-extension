@@ -1,0 +1,3 @@
+## 2025-03-05 - Dynamic Keyboard Shortcut Hint
+**Learning:** Hardcoded shortcut hints like `⌘ + Enter` can cause confusion for Windows and Linux users who expect `Ctrl + Enter`. Additionally, displaying raw text for shortcuts makes them blend into standard text, missing an opportunity for visual distinction.
+**Action:** When displaying keyboard shortcut hints in UI components, always wrap the keys in `<kbd>` tags for visual distinction to match native interface patterns. Furthermore, dynamically check `navigator.platform` (safely guarding against SSR ReferenceErrors with `typeof navigator !== 'undefined'`) to display the correct modifier key ('⌘' for Mac/iOS, 'Ctrl' for others) based on the user's operating system.
