@@ -2,7 +2,7 @@
  * SettingsPanel 组件 - 设置面板
  * 服务引擎管理 UI，支持无障碍访问
  */
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { t } from '@/i18n';
 import { speechService, SpeechConfig, LANGUAGE_VOICE_MAP } from '@/services/SpeechService';
 
@@ -48,6 +48,14 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
   // 语音设置状态
   const [speechConfig, setSpeechConfig] = useState<SpeechConfig>(() => speechService.getConfig());
   const panelRef = useRef<HTMLDivElement>(null);
+
+  const groupedEngines = useMemo(() => {
+    return {
+      local: engines.filter((e) => e.category === 'local'),
+      llm: engines.filter((e) => e.category === 'llm'),
+      translation: engines.filter((e) => e.category === 'translation'),
+    };
+  }, [engines]);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   // 焦点管理
@@ -160,7 +168,7 @@ export function SettingsPanel({ visible, onClose }: SettingsPanelProps) {
 
             {/* 按类别分组显示引擎 */}
             {(['local', 'llm', 'translation'] as const).map((category) => {
-              const categoryEngines = engines.filter((e) => e.category === category);
+              const categoryEngines = groupedEngines[category];
               if (categoryEngines.length === 0) return null;
 
               return (
