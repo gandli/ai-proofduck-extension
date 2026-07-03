@@ -88,6 +88,11 @@ export function TranslationTab({
     onSubmit(inputText.trim());
   }, [inputText, loading, onSubmit]);
 
+  const handleClear = useCallback(() => {
+    setInputText('');
+    document.getElementById(textareaId)?.focus();
+  }, [textareaId]);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
@@ -127,13 +132,27 @@ export function TranslationTab({
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={t(getPlaceholder(mode))}
-            className="w-full h-full resize-none rounded-lg border border-gray-300 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 focus:border-brand-orange"
+            className="w-full h-full resize-none rounded-lg border border-gray-300 p-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 focus:border-brand-orange"
             disabled={loading}
             aria-label={getAriaLabel(mode)}
             aria-invalid={!!error}
             aria-describedby={error ? errorId : undefined}
             aria-readonly={loading}
           />
+          {inputText && !loading && (
+            <button
+              onClick={handleClear}
+              className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
+              title={t('clearInput') || 'Clear text'}
+              aria-label={t('clearInput') || 'Clear text'}
+              type="button"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          )}
         </div>
 
         {/* 字符数显示 */}
