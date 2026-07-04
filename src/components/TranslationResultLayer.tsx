@@ -57,6 +57,9 @@ export function TranslationResultLayer({
   const streamingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // 计算浮层位置（确保在可视区域内）
+  // ⚡ Bolt Performance Optimization:
+  // Refactored to useMemo to avoid recalculating position and reading window dimensions on every render.
+  // Expected impact: Eliminates layout thrashing and reduces CPU overhead during frequent streaming updates.
   const { x, y } = useMemo(() => {
     // 确保在浏览器环境下运行
     if (typeof window === 'undefined') {
