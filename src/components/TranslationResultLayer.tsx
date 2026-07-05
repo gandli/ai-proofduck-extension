@@ -3,7 +3,7 @@
  * 支持流式输出显示、复制、朗读、关闭等功能
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { t } from '@/i18n';
 import { speechService } from '@/services/SpeechService';
 
@@ -57,9 +57,9 @@ export function TranslationResultLayer({
   const streamingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // 计算浮层位置（确保在可视区域内）
-  const calculatePosition = useCallback(() => {
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+  const { x, y } = useMemo(() => {
+    const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
+    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 768;
 
     // 默认浮层尺寸
     const layerWidth = 360;
@@ -86,8 +86,6 @@ export function TranslationResultLayer({
 
     return { x, y };
   }, [position]);
-
-  const { x, y } = calculatePosition();
 
   // 流式输出效果
   useEffect(() => {

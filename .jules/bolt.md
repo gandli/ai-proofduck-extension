@@ -1,0 +1,3 @@
+## 2024-07-05 - Avoid immediate useCallback invocation
+**Learning:** React anti-pattern found where `useCallback` is wrapped around a calculation function which is then immediately unconditionally invoked inside the render body (e.g., `const { x, y } = calculatePosition()`). This defeats the purpose of the hook and causes unnecessary calculations on every single render cycle, especially detrimental in components supporting high-frequency "streaming" state updates.
+**Action:** When auditing React hooks, refactor immediate `useCallback` invocations to `useMemo` to properly memoize the result itself instead of just the function reference.
