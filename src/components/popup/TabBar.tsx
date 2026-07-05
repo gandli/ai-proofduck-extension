@@ -79,8 +79,8 @@ export function TabBar({ activeTab, onTabChange }: TabBarProps) {
             onKeyDown={(e) => handleKeyDown(e, index)}
             className={`
               flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2
-              text-sm font-medium transition-colors
-              border-b-2 -mb-px
+              text-sm font-medium transition-colors outline-none
+              border-b-2 -mb-px focus-visible:ring-2 focus-visible:ring-brand-orange/50 focus-visible:ring-inset
               ${
                 isActive
                   ? 'border-brand-orange text-brand-orange'

@@ -85,7 +85,8 @@ export function LanguageSelector({
         onClick={handleSwap}
         disabled={sourceLang === 'auto'}
         className={`
-          p-2 rounded-lg border border-gray-300 transition-all
+          p-2 rounded-lg border border-gray-300 transition-all outline-none
+          focus-visible:ring-2 focus-visible:ring-brand-orange/50
           ${sourceLang === 'auto' ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 hover:border-brand-orange'}
           ${swapLoading ? 'animate-spin' : ''}
         `}
