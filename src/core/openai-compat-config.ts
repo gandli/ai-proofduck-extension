@@ -43,7 +43,9 @@ export const openaiCompatConfig = {
 
   watch(cb: (cfg: OpenAiCompatConfig) => void): () => void {
     // 任意一项变更都重新广播全量配置
-    const trigger = async () => cb(await openaiCompatConfig.get());
+    const trigger = () => {
+      void openaiCompatConfig.get().then(cb);
+    };
     const un1 = baseUrlItem.watch(trigger);
     const un2 = apiKeyItem.watch(trigger);
     const un3 = modelItem.watch(trigger);

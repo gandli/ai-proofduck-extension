@@ -35,17 +35,20 @@ const TARGET_LANGS: Array<{ code: string; label: string }> = [
 ];
 
 /**
- * 引擎缺失时的 no-op stub。
- * 提到组件外声明，避免每次渲染重建导致 useTranslate 内的 useCallback 依赖变化。
+ * STUB_ENGINE：给 useTranslate 一个 no-op 的 Engine，
+ * 避免 resolvedEngine 为 null 时 useTranslate hooks 崩溃。
+ * 提到组件外声明，避免每次渲染重建导致 useTranslate 内 useCallback 依赖变化。
  * (Gemini review 建议)
+ *
+ * 用 Promise.resolve() 而非 async fn，避免 require-await 规则误报。
  */
 const STUB_ENGINE: Engine = {
   id: 'chrome-ai',
   name: 'unavailable',
   priority: 0,
-  isAvailable: async () => false,
+  isAvailable: () => Promise.resolve(false),
   supports: () => false,
-  run: async () => '',
+  run: () => Promise.resolve(''),
 };
 
 const MAX_CHARS = 5000;
@@ -64,15 +67,13 @@ export default function SidePanelApp({ engine }: Props = {}) {
   // 当没有传 engine（生产环境），异步选一个最好的
   useEffect(() => {
     if (engine) {
-      // 测试注入路径：直接用
-      setResolvedEngine(engine);
-      setIsResolving(false);
+      // 测试注入路径：初始 state 已用 engine ?? null / !engine 初始化，无需重设
+      // (Gemini review 建议：省一次渲染，同时消除 set-state-in-effect 警告)
       return;
     }
-    // 生产路径：走 pickBest() 兜底
+    // 生产路径：走 pickBest() 兜底（初始 isResolving = !engine 已经是 true，无需再设）
     let cancelled = false;
-    setIsResolving(true);
-    getEngines()
+    void getEngines()
       .pickBest()
       .then((e: Engine | null) => {
         if (!cancelled) {
@@ -99,10 +100,16 @@ export default function SidePanelApp({ engine }: Props = {}) {
   useEffect(() => {
     if (isResolving) return;
     if (!resolvedEngine) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAvailable(false);
       return;
     }
-    resolvedEngine.isAvailable().then(setAvailable).catch(() => setAvailable(false));
+    void resolvedEngine
+      .isAvailable()
+      .then(setAvailable)
+      .catch(() => {
+        setAvailable(false);
+      });
   }, [resolvedEngine, isResolving]);
 
   // 同语言校验：手动选定的源和目标一样时无意义（'auto' 例外，由引擎自行推断）
@@ -113,7 +120,7 @@ export default function SidePanelApp({ engine }: Props = {}) {
   const handleTranslate = () => {
     // 'auto' → 让引擎自己推断；chrome-ai 目前需要显式 source，暂用启发式：中→英，其他→中
     const src = source === 'auto' ? (target === 'zh' ? 'en' : 'zh') : source;
-    translate(text, { source: src, target });
+    void translate(text, { source: src, target });
   };
 
   // 交换语言：auto 时不能交换（无源语言）

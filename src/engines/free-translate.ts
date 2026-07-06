@@ -46,11 +46,11 @@ function parseGoogleResponse(json: unknown): string {
   if (!Array.isArray(json) || !Array.isArray(json[0])) {
     throw new Error('free-translate: 响应格式无法识别');
   }
-  const chunks = json[0] as unknown[];
+  const chunks = json[0];
   return chunks
     .map((chunk) => {
       if (!Array.isArray(chunk)) return '';
-      const text = chunk[0];
+      const text: unknown = chunk[0];
       return typeof text === 'string' ? text : '';
     })
     .join('');

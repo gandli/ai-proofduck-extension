@@ -58,12 +58,12 @@ export function OpenAiCompatSection() {
   const [showKey, setShowKey] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
   const [testState, setTestState] = useState<TestState>({ status: 'idle' });
-  const [permState, setPermState] = useState<PermState>({ status: 'unknown' });
+  const [rawPermState, setRawPermState] = useState<PermState>({ status: 'unknown' });
 
   // 首次挂载回填
   useEffect(() => {
     let mounted = true;
-    openaiCompatConfig.get().then((cfg) => {
+    void openaiCompatConfig.get().then((cfg) => {
       if (!mounted) return;
       setBaseUrl(cfg.baseUrl);
       setApiKey(cfg.apiKey);
@@ -87,20 +87,27 @@ export function OpenAiCompatSection() {
     }
   }, [baseUrl]);
 
+  // 派生状态：无 hostPattern 时 permState 统一为 unknown，避免 setState in effect
+  // (Gemini review 建议：You Might Not Need an Effect)
+  const permState: PermState = useMemo(
+    () => (hostPattern ? rawPermState : { status: 'unknown' }),
+    [hostPattern, rawPermState],
+  );
+
   // Round 5 (#465): baseUrl 变化时重查权限；同时监听 chrome.permissions 变化事件
   useEffect(() => {
     let cancelled = false;
-    if (!hostPattern) {
-      setPermState({ status: 'unknown' });
-      return;
-    }
+    if (!hostPattern) return; // rawPermState 保留上次值；permState 派生为 unknown
     const refresh = async () => {
       const granted = await hasHostPermission(hostPattern);
       if (cancelled) return;
-      setPermState(granted ? { status: 'granted' } : { status: 'missing' });
+      setRawPermState(granted ? { status: 'granted' } : { status: 'missing' });
     };
-    refresh();
-    const unsub = onPermissionsChanged(refresh);
+    void refresh();
+    // onPermissionsChanged 期望 void 回调，refresh 返回 Promise —— 包一层避免悬空
+    const unsub = onPermissionsChanged(() => {
+      void refresh();
+    });
     return () => {
       cancelled = true;
       unsub();
@@ -119,14 +126,14 @@ export function OpenAiCompatSection() {
 
   const handleAuthorize = useCallback(async () => {
     if (!hostPattern) return;
-    setPermState({ status: 'requesting' });
+    setRawPermState({ status: 'requesting' });
     const granted = await requestHostPermission(hostPattern);
     // 授权对话框关掉后重查一次（onPermissionsChanged 会补一次，这里保双保险）
     if (granted) {
       const confirmed = await hasHostPermission(hostPattern);
-      setPermState(confirmed ? { status: 'granted' } : { status: 'denied' });
+      setRawPermState(confirmed ? { status: 'granted' } : { status: 'denied' });
     } else {
-      setPermState({ status: 'denied' });
+      setRawPermState({ status: 'denied' });
     }
   }, [hostPattern]);
 
@@ -161,7 +168,7 @@ export function OpenAiCompatSection() {
     } catch (err) {
       setTestState({ status: 'error', message: formatErrorMessage(err) });
     }
-  }, [baseUrl, apiKey, model]);
+  }, [baseUrl, apiKey]);
 
   if (!loaded) {
     // 简单 skeleton：等 storage 拉完再显示表单，避免"空 → 填了 → 又清空"的闪烁

@@ -1,0 +1,28 @@
+# Codacy 配置：让云端 lint 和本地 eslint.config.js 保持一致
+#
+# 关键点：
+# 1. exclude_paths 排除 dist / .wxt / 设计稿 / test-results
+# 2. engines 指定 ESLint 使用仓库自带的 flat config（Codacy v8 支持）
+# 3. 不覆盖单条规则，让 flat config 说了算
+
+---
+exclude_paths:
+  - "dist/**"
+  - ".wxt/**"
+  - ".output/**"
+  - "node_modules/**"
+  - "coverage/**"
+  - "playwright-report/**"
+  - "test-results/**"
+  - "sketches/**"
+  - "**/*.snap"
+  - "**/*.min.js"
+
+engines:
+  eslint:
+    enabled: true
+    # 让 Codacy 用仓库自带的 eslint.config.js（flat config）
+    config_file: "eslint.config.js"
+
+# 允许把 project-defined 的 ESLint 规则作为唯一真相源
+# 这样 Codacy 不会用它家默认的 recommended-type-checked 覆盖

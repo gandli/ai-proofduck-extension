@@ -43,7 +43,10 @@ export default function PopupApp() {
 
   const openOptions = () => {
     const c: typeof chrome | undefined = (globalThis as { chrome?: typeof chrome }).chrome;
-    c?.runtime?.openOptionsPage?.();
+    if (c?.runtime?.openOptionsPage) {
+      // MV3 中 openOptionsPage() 返回 Promise，void 前缀显式忽略
+      void c.runtime.openOptionsPage();
+    }
   };
 
   return (
