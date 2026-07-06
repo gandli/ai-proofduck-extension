@@ -1,19 +1,24 @@
 /**
  * Options App: 设置页
+ *
+ * 分区：
  * - 主题（light/dark/system）
  * - 语言（zh-CN/en/ja）
- * - 默认引擎（auto/... M2 起会有真正的引擎）
- * - API Key（M2 起才有意义，先放 UI 占位）
+ * - 默认引擎
+ * - OpenAI 兼容 API 配置（Cycle 4b 新增）
+ * - 免费翻译兜底开关（Cycle 4b 新增）
  */
 import { useSettingsStore } from '@stores/settings';
 import type { Theme, Locale, EngineId } from '@stores/settings';
+import { OpenAiCompatSection } from '@components/OpenAiCompatSection';
+import { FreeTranslateSection } from '@components/FreeTranslateSection';
 
 export default function OptionsApp() {
   const { theme, locale, defaultEngine, setTheme, setLocale, setDefaultEngine } =
     useSettingsStore();
 
   return (
-    <div className="max-w-xl mx-auto p-6 space-y-6 bg-white text-slate-900">
+    <div className="max-w-xl mx-auto p-6 space-y-8 bg-white text-slate-900">
       <header className="flex items-center gap-3">
         <img src="/icons/icon-48.png" alt="" className="w-8 h-8" />
         <h1 className="text-xl font-bold">校对鸭 · 设置</h1>
@@ -55,12 +60,18 @@ export default function OptionsApp() {
           <option value="auto">自动（推荐）</option>
           <option value="chrome-ai">Chrome AI · Gemini Nano</option>
           <option value="webllm">WebLLM · WebGPU</option>
-          <option value="wasm">WASM 备用</option>
           <option value="openai-compat">OpenAI 兼容 API</option>
-          <option value="free-translate">免费翻译（兜底）</option>
+          <option value="free-translate">免费翻译（Google 公开端点）</option>
         </select>
-        <p className="text-xs text-slate-500">M1 未实现真实引擎；M2 起可用。</p>
       </section>
+
+      <hr className="border-slate-200" />
+
+      <OpenAiCompatSection />
+
+      <hr className="border-slate-200" />
+
+      <FreeTranslateSection />
     </div>
   );
 }
