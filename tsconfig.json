@@ -3,6 +3,17 @@
   "compilerOptions": {
     "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
-    "strict": true
-  }
+    "strict": true,
+    "types": ["chrome", "vitest/globals", "@testing-library/jest-dom"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@core/*": ["./src/core/*"],
+      "@stores/*": ["./src/stores/*"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@components/*": ["./src/components/*"],
+      "@engines/*": ["./src/engines/*"],
+      "@i18n/*": ["./src/i18n/*"]
+    }
+  },
+  "exclude": ["dist", ".output", "node_modules"]
 }
