@@ -24,6 +24,10 @@ export default defineConfig({
     description: '__MSG_extensionDescription__',
     default_locale: 'zh_CN',
     permissions: ['sidePanel', 'storage', 'activeTab'],
+    host_permissions: [
+      // 免费翻译引擎的 Google 端点 — 否则扩展页面 fetch 会被 CORS 拒
+      'https://translate.googleapis.com/*',
+    ],
     icons: {
       '16': 'icons/icon-16.png',
       '32': 'icons/icon-32.png',
