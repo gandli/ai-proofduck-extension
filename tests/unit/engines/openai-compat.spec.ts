@@ -451,4 +451,89 @@ describe('createOpenAiCompatEngine', () => {
       expect(createOpenAiCompatEngine().name.length).toBeGreaterThan(0);
     });
   });
+
+  describe('异常边界', () => {
+    it('isAvailable(): baseUrl 非法 URL 时 catch 走 false 分支', async () => {
+      mocks.config.value = {
+        baseUrl: 'not::a::valid::url',
+        apiKey: 'k',
+        model: 'm',
+      };
+
+      const engine = createOpenAiCompatEngine();
+      // extractOriginPattern 抛错 → return false
+      expect(await engine.isAvailable()).toBe(false);
+    });
+
+    it('run(): HTTP 非 2xx 应携带 status 抛出（含 body 读取失败降级）', async () => {
+      mocks.config.value = {
+        baseUrl: 'https://api.deepseek.com',
+        apiKey: 'sk-x',
+        model: 'deepseek-chat',
+      };
+
+      const fetchMock = vi.fn(async () => ({
+        ok: false,
+        status: 401,
+        text: () => Promise.reject(new Error('body read failed')),
+      })) as unknown as typeof fetch;
+      vi.stubGlobal('fetch', fetchMock);
+
+      const engine = createOpenAiCompatEngine();
+      await expect(
+        engine.run({ mode: 'translate', text: 'hi', sourceLang: 'en', targetLang: 'zh' }),
+      ).rejects.toThrow(/HTTP 401/);
+    });
+
+    it('runStreaming(): HTTP 非 2xx 应抛错', async () => {
+      mocks.config.value = {
+        baseUrl: 'https://api.deepseek.com',
+        apiKey: 'sk-x',
+        model: 'deepseek-chat',
+      };
+
+      const fetchMock = vi.fn(async () => ({
+        ok: false,
+        status: 500,
+        text: () => Promise.resolve('server exploded'),
+      })) as unknown as typeof fetch;
+      vi.stubGlobal('fetch', fetchMock);
+
+      const engine = createOpenAiCompatEngine();
+      const iterate = async () => {
+        for await (const _ of engine.runStreaming!({
+          mode: 'translate',
+          text: 'hi',
+          sourceLang: 'en',
+          targetLang: 'zh',
+        })) { void _; }
+      };
+      await expect(iterate()).rejects.toThrow(/HTTP 500/);
+    });
+
+    it('runStreaming(): 响应缺少 body 应抛「SSE 不可读」', async () => {
+      mocks.config.value = {
+        baseUrl: 'https://api.deepseek.com',
+        apiKey: 'sk-x',
+        model: 'deepseek-chat',
+      };
+
+      const fetchMock = vi.fn(async () => ({
+        ok: true,
+        body: null, // 关键：没 body
+      })) as unknown as typeof fetch;
+      vi.stubGlobal('fetch', fetchMock);
+
+      const engine = createOpenAiCompatEngine();
+      const iterate = async () => {
+        for await (const _ of engine.runStreaming!({
+          mode: 'translate',
+          text: 'hi',
+          sourceLang: 'en',
+          targetLang: 'zh',
+        })) { void _; }
+      };
+      await expect(iterate()).rejects.toThrow(/SSE 不可读/);
+    });
+  });
 });

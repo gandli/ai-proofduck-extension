@@ -154,5 +154,58 @@ describe('chrome-ai engine', () => {
       }
       expect(chunks.join('')).toBe('[EN2ZH] hi');
     });
+
+    it('pickLangs: 未指定 target → 默认 zh，未指定 source 且 target=zh → en', async () => {
+      const engine = createChromeAiEngine();
+      await engine.run({ mode: 'translate', text: 'hi' });
+      expect(createCalls.at(-1)).toEqual({ sourceLanguage: 'en', targetLanguage: 'zh' });
+    });
+
+    it('pickLangs: target=en 且未指定 source → source 默认 zh', async () => {
+      const engine = createChromeAiEngine();
+      await engine.run({ mode: 'translate', text: '你好', targetLang: 'en' });
+      expect(createCalls.at(-1)).toEqual({ sourceLanguage: 'zh', targetLanguage: 'en' });
+    });
+
+    it('runStreaming() 不支持的模式应抛错', async () => {
+      const engine = createChromeAiEngine();
+      const iterate = async () => {
+        for await (const _ of engine.runStreaming!({ mode: 'summarize', text: 'hi' })) { void _; }
+      };
+      await expect(iterate()).rejects.toThrow(/不支持/);
+    });
+
+    it('isAvailable() Translator.availability 抛错时应 catch 走 false', async () => {
+      (globalThis as any).Translator.availability = vi.fn(async () => {
+        throw new Error('availability crash');
+      });
+      const engine = createChromeAiEngine();
+      expect(await engine.isAvailable()).toBe(false);
+    });
+
+    it('translator create 失败时从 cache 移除，下次仍可重试（Gemini review 分支）', async () => {
+      // 第一次 create 失败 → cache.delete 走通
+      let callCount = 0;
+      (globalThis as any).Translator.create = vi.fn(async (opts: any) => {
+        callCount++;
+        if (callCount === 1) throw new Error('lang pack download failed');
+        createCalls.push(opts);
+        return translatorMock;
+      });
+
+      const engine = createChromeAiEngine();
+      await expect(
+        engine.run({ mode: 'translate', text: 'hi', sourceLang: 'en', targetLang: 'zh' }),
+      ).rejects.toThrow(/lang pack/);
+
+      // 第二次 create 成功（若 cache 没清除，会重用已 reject 的 promise 又抛同错）
+      const out = await engine.run({
+        mode: 'translate',
+        text: 'hi',
+        sourceLang: 'en',
+        targetLang: 'zh',
+      });
+      expect(out).toBe('[EN2ZH] hi');
+    });
   });
 });

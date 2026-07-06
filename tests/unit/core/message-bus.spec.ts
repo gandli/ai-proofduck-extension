@@ -119,5 +119,67 @@ describe('message-bus', () => {
         fakeBrowser.runtime.onMessage.addListener = originalAdd;
       }
     });
+
+    it('send() 遇到非「No listeners」错误应向上抛出（不吞）', async () => {
+      const bus = defineMessages<AppMessages>();
+      const spy = vi.spyOn(fakeBrowser.runtime, 'sendMessage').mockRejectedValue(
+        new Error('Random network glitch'),
+      );
+
+      await expect(bus.send('ping', undefined)).rejects.toThrow('Random network glitch');
+      spy.mockRestore();
+    });
+
+    it('handler 抛出 rejection 时应记录 console.error 并把错误返给发送方', async () => {
+      type Bus = { 'boom': undefined };
+      const bus = defineMessages<Bus>();
+      const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      // 直接抓 listener 手动喂消息 —— fakeBrowser 的 sendMessage 不复刻 chrome 的 sendResponse 双工
+      const listeners: Array<(m: unknown, s: unknown, sr: (r: unknown) => void) => unknown> = [];
+      const originalAdd = fakeBrowser.runtime.onMessage.addListener;
+      fakeBrowser.runtime.onMessage.addListener = ((fn: never) => {
+        listeners.push(fn as never);
+      }) as never;
+      try {
+        bus.on('boom', async () => {
+          throw new Error('handler exploded');
+        });
+
+        const sendResponse = vi.fn();
+        const ret = listeners[0]!({ type: 'boom', payload: undefined }, {}, sendResponse);
+        // 关键：async handler 必须让 listener 返回 true 保持通道开启
+        expect(ret).toBe(true);
+
+        // 等 microtask，让 Promise catch 执行
+        await new Promise((r) => setTimeout(r, 5));
+
+        expect(errSpy).toHaveBeenCalled();
+        const arg = sendResponse.mock.calls[0]?.[0] as { error?: string } | undefined;
+        expect(arg?.error).toContain('handler exploded');
+      } finally {
+        fakeBrowser.runtime.onMessage.addListener = originalAdd;
+        errSpy.mockRestore();
+      }
+    });
+
+    it('handler 返回同步值时通过 sendResponse 传回（非 Promise 分支）', async () => {
+      type Bus = { 'sync-echo': string };
+      const bus = defineMessages<Bus>();
+
+      const listeners: Array<(m: unknown, s: unknown, sr: (r: unknown) => void) => unknown> = [];
+      const originalAdd = fakeBrowser.runtime.onMessage.addListener;
+      fakeBrowser.runtime.onMessage.addListener = ((fn: never) => {
+        listeners.push(fn as never);
+      }) as never;
+      try {
+        bus.on('sync-echo', ((payload: string) => `got:${payload}`) as never);
+        const sendResponse = vi.fn();
+        listeners[0]!({ type: 'sync-echo', payload: 'hi' }, {}, sendResponse);
+        expect(sendResponse).toHaveBeenCalledWith('got:hi');
+      } finally {
+        fakeBrowser.runtime.onMessage.addListener = originalAdd;
+      }
+    });
   });
 });
