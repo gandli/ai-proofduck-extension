@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff9db"/>
+      <stop offset="50%" stop-color="#ffe8c8"/>
+      <stop offset="100%" stop-color="#ffd4a3"/>
+    </linearGradient>
+    <linearGradient id="duckyellow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffd43b"/>
+      <stop offset="100%" stop-color="#f59f00"/>
+    </linearGradient>
+    <linearGradient id="titleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#212529"/>
+      <stop offset="100%" stop-color="#495057"/>
+    </linearGradient>
+    <filter id="softshadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="10"/>
+      <feOffset dx="0" dy="8" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.18"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <radialGradient id="spot" cx="0.3" cy="0.3" r="0.8">
+      <stop offset="0%" stop-color="#ff6c2b" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#ff6c2b" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#spot)"/>
+
+  <!-- 网格背景 -->
+  <g opacity="0.06">
+    <path d="M0 0h1200M0 40h1200M0 80h1200M0 120h1200M0 160h1200M0 200h1200M0 240h1200M0 280h1200M0 320h1200M0 360h1200M0 400h1200M0 440h1200M0 480h1200M0 520h1200M0 560h1200M0 600h1200" stroke="#212529" stroke-width="1"/>
+    <path d="M0 0v630M40 0v630M80 0v630M120 0v630M160 0v630M200 0v630M240 0v630M280 0v630M320 0v630M360 0v630M400 0v630M440 0v630M480 0v630M520 0v630M560 0v630M600 0v630M640 0v630M680 0v630M720 0v630M760 0v630M800 0v630M840 0v630M880 0v630M920 0v630M960 0v630M1000 0v630M1040 0v630M1080 0v630M1120 0v630M1160 0v630" stroke="#212529" stroke-width="1"/>
+  </g>
+
+  <!-- 装饰圆点 -->
+  <circle cx="80" cy="90" r="6" fill="#f59f00" opacity="0.5"/>
+  <circle cx="1120" cy="70" r="10" fill="#ff6c2b" opacity="0.35"/>
+  <circle cx="60" cy="560" r="12" fill="#0ca678" opacity="0.3"/>
+  <circle cx="1130" cy="540" r="8" fill="#7048e8" opacity="0.35"/>
+  <circle cx="1090" cy="200" r="5" fill="#1c7ed6" opacity="0.4"/>
+
+  <!-- 大鸭子头像（左侧） -->
+  <g transform="translate(90,180)" filter="url(#softshadow)">
+    <!-- 圆角背景板 -->
+    <rect x="0" y="0" width="280" height="280" rx="60" fill="url(#duckyellow)"/>
+    <!-- 鸭身 -->
+    <ellipse cx="130" cy="180" rx="90" ry="60" fill="#fff" opacity="0.95"/>
+    <!-- 鸭头 -->
+    <circle cx="180" cy="110" r="60" fill="#fff" opacity="0.95"/>
+    <!-- 鸭嘴 -->
+    <path d="M228,105 Q278,110 265,140 Q230,148 220,125 Z" fill="#ff6c2b"/>
+    <path d="M228,120 Q265,125 258,138 L233,135 Z" fill="#e8590c"/>
+    <!-- 眼睛 -->
+    <circle cx="190" cy="100" r="8" fill="#212529"/>
+    <circle cx="192" cy="97" r="3" fill="#fff"/>
+    <!-- 校对勾徽章 -->
+    <g transform="translate(210,205)">
+      <circle cx="0" cy="0" r="30" fill="#0ca678" stroke="#fff" stroke-width="4"/>
+      <path d="M-13,2 L-4,11 L14,-8" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+
+  <!-- 标题 -->
+  <text x="420" y="220" font-family="-apple-system, PingFang SC, sans-serif" font-size="88" font-weight="800" fill="url(#titleGrad)">
+    校对鸭
+  </text>
+  <text x="420" y="220" font-family="-apple-system, PingFang SC, sans-serif" font-size="88" font-weight="800">
+    <tspan x="700" dy="0" fill="#f59f00">🦆</tspan>
+  </text>
+
+  <!-- 英文副标题 -->
+  <text x="420" y="270" font-family="-apple-system, sans-serif" font-size="32" font-weight="600" fill="#495057">
+    AI Proofduck · Privacy-First Writing Assistant
+  </text>
+
+  <!-- 中文 tagline -->
+  <text x="420" y="315" font-family="-apple-system, PingFang SC, sans-serif" font-size="26" font-weight="500" fill="#868e96">
+    浏览器里的隐私 AI 翻译 / 校对助手 · 4 引擎智能路由
+  </text>
+
+  <!-- 4 引擎 tag pills -->
+  <g transform="translate(420,355)" font-family="-apple-system, PingFang SC, sans-serif" font-size="19" font-weight="600">
+    <g>
+      <rect x="0" y="0" width="150" height="42" rx="21" fill="rgba(231,245,255,0.9)" stroke="#1c7ed6" stroke-width="2"/>
+      <text x="75" y="27" text-anchor="middle" fill="#0b5394">🤖 chrome-ai</text>
+    </g>
+    <g transform="translate(165,0)">
+      <rect x="0" y="0" width="128" height="42" rx="21" fill="rgba(243,240,255,0.9)" stroke="#7048e8" stroke-width="2"/>
+      <text x="64" y="27" text-anchor="middle" fill="#4c3399">🧠 webllm</text>
+    </g>
+    <g transform="translate(308,0)">
+      <rect x="0" y="0" width="188" height="42" rx="21" fill="rgba(230,252,245,0.9)" stroke="#0ca678" stroke-width="2"/>
+      <text x="94" y="27" text-anchor="middle" fill="#087f5b">🔗 openai-compat</text>
+    </g>
+    <g transform="translate(511,0)">
+      <rect x="0" y="0" width="164" height="42" rx="21" fill="rgba(255,249,219,0.9)" stroke="#f59f00" stroke-width="2"/>
+      <text x="82" y="27" text-anchor="middle" fill="#5c3c00">🆓 free-translate</text>
+    </g>
+  </g>
+
+  <!-- 特性 bullet -->
+  <g transform="translate(420,445)" font-family="-apple-system, PingFang SC, sans-serif" font-size="22" fill="#212529">
+    <text x="0" y="0">🔒 本地推理 · 一个字节都不上传</text>
+    <text x="0" y="38">🔑 BYOK · 任意 OpenAI 兼容 API</text>
+    <text x="0" y="76">⚡ 开源 MIT · 247 单测 · 30 E2E</text>
+  </g>
+
+  <!-- 底部品牌线 -->
+  <line x1="90" y1="580" x2="1110" y2="580" stroke="#f59f00" stroke-width="2" opacity="0.4"/>
+  <text x="600" y="608" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="20" font-weight="600" fill="#868e96">
+    github.com/gandli/ai-proofduck-extension  ·  MIT License
+  </text>
+</svg>

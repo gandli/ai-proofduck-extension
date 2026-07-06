@@ -4,15 +4,25 @@ import { ViewTransitions } from "astro:transitions";
 interface Props {
   title?: string;
   description?: string;
+  image?: string;
 }
 
 const {
   title = "AI Proofduck - Smart Writing Assistant · Privacy First",
   description = "In-browser AI writing assistant with summarize, correct, polish, translate, and expand modes. Fully local inference, privacy protection, ready to use.",
+  image = "og-image.png",
 } = Astro.props;
 
 const pathname = Astro.url.pathname;
 const currentLocale = pathname.includes("/zh") ? "zh" : "en";
+
+// 用于 og:url 和 og:image 的绝对 URL
+const siteUrl = Astro.site
+  ? new URL(Astro.url.pathname, Astro.site).href.replace(/\/$/, "")
+  : Astro.url.href.replace(/\/$/, "");
+const imageUrl = Astro.site
+  ? new URL(`${import.meta.env.BASE_URL}${image}`.replace(/\/+/g, "/"), Astro.site).href
+  : image;
 ---
 
 <!doctype html>
@@ -27,6 +37,9 @@ const currentLocale = pathname.includes("/zh") ? "zh" : "en";
     <meta name="title" content={title} />
     <meta name="description" content={description} />
     <meta name="author" content="Gandli" />
+    <meta name="theme-color" content="#f59f00" />
+    <meta name="keywords" content="AI Proofduck,校对鸭,Chrome extension,AI writing,translate,proofread,privacy,WebLLM,Chrome AI,BYOK,OpenAI" />
+    <link rel="canonical" href={siteUrl} />
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
@@ -39,6 +52,28 @@ const currentLocale = pathname.includes("/zh") ? "zh" : "en";
       sizes="128x128"
       href="icons/icon-128.png"
     />
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
+    <link rel="manifest" href="site.webmanifest" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="AI Proofduck" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="AI Proofduck - Privacy-first AI writing assistant Chrome extension" />
+    <meta property="og:url" content={siteUrl} />
+    <meta property="og:locale" content={currentLocale === "zh" ? "zh_CN" : "en_US"} />
+    <meta property="og:locale:alternate" content={currentLocale === "zh" ? "en_US" : "zh_CN"} />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageUrl} />
+    <meta name="twitter:image:alt" content="AI Proofduck - Privacy-first AI writing assistant" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
