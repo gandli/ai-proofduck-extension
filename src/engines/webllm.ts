@@ -20,6 +20,16 @@ import type { Engine, EngineMode, EngineRunInput } from './types';
 
 const DEFAULT_MODEL = 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC';
 
+/** 首次下载进度回调。text 是 web-llm 给的人类可读进度描述，progress ∈ [0,1]。 */
+export type InitProgressCallback = (info: { progress: number; text: string }) => void;
+
+export interface CreateWebLlmEngineOptions {
+  /** 覆盖默认模型 ID */
+  modelId?: string;
+  /** 首次 CreateMLCEngine 加载进度回调（下载 + shader 编译） */
+  onInitProgress?: InitProgressCallback;
+}
+
 /** 按 mode 拼系统 prompt。翻译带语言参数，其他任务纯中文指令。 */
 function systemPromptFor(input: EngineRunInput): string {
   switch (input.mode) {
@@ -39,15 +49,27 @@ function systemPromptFor(input: EngineRunInput): string {
   }
 }
 
-export function createWebLlmEngine(modelId: string = DEFAULT_MODEL): Engine {
+export function createWebLlmEngine(options: CreateWebLlmEngineOptions = {}): Engine {
+  const modelId = options.modelId ?? DEFAULT_MODEL;
   let enginePromise: Promise<MLCEngine> | null = null;
 
-  /** 惰性拿 MLCEngine 实例。失败时清缓存，支持重试。 */
+  /**
+   * 惰性拿 MLCEngine 实例。失败时清缓存，支持重试。
+   *
+   * 修正（Gemini review）：改用链式 catch 并 throw，避免"游离 promise"警告。
+   * 之前的写法 `.catch(() => { enginePromise = null; })` 会返回一个已经 resolved 的
+   * promise，调用方 await 时反而拿到 undefined。
+   */
   function getEngine(): Promise<MLCEngine> {
     if (!enginePromise) {
-      enginePromise = CreateMLCEngine(modelId);
-      enginePromise.catch(() => {
-        enginePromise = null; // 失败可重试（同 chrome-ai 那次 Gemini 反馈教训）
+      enginePromise = CreateMLCEngine(modelId, {
+        // web-llm 用 initProgressCallback 上报下载 + shader 编译进度
+        // 契约测试锁定该回调必须被传入
+        initProgressCallback: options.onInitProgress,
+      }).catch((err) => {
+        // 失败清缓存，用户可以重试（同 chrome-ai 那次 Gemini 反馈教训）
+        enginePromise = null;
+        throw err;
       });
     }
     return enginePromise;
@@ -70,6 +92,7 @@ export function createWebLlmEngine(modelId: string = DEFAULT_MODEL): Engine {
         const adapter = await gpu.requestAdapter();
         return adapter !== null && adapter !== undefined;
       } catch {
+        // requestAdapter 抛异常（如硬件驱动崩溃）也算不可用
         return false;
       }
     },
@@ -85,8 +108,13 @@ export function createWebLlmEngine(modelId: string = DEFAULT_MODEL): Engine {
         messages: buildMessages(input),
         temperature: 0.3, // 翻译/校对偏保守，润色/扩写可以由未来 UI 调
       });
-      // web-llm 的响应结构与 OpenAI 完全一致
-      return resp.choices[0]?.message?.content ?? '';
+      // 修正（Sourcery review）：结构异常时抛错，让 engine-manager 走兜底
+      // 之前静默返回 '' 会掩盖故障，用户看到"翻译成功但结果为空"完全无法排查
+      const content = resp.choices[0]?.message?.content;
+      if (typeof content !== 'string') {
+        throw new Error('WebLLM 响应结构异常：未取到 choices[0].message.content');
+      }
+      return content;
     },
 
     async *runStreaming(input: EngineRunInput): AsyncIterable<string> {
