@@ -21,6 +21,8 @@
  */
 import type { Engine, EngineMode, EngineRunInput } from './types';
 import { openaiCompatConfig } from '@core/openai-compat-config';
+import { hasHostPermission } from '@core/host-permissions';
+import { extractOriginPattern } from '@core/origin-pattern';
 
 function systemPromptFor(input: EngineRunInput): string {
   switch (input.mode) {
@@ -82,7 +84,15 @@ export function createOpenAiCompatEngine(): Engine {
 
     async isAvailable(): Promise<boolean> {
       const { baseUrl, apiKey, model } = await openaiCompatConfig.get();
-      return Boolean(baseUrl && apiKey && model);
+      if (!baseUrl || !apiKey || !model) return false;
+      // Round 3 (#465): 三项齐才检查 host 权限 —— 避免用户没配就弹权限
+      let pattern: string;
+      try {
+        pattern = extractOriginPattern(baseUrl);
+      } catch {
+        return false;
+      }
+      return hasHostPermission(pattern);
     },
 
     supports(_mode: EngineMode): boolean {

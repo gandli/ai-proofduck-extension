@@ -20,7 +20,8 @@ const mocks = vi.hoisted(() => {
     value: { baseUrl: '', apiKey: '', model: '' },
   };
   const mockGet = vi.fn(async () => config.value);
-  return { config, mockGet };
+  const mockHasHostPermission = vi.fn(async () => true);
+  return { config, mockGet, mockHasHostPermission };
 });
 
 vi.mock('@core/openai-compat-config', () => ({
@@ -31,12 +32,20 @@ vi.mock('@core/openai-compat-config', () => ({
   },
 }));
 
+vi.mock('@core/host-permissions', () => ({
+  hasHostPermission: mocks.mockHasHostPermission,
+  requestHostPermission: vi.fn(async () => true),
+  onPermissionsChanged: vi.fn(() => () => {}),
+}));
+
 import { createOpenAiCompatEngine } from '@engines/openai-compat';
 
 describe('createOpenAiCompatEngine', () => {
   beforeEach(() => {
     mocks.config.value = { baseUrl: '', apiKey: '', model: '' };
     mocks.mockGet.mockClear();
+    mocks.mockHasHostPermission.mockClear();
+    mocks.mockHasHostPermission.mockResolvedValue(true);
     vi.stubGlobal('fetch', vi.fn());
   });
 
@@ -66,8 +75,45 @@ describe('createOpenAiCompatEngine', () => {
     });
 
     it('缺 model → false', async () => {
-      mocks.config.value = { baseUrl: 'https://x', apiKey: 'sk', model: '' };
+      mocks.config.value = { baseUrl: 'https://x', apiKey: 'k', model: '' };
       expect(await createOpenAiCompatEngine().isAvailable()).toBe(false);
+    });
+
+    // ─── Round 3 新增：host permission 检查 ───
+    it('三项齐 + host 权限未授 → false', async () => {
+      mocks.config.value = {
+        baseUrl: 'https://api.deepseek.com',
+        apiKey: 'sk-xxx',
+        model: 'deepseek-chat',
+      };
+      mocks.mockHasHostPermission.mockResolvedValueOnce(false);
+      expect(await createOpenAiCompatEngine().isAvailable()).toBe(false);
+    });
+
+    it('三项齐 + host 权限已授 → true', async () => {
+      mocks.config.value = {
+        baseUrl: 'https://api.deepseek.com',
+        apiKey: 'sk-xxx',
+        model: 'deepseek-chat',
+      };
+      mocks.mockHasHostPermission.mockResolvedValueOnce(true);
+      expect(await createOpenAiCompatEngine().isAvailable()).toBe(true);
+    });
+
+    it('用 baseUrl 的 origin pattern 查权限（不是原始 baseUrl）', async () => {
+      mocks.config.value = {
+        baseUrl: 'https://api.groq.com/openai/v1',
+        apiKey: 'gsk-xxx',
+        model: 'llama-3',
+      };
+      await createOpenAiCompatEngine().isAvailable();
+      expect(mocks.mockHasHostPermission).toHaveBeenCalledWith('https://api.groq.com/*');
+    });
+
+    it('配置缺项时不查权限（短路）', async () => {
+      mocks.config.value = { baseUrl: '', apiKey: '', model: '' };
+      await createOpenAiCompatEngine().isAvailable();
+      expect(mocks.mockHasHostPermission).not.toHaveBeenCalled();
     });
   });
 
