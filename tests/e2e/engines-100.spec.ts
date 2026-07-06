@@ -13,13 +13,30 @@ import { test, expect, chromium } from '@playwright/test';
 import type { BrowserContext } from '@playwright/test';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { execSync } from 'node:child_process';
 import http from 'node:http';
 import type { AddressInfo } from 'node:net';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const EXT_PATH = path.resolve(__dirname, '..', '..', 'dist', 'chrome-mv3');
+const REPO_ROOT = path.resolve(__dirname, '..', '..');
+const EXT_PATH = path.resolve(REPO_ROOT, 'dist', 'chrome-mv3');
+
+// 首次跑：需要 E2E 构建版（挂 window.__pd_engines）
+// 生产 zip 里没有这个探针，直接 --load-extension 装的可能是生产版
+test.beforeAll(() => {
+  // 检查 dist/chrome-mv3 是否是 E2E 构建（找探针字符串）
+  const sidepanelChunk = existsSync(path.join(EXT_PATH, 'chunks'))
+    ? execSync(`grep -rlE '__pd_engines' ${EXT_PATH}/chunks 2>/dev/null | head -1 || true`)
+        .toString()
+        .trim()
+    : '';
+  if (!sidepanelChunk) {
+    console.log('[engines-100] 检测到非 E2E 构建，重新 build:e2e...');
+    execSync('bun run build:e2e', { cwd: REPO_ROOT, stdio: 'inherit' });
+  }
+});
 
 async function launchWithExt(): Promise<{ context: BrowserContext; extId: string; userDataDir: string }> {
   const userDataDir = mkdtempSync(path.join(tmpdir(), 'pd-engines-'));
