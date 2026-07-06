@@ -8,6 +8,7 @@
         "@mlc-ai/web-llm": "^0.2.74",
         "react": "^19.2.4",
         "react-dom": "^19.2.4",
+        "zustand": "^5.0.14",
       },
       "devDependencies": {
         "@playwright/test": "^1.48.0",
@@ -26,7 +27,6 @@
         "typescript": "^5.9.3",
         "vitest": "^4.1.0",
         "wxt": "^0.20.27",
-        "zustand": "^5.0.14",
       },
     },
   },

@@ -21,11 +21,14 @@
   "dependencies": {
     "@mlc-ai/web-llm": "^0.2.74",
     "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react-dom": "^19.2.4",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@playwright/test": "^1.48.0",
+    "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/chrome": "^0.1.36",
     "@types/react": "^19.2.13",
     "@types/react-dom": "^19.2.3",
