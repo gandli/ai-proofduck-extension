@@ -1,0 +1,1076 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<title>校对鸭 · UI 重设计</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    /* === 品牌色（与 public/icon.svg 完全一致） === */
+    --brand-50:  #fffbea;
+    --brand-100: #fff9db;   /* 图标背景起点 */
+    --brand-200: #ffec99;
+    --brand-300: #ffd43b;
+    --brand-500: #f59f00;   /* 图标主色 */
+    --brand-600: #d68b00;
+    --brand-700: #a56501;
+
+    --ink-900:  #495057;    /* 图标描边深灰 */
+    --ink-800:  #212529;
+    --ink-700:  #343a40;
+    --ink-600:  #495057;
+    --ink-500:  #6c757d;
+    --ink-400:  #adb5bd;
+    --ink-300:  #ced4da;
+    --ink-200:  #dee2e6;
+    --ink-100:  #e9ecef;
+    --ink-50:   #f8f9fa;
+
+    /* === 语义色（黄仅品牌，不作警告） === */
+    --success:      #2f9e44;
+    --success-soft: #ebfbee;
+    --danger:       #e03131;
+    --danger-soft:  #fff5f5;
+    --info:         #1971c2;
+    --info-soft:    #e7f5ff;
+
+    /* === 表面 === */
+    --bg:      #fbfaf7;
+    --surface: #ffffff;
+    --surface-alt: #f8f9fa;
+
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 1px 2px rgba(73,80,87,.05), 0 4px 12px rgba(73,80,87,.06);
+    --shadow-brand: 0 4px 12px rgba(245,159,0,.28);
+
+    --font-sans: 'Inter', 'PingFang SC', 'Microsoft YaHei', -apple-system, sans-serif;
+    --font-serif: 'Noto Serif SC', Georgia, serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  }
+  body {
+    font-family: var(--font-sans);
+    color: var(--ink-800);
+    background: var(--bg);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    padding: 40px 32px;
+  }
+  .doc-head {
+    max-width: 1240px;
+    margin: 0 auto 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--ink-200);
+  }
+  h1.doc-title {
+    font-family: var(--font-serif);
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -.02em;
+    color: var(--ink-900);
+  }
+  .doc-title .brand {
+    background: linear-gradient(135deg, var(--brand-500) 0%, var(--brand-600) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .doc-sub {
+    color: var(--ink-500);
+    font-size: 14px;
+    margin-top: 6px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .doc-sub .token {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .swatch {
+    width: 12px; height: 12px;
+    border-radius: 3px;
+    border: 1px solid rgba(0,0,0,.1);
+  }
+  .board {
+    display: grid;
+    grid-template-columns: 380px 500px minmax(380px, 1fr);
+    gap: 28px;
+    max-width: 1240px;
+    margin: 0 auto;
+  }
+  .screen-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--ink-400);
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .screen-label::before {
+    content: '';
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--brand-500);
+  }
+
+  /* ==========  Sidepanel  ========== */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--ink-200);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .sidepanel { height: 760px; display: flex; flex-direction: column; }
+  .sp-header {
+    padding: 16px 18px 12px;
+    border-bottom: 1px solid var(--ink-200);
+    background: linear-gradient(180deg, var(--brand-50) 0%, var(--surface) 100%);
+  }
+  .sp-brand { display: flex; align-items: center; gap: 10px; }
+  .sp-logo {
+    width: 30px; height: 30px;
+    background: linear-gradient(135deg, var(--brand-100) 0%, var(--brand-500) 100%);
+    border: 1.5px solid var(--ink-900);
+    border-radius: 8px;
+    display: grid; place-items: center;
+    font-size: 16px;
+    box-shadow: var(--shadow-brand);
+  }
+  .sp-title {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: -.01em;
+    color: var(--ink-900);
+  }
+  .sp-actions { margin-left: auto; display: flex; gap: 2px; }
+  .icon-btn {
+    width: 30px; height: 30px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    display: grid; place-items: center;
+    cursor: pointer;
+    color: var(--ink-500);
+    transition: all .15s;
+  }
+  .icon-btn:hover { background: var(--ink-50); color: var(--ink-900); }
+
+  .sp-status-bar {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+  }
+  .engine-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    background: var(--success-soft);
+    color: var(--success);
+    border-radius: 999px;
+    font-weight: 500;
+    font-size: 12px;
+  }
+  .engine-chip::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 0 3px rgba(47,158,68,.15);
+  }
+  .health-summary { color: var(--ink-400); font-size: 12px; }
+
+  .sp-body {
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1;
+    overflow-y: auto;
+  }
+  .lang-row {
+    display: grid;
+    grid-template-columns: 1fr 34px 1fr;
+    gap: 8px;
+    align-items: end;
+  }
+  .lang-cell { display: flex; flex-direction: column; gap: 4px; }
+  .lang-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--ink-400);
+    font-weight: 600;
+  }
+  .lang-select, .input, .io-textarea {
+    padding: 8px 10px;
+    border: 1px solid var(--ink-200);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    background: var(--surface);
+    color: var(--ink-800);
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .lang-select { cursor: pointer; }
+  .lang-select:hover, .input:hover { border-color: var(--ink-300); }
+  .lang-select:focus, .input:focus, .io-textarea:focus {
+    outline: none;
+    border-color: var(--brand-500);
+    box-shadow: 0 0 0 3px rgba(245,159,0,.15);
+  }
+  .lang-swap {
+    width: 30px; height: 30px;
+    border: 1px solid var(--ink-200);
+    border-radius: 50%;
+    background: var(--surface);
+    display: grid; place-items: center;
+    cursor: pointer;
+    color: var(--ink-500);
+    transition: all .2s;
+  }
+  .lang-swap:hover {
+    border-color: var(--brand-500);
+    color: var(--brand-600);
+    transform: rotate(180deg);
+  }
+
+  .io-block { display: flex; flex-direction: column; gap: 6px; }
+  .io-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--ink-400);
+    font-weight: 600;
+  }
+  .io-header .charcount { font-family: var(--font-mono); font-weight: 400; text-transform: none; letter-spacing: 0; }
+  .io-textarea {
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.55;
+  }
+  .io-output {
+    padding: 14px 44px 14px 14px;
+    background: var(--brand-50);
+    border: 1px solid var(--brand-200);
+    border-radius: var(--radius-sm);
+    min-height: 90px;
+    font-size: 14px;
+    line-height: 1.7;
+    font-family: var(--font-serif);
+    color: var(--ink-900);
+    position: relative;
+  }
+  .output-toolbar {
+    display: flex;
+    gap: 4px;
+    position: absolute;
+    top: 8px; right: 8px;
+    opacity: 0;
+    transition: opacity .15s;
+  }
+  .io-output:hover .output-toolbar { opacity: 1; }
+  .tool-btn {
+    width: 26px; height: 26px;
+    border: 1px solid var(--brand-200);
+    background: var(--surface);
+    border-radius: 5px;
+    display: grid; place-items: center;
+    cursor: pointer;
+    font-size: 11px;
+    color: var(--ink-500);
+  }
+  .tool-btn:hover { color: var(--ink-900); border-color: var(--brand-500); }
+
+  .cta-row { display: flex; gap: 10px; align-items: center; }
+  .btn {
+    padding: 9px 16px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-primary {
+    background: linear-gradient(180deg, var(--brand-500) 0%, var(--brand-600) 100%);
+    color: var(--ink-900);
+    border: 1px solid var(--brand-600);
+    box-shadow: 0 1px 2px rgba(245,159,0,.4), inset 0 1px 0 rgba(255,255,255,.4);
+    font-weight: 600;
+  }
+  .btn-primary:hover {
+    background: linear-gradient(180deg, var(--brand-600) 0%, var(--brand-700) 100%);
+    box-shadow: 0 2px 6px rgba(245,159,0,.5);
+  }
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--ink-700);
+    border-color: var(--ink-200);
+  }
+  .btn-secondary:hover { border-color: var(--ink-400); color: var(--ink-900); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-500);
+    border-color: transparent;
+  }
+  .btn-ghost:hover { color: var(--ink-800); background: var(--ink-50); }
+  .kbd {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    padding: 1px 5px;
+    border: 1px solid rgba(73,80,87,.25);
+    background: rgba(255,255,255,.4);
+    border-radius: 4px;
+    color: var(--ink-800);
+    font-weight: 500;
+  }
+
+  .history {
+    margin-top: 4px;
+    border-top: 1px dashed var(--ink-200);
+    padding-top: 14px;
+  }
+  .history-head {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--ink-400);
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .history-head .clear-btn {
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+    color: var(--ink-400);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 11px;
+  }
+  .history-head .clear-btn:hover { color: var(--danger); }
+  .history-item {
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .history-item:hover { background: var(--ink-50); }
+  .h-src { font-size: 12px; color: var(--ink-500); }
+  .h-dst { font-size: 13px; color: var(--ink-900); margin-top: 2px; font-family: var(--font-serif); }
+
+  /* ==========  Options  ========== */
+  .options {
+    height: 760px;
+    overflow-y: auto;
+    padding: 28px 32px;
+  }
+  .opt-title {
+    font-family: var(--font-serif);
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    color: var(--ink-900);
+    margin-bottom: 4px;
+  }
+  .opt-sub { color: var(--ink-500); font-size: 13px; margin-bottom: 20px; }
+
+  .health-card {
+    background: linear-gradient(135deg, var(--brand-50) 0%, var(--surface) 60%);
+    border: 1px solid var(--brand-200);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 24px;
+  }
+  .health-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--ink-500);
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .health-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
+  }
+  .health-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+  .health-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .health-dot.ok { background: var(--success); box-shadow: 0 0 0 3px var(--success-soft); }
+  .health-dot.err { background: var(--danger); box-shadow: 0 0 0 3px var(--danger-soft); }
+  .health-dot.off { background: var(--ink-300); }
+  .health-row .name { color: var(--ink-500); }
+  .health-row .value { color: var(--ink-900); font-weight: 500; }
+
+  .section {
+    padding: 20px 0;
+    border-top: 1px solid var(--ink-200);
+  }
+  .section:first-of-type { border-top: none; padding-top: 0; }
+  .sec-title {
+    font-family: var(--font-serif);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink-900);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sec-desc {
+    color: var(--ink-500);
+    font-size: 12.5px;
+    margin-bottom: 14px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .field-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-700);
+  }
+  .field-hint {
+    font-size: 11.5px;
+    color: var(--ink-400);
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .input { padding: 8px 10px; font-size: 13px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .preset-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .preset {
+    padding: 5px 12px;
+    border: 1px solid var(--ink-200);
+    background: var(--surface);
+    border-radius: 999px;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--ink-600);
+    font-weight: 500;
+    transition: all .15s;
+  }
+  .preset:hover { border-color: var(--brand-500); color: var(--brand-700); }
+  .preset.active {
+    background: var(--brand-500);
+    color: var(--ink-900);
+    border-color: var(--brand-600);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.3);
+    font-weight: 600;
+  }
+
+  .input-group { display: flex; gap: 0; align-items: stretch; }
+  .input-group .input {
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+    flex: 1;
+    border-right: none;
+  }
+  .input-group .adornment {
+    padding: 0 10px;
+    border: 1px solid var(--ink-200);
+    background: var(--ink-50);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    display: grid; place-items: center;
+    font-size: 12px;
+    color: var(--ink-500);
+    cursor: pointer;
+  }
+  .input-group .adornment:hover { color: var(--ink-800); }
+
+  .alert {
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 13px;
+    margin: 6px 0 12px;
+  }
+  .alert-danger {
+    background: var(--danger-soft);
+    border-color: rgba(224,49,49,.25);
+    color: #862e2e;
+  }
+  .alert-info {
+    background: var(--info-soft);
+    border-color: rgba(25,113,194,.25);
+    color: #1c4a72;
+  }
+  .alert-icon {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .alert-danger .alert-icon { background: var(--danger); color: white; }
+  .alert-info .alert-icon { background: var(--info); color: white; }
+  .alert-title { font-weight: 600; margin-bottom: 2px; }
+  .alert-body { font-size: 12.5px; opacity: .85; line-height: 1.5; }
+  .alert-action {
+    padding: 5px 12px;
+    background: var(--danger);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 8px;
+  }
+
+  .switch { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .switch-track {
+    width: 36px; height: 20px;
+    background: var(--brand-500);
+    border-radius: 999px;
+    position: relative;
+    transition: background .2s;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
+  }
+  .switch-thumb {
+    position: absolute;
+    top: 2px; left: 18px;
+    width: 16px; height: 16px;
+    background: white;
+    border-radius: 50%;
+    transition: left .2s;
+    box-shadow: 0 1px 2px rgba(0,0,0,.2);
+  }
+  .switch-track.off { background: var(--ink-300); }
+  .switch-track.off .switch-thumb { left: 2px; }
+  .switch-label { font-size: 13px; color: var(--ink-700); }
+
+  .cta-save { display: flex; gap: 8px; padding-top: 10px; align-items: center; }
+  .saved-flash {
+    color: var(--success);
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    font-weight: 500;
+  }
+
+  /* ==========  Bubble Demo  ========== */
+  .bubble-demo {
+    height: 760px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .demo-header {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--ink-200);
+    background: var(--ink-50);
+    font-size: 12px;
+    color: var(--ink-500);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .demo-header .url {
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+  .demo-body {
+    padding: 24px 28px;
+    flex: 1;
+    overflow: hidden;
+    line-height: 1.85;
+    font-size: 15px;
+    color: var(--ink-800);
+    position: relative;
+    background: var(--surface);
+  }
+  .demo-body p { margin-bottom: 16px; }
+  .demo-body p mark {
+    background: rgba(245,159,0,.22);
+    padding: 0 2px;
+    border-radius: 2px;
+    color: inherit;
+    box-decoration-break: clone;
+  }
+
+  .bubble {
+    position: absolute;
+    top: 108px;
+    left: 24px;
+    max-width: 300px;
+    background: var(--ink-900);
+    color: white;
+    border-radius: var(--radius);
+    box-shadow: 0 12px 32px rgba(73,80,87,.28), 0 2px 4px rgba(73,80,87,.15);
+    padding: 12px 14px;
+    font-size: 13px;
+    z-index: 10;
+    border: 1px solid var(--ink-700);
+  }
+  .bubble::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 40px;
+    width: 12px; height: 12px;
+    background: var(--ink-900);
+    transform: rotate(45deg);
+    border-radius: 2px;
+    border-top: 1px solid var(--ink-700);
+    border-left: 1px solid var(--ink-700);
+  }
+  .bubble-hdr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    gap: 8px;
+  }
+  .bubble-engine {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--brand-300);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 600;
+  }
+  .bubble-actions { display: flex; gap: 1px; }
+  .b-btn {
+    width: 22px; height: 22px;
+    background: transparent;
+    border: none;
+    color: var(--ink-300);
+    cursor: pointer;
+    border-radius: 4px;
+    display: grid; place-items: center;
+    font-size: 11px;
+    transition: all .15s;
+  }
+  .b-btn:hover { background: rgba(255,255,255,.1); color: white; }
+  .bubble-content {
+    font-family: var(--font-serif);
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: white;
+  }
+  .bubble-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,.1);
+    font-size: 10.5px;
+    color: var(--ink-400);
+  }
+  .bubble-footer kbd {
+    font-family: var(--font-mono);
+    background: rgba(255,255,255,.08);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--ink-300);
+    margin-right: 4px;
+    font-size: 10px;
+  }
+
+  /* Popup */
+  .popup-mini {
+    position: absolute;
+    top: 24px; right: 24px;
+    width: 260px;
+    background: var(--surface);
+    border: 1px solid var(--ink-200);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 24px rgba(73,80,87,.15);
+    padding: 14px;
+    z-index: 5;
+  }
+  .popup-brand-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--ink-200);
+  }
+  .popup-name {
+    font-family: var(--font-serif);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink-900);
+    line-height: 1;
+  }
+  .popup-tag {
+    font-size: 11px;
+    color: var(--ink-400);
+    margin-top: 2px;
+  }
+  .popup-cta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .popup-btn {
+    padding: 8px 12px;
+    border: 1px solid var(--ink-200);
+    border-radius: 6px;
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--ink-800);
+    cursor: pointer;
+    transition: all .15s;
+    font-family: inherit;
+    text-align: left;
+  }
+  .popup-btn:hover {
+    border-color: var(--brand-500);
+    background: var(--brand-50);
+  }
+  .popup-btn .popup-btn-icon {
+    width: 24px; height: 24px;
+    border-radius: 5px;
+    background: var(--brand-100);
+    display: grid; place-items: center;
+    font-size: 12px;
+  }
+  .popup-btn.primary {
+    background: linear-gradient(180deg, var(--brand-500) 0%, var(--brand-600) 100%);
+    border-color: var(--brand-600);
+    color: var(--ink-900);
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(245,159,0,.35);
+  }
+  .popup-btn.primary .popup-btn-icon {
+    background: rgba(255,255,255,.4);
+  }
+</style>
+</head>
+<body>
+  <div class="doc-head">
+    <h1 class="doc-title"><span class="brand">校对鸭</span> · UI/UX 重设计</h1>
+    <div class="doc-sub">
+      <span>与图标同源品牌色系统 · 语义色严格分离 · 完整状态反馈</span>
+      <span class="token"><span class="swatch" style="background:#f59f00"></span>#f59f00 品牌主色</span>
+      <span class="token"><span class="swatch" style="background:#fff9db"></span>#fff9db 品牌淡</span>
+      <span class="token"><span class="swatch" style="background:#495057"></span>#495057 墨深</span>
+      <span class="token"><span class="swatch" style="background:#2f9e44"></span>成功</span>
+      <span class="token"><span class="swatch" style="background:#e03131"></span>危险</span>
+      <span class="token"><span class="swatch" style="background:#1971c2"></span>信息</span>
+    </div>
+  </div>
+
+  <div class="board">
+
+    <!-- ============ SidePanel + Popup 悬浮 ============ -->
+    <div>
+      <div class="screen-label">侧边栏 SidePanel</div>
+      <div class="card sidepanel">
+        <div class="sp-header">
+          <div class="sp-brand">
+            <div class="sp-logo">🦆</div>
+            <div>
+              <div class="sp-title">校对鸭</div>
+            </div>
+            <div class="sp-actions">
+              <button class="icon-btn" title="历史"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="10"/></svg></button>
+              <button class="icon-btn" title="设置"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/></svg></button>
+            </div>
+          </div>
+          <div class="sp-status-bar">
+            <span class="engine-chip">WebLLM · Qwen2.5-1.5B</span>
+            <span class="health-summary">3/4 引擎就绪</span>
+          </div>
+        </div>
+
+        <div class="sp-body">
+          <div class="lang-row">
+            <div class="lang-cell">
+              <label class="lang-label">源语言</label>
+              <select class="lang-select">
+                <option>自动检测</option>
+              </select>
+            </div>
+            <button class="lang-swap" title="交换">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10h10M7 10l3-3M7 10l3 3M17 14H7M17 14l-3-3M17 14l-3 3"/></svg>
+            </button>
+            <div class="lang-cell">
+              <label class="lang-label">目标语言</label>
+              <select class="lang-select">
+                <option>简体中文</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="io-block">
+            <div class="io-header">
+              <span>原文</span>
+              <span class="charcount">32 / 5000</span>
+            </div>
+            <textarea class="io-textarea" placeholder="在这里粘贴要翻译的文本…">Machine learning is amazing.</textarea>
+          </div>
+
+          <div class="cta-row">
+            <button class="btn btn-primary">
+              翻译 <span class="kbd">⌘ ↵</span>
+            </button>
+            <button class="btn btn-ghost">清空</button>
+          </div>
+
+          <div class="io-block">
+            <div class="io-header">
+              <span>译文</span>
+              <span class="charcount">6 字 · 276ms</span>
+            </div>
+            <div class="io-output">
+              机器学习真是令人惊叹。
+              <div class="output-toolbar">
+                <button class="tool-btn" title="复制">📋</button>
+                <button class="tool-btn" title="朗读">🔊</button>
+                <button class="tool-btn" title="重新翻译">↻</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="history">
+            <div class="history-head">
+              <span>最近翻译</span>
+              <button class="clear-btn">清空</button>
+            </div>
+            <div class="history-item">
+              <div class="h-src">The quick brown fox jumps…</div>
+              <div class="h-dst">敏捷的棕色狐狸跳过…</div>
+            </div>
+            <div class="history-item">
+              <div class="h-src">Artificial intelligence</div>
+              <div class="h-dst">人工智能</div>
+            </div>
+            <div class="history-item">
+              <div class="h-src">Transformer architectures</div>
+              <div class="h-dst">Transformer 架构</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ Options ============ -->
+    <div>
+      <div class="screen-label">设置 Options</div>
+      <div class="card options">
+        <div class="opt-title">设置</div>
+        <div class="opt-sub">配置翻译引擎、语言与外观偏好。</div>
+
+        <div class="health-card">
+          <div class="health-title">🩺 引擎健康度</div>
+          <div class="health-grid">
+            <div class="health-row"><span class="health-dot ok"></span><span class="value">Chrome AI</span><span class="name">设备端就绪</span></div>
+            <div class="health-row"><span class="health-dot ok"></span><span class="value">WebLLM</span><span class="name">已缓存</span></div>
+            <div class="health-row"><span class="health-dot err"></span><span class="value">OpenAI 兼容</span><span class="name">未授权</span></div>
+            <div class="health-row"><span class="health-dot ok"></span><span class="value">免费兜底</span><span class="name">已启用</span></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sec-title">外观</div>
+          <div class="grid-2">
+            <div class="field">
+              <label class="field-label">主题</label>
+              <select class="input">
+                <option>跟随系统</option>
+                <option>浅色</option>
+                <option>深色</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field-label">界面语言</label>
+              <select class="input">
+                <option>简体中文</option>
+                <option>English</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sec-title">引擎路由</div>
+          <div class="sec-desc">按优先级自动选用，也可强制指定。</div>
+          <div class="field">
+            <label class="field-label">默认引擎</label>
+            <select class="input">
+              <option>自动（chrome-ai → webllm → openai → 兜底）</option>
+            </select>
+            <div class="field-hint">按可用性自动降级；手动指定则跳过自动选择。</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sec-title">OpenAI 兼容 API</div>
+          <div class="sec-desc">BYOK 自带密钥。支持 OpenAI / DeepSeek / 通义 / 豆包 / Kimi。</div>
+
+          <div class="alert alert-danger">
+            <div class="alert-icon">!</div>
+            <div style="flex:1;">
+              <div class="alert-title">权限缺失</div>
+              <div class="alert-body">还没获得访问 <code style="font-family:var(--font-mono);font-size:12px;background:rgba(0,0,0,.05);padding:0 3px;border-radius:3px;">api.deepseek.com</code> 的权限，翻译请求会被浏览器拦截。</div>
+              <button class="alert-action">授权访问</button>
+            </div>
+          </div>
+
+          <div class="preset-row">
+            <button class="preset">OpenAI</button>
+            <button class="preset active">DeepSeek</button>
+            <button class="preset">通义千问</button>
+            <button class="preset">豆包</button>
+            <button class="preset">Kimi</button>
+          </div>
+
+          <div class="field">
+            <label class="field-label">API Base URL</label>
+            <input class="input" value="https://api.deepseek.com"/>
+          </div>
+
+          <div class="field">
+            <label class="field-label">API Key</label>
+            <div class="input-group">
+              <input class="input" type="password" value="sk-••••••••••••••••••••••"/>
+              <div class="adornment" title="显示/隐藏">👁</div>
+            </div>
+            <div class="field-hint">🔒 仅存于本机 chrome.storage.local，不同步到其他设备。</div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">模型 ID</label>
+            <input class="input" style="font-family:var(--font-mono);" value="deepseek-chat"/>
+          </div>
+
+          <div class="cta-save">
+            <button class="btn btn-primary" style="padding:8px 14px;font-size:13px;">保存</button>
+            <button class="btn btn-secondary" style="padding:8px 14px;font-size:13px;">测试连接</button>
+            <span class="saved-flash">✓ 已保存 3s 前</span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sec-title">免费翻译兜底</div>
+          <div class="alert alert-info">
+            <div class="alert-icon">ⓘ</div>
+            <div style="flex:1;">
+              <div class="alert-body">启用后，文本会以 CORS 方式发到 Google 公开端点。<strong>不适合敏感内容</strong>。</div>
+            </div>
+          </div>
+          <label class="switch">
+            <div class="switch-track"><div class="switch-thumb"></div></div>
+            <span class="switch-label">已启用（作为引擎链末端兜底）</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ Bubble Demo ============ -->
+    <div>
+      <div class="screen-label">划词浮标 + 弹出窗</div>
+      <div class="card bubble-demo">
+        <div class="demo-header">
+          <span class="url">🔒 example.com/article</span>
+          <span style="font-size:11px;">扩展工具栏点击 →</span>
+        </div>
+        <div class="demo-body">
+          <p><mark>Machine learning is a subfield of artificial intelligence</mark> that gives computers the ability to learn from data without being explicitly programmed.</p>
+          <p>The quick brown fox jumps over the lazy dog. This pangram contains every letter of the English alphabet at least once.</p>
+          <p>Recent advances in transformer architectures have revolutionized natural language processing across nearly every task in NLP.</p>
+
+          <!-- Bubble -->
+          <div class="bubble">
+            <div class="bubble-hdr">
+              <span class="bubble-engine">🖥 本地 · Qwen2.5</span>
+              <div class="bubble-actions">
+                <button class="b-btn" title="复制">📋</button>
+                <button class="b-btn" title="朗读">🔊</button>
+                <button class="b-btn" title="侧边栏打开">⇱</button>
+                <button class="b-btn" title="关闭">✕</button>
+              </div>
+            </div>
+            <div class="bubble-content">机器学习是人工智能的一个子领域。</div>
+            <div class="bubble-footer">
+              <span>276ms · 8 tokens</span>
+              <span><kbd>Esc</kbd> 关闭</span>
+            </div>
+          </div>
+
+          <!-- Popup -->
+          <div class="popup-mini">
+            <div class="popup-brand-row">
+              <div class="sp-logo" style="width:32px;height:32px;font-size:17px;">🦆</div>
+              <div>
+                <div class="popup-name">校对鸭</div>
+                <div class="popup-tag">v0.4 · 隐私优先翻译</div>
+              </div>
+            </div>
+            <div class="popup-cta">
+              <button class="popup-btn primary">
+                <span class="popup-btn-icon">⇱</span>
+                <span>打开侧边栏</span>
+              </button>
+              <button class="popup-btn">
+                <span class="popup-btn-icon">⚙</span>
+                <span>设置</span>
+              </button>
+              <button class="popup-btn">
+                <span class="popup-btn-icon">⌘</span>
+                <span>快捷键 · Alt + P</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

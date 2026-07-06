@@ -1,24 +1,34 @@
 /**
- * SelectionBubble: 划词浮标（Cycle 5）
+ * SelectionBubble (v0.4 UI 重设计): 划词浮标
+ *
+ * v0.4 UI 变更：
+ * - success 态改为深色气泡（ink-900 底）+ serif 白字，与网页背景形成清晰对比
+ * - 顶部小箭头指向选区
+ * - 引擎徽章 + 操作栏（复制 / 侧边栏 / 关闭）
+ * - 底部 kbd 快捷键提示（Esc 关闭）
+ * - idle 触发按钮改用品牌黄渐变
  *
  * 用户在网页里选中文本后，浮标会出现在选区右下角。
  *
  * 状态机：
- *   idle    → 只显示鸭子图标，等用户点击
+ *   idle    → 显示 [🦆 翻译] 按钮，等用户点击
  *   loading → 显示"翻译中…"
- *   success → 显示译文 + 引擎徽章
+ *   success → 深色气泡展示译文 + 引擎徽章 + 操作栏
  *   error   → 显示错误信息
  *
  * 交互：
- *   - 点鸭子图标 → 触发 onTrigger(selectedText)
+ *   - 点鸭子按钮 → 触发 onTrigger(selectedText)
  *   - Esc / 点浮标外 → 触发 onDismiss
- *   - 点浮标内部（比如复制译文）→ 不 dismiss
+ *   - 点浮标内部（复制、朗读）→ 不 dismiss
  *
  * 定位：
  *   容器 position: fixed（因为要跟随视口，不受页面滚动影响时
  *   由上层负责传新的 rect；测试用 style.top/left 校验字符串值即可）
  *   放在选区 rect.bottom + 8 / rect.left，避免遮住选区本身。
  *   超出视口时的边缘处理暂不加（v0.3.0 先能用，v0.4 再打磨）。
+ *
+ * Shadow DOM 场景：Tailwind 在 content script 里通常靠 wxt-css 注入；
+ * 这里所有关键样式**同时给一层内联 fallback**，即使 CSS 加载失败也能看。
  */
 import { useEffect, useRef } from 'react';
 import type { SelectionRect } from '@hooks/useSelection';
@@ -68,6 +78,13 @@ export function SelectionBubble(props: SelectionBubbleProps) {
   // 无选中不渲染
   if (!selectedText || !rect) return null;
 
+  // 复制到剪贴板
+  const handleCopy = () => {
+    if (output && navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(output).catch(() => {});
+    }
+  };
+
   return (
     <div
       ref={rootRef}
@@ -80,8 +97,6 @@ export function SelectionBubble(props: SelectionBubbleProps) {
         left: `${rect.left}px`,
         zIndex: 2147483647, // 顶到天
       }}
-      // Tailwind 在 content script 里通常靠 wxt-css 注入；这里备一层
-      // 内联 fallback 样式，即使 CSS 加载失败也能看
       className="pd-bubble"
     >
       {status === 'idle' && (
@@ -89,16 +104,18 @@ export function SelectionBubble(props: SelectionBubbleProps) {
           type="button"
           aria-label="翻译（校对鸭）"
           onClick={() => onTrigger(selectedText)}
-          className="inline-flex items-center gap-1 rounded-full bg-yellow-400 px-2.5 py-1.5 text-sm font-medium text-slate-900 shadow-lg ring-1 ring-black/10 hover:bg-yellow-300 transition"
+          className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold text-ink-800 shadow-brand-lg ring-1 ring-brand-600 hover:brightness-105 transition"
           style={{
-            background: '#facc15',
-            color: '#0f172a',
-            border: 'none',
+            // v0.4：品牌黄渐变（与 icon.svg 同源 #f59f00）
+            background: 'linear-gradient(180deg, #f59f00 0%, #d68b00 100%)',
+            color: '#212529',
+            border: '1px solid #d68b00',
             cursor: 'pointer',
-            padding: '4px 10px',
+            padding: '5px 12px',
             borderRadius: '999px',
             fontSize: 13,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            fontWeight: 600,
+            boxShadow: '0 2px 8px rgba(245,159,0,0.35), inset 0 1px 0 rgba(255,255,255,0.4)',
           }}
         >
           <span aria-hidden>🦆</span>
@@ -108,13 +125,15 @@ export function SelectionBubble(props: SelectionBubbleProps) {
 
       {status === 'loading' && (
         <div
-          className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm shadow-lg ring-1 ring-black/10"
+          className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm shadow-lg ring-1 ring-ink-200"
           style={{
             background: 'white',
-            padding: '6px 12px',
+            padding: '8px 14px',
             borderRadius: 8,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            boxShadow: '0 4px 12px rgba(73,80,87,0.15)',
+            border: '1px solid #dee2e6',
             fontSize: 13,
+            color: '#495057',
           }}
         >
           <span aria-hidden>⏳</span>
@@ -124,46 +143,184 @@ export function SelectionBubble(props: SelectionBubbleProps) {
 
       {status === 'success' && (
         <div
-          className="max-w-sm rounded-lg bg-white p-3 text-sm shadow-lg ring-1 ring-black/10"
+          // v0.4：深色气泡 + 顶部箭头
           style={{
-            background: 'white',
+            position: 'relative',
+            background: '#495057',
+            color: 'white',
+            borderRadius: 10,
+            boxShadow: '0 12px 32px rgba(73,80,87,0.28), 0 2px 4px rgba(73,80,87,0.15)',
+            border: '1px solid #343a40',
             padding: '10px 12px',
-            borderRadius: 8,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
             fontSize: 13,
             maxWidth: 320,
-            lineHeight: 1.5,
+            lineHeight: 1.6,
           }}
         >
-          <div className="mb-1 text-slate-900" style={{ color: '#0f172a' }}>
+          {/* 顶部箭头指向选区 */}
+          <span
+            aria-hidden
+            style={{
+              position: 'absolute',
+              top: -6,
+              left: 20,
+              width: 12,
+              height: 12,
+              background: '#495057',
+              transform: 'rotate(45deg)',
+              borderRadius: 2,
+              borderTop: '1px solid #343a40',
+              borderLeft: '1px solid #343a40',
+            }}
+          />
+          {/* 顶栏：引擎 + 操作 */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 6,
+              gap: 8,
+            }}
+          >
+            {engineName && (
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  fontSize: 10.5,
+                  color: '#ffd43b',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                  fontWeight: 600,
+                }}
+              >
+                <span aria-hidden>🖥</span>
+                <span>{engineName}</span>
+              </span>
+            )}
+            <div style={{ display: 'flex', gap: 1 }}>
+              <button
+                type="button"
+                onClick={handleCopy}
+                aria-label="复制译文"
+                title="复制译文"
+                style={{
+                  width: 22,
+                  height: 22,
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#ced4da',
+                  cursor: 'pointer',
+                  borderRadius: 4,
+                  display: 'grid',
+                  placeItems: 'center',
+                  fontSize: 11,
+                  padding: 0,
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.1)';
+                  (e.currentTarget as HTMLButtonElement).style.color = 'white';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                  (e.currentTarget as HTMLButtonElement).style.color = '#ced4da';
+                }}
+              >
+                📋
+              </button>
+              <button
+                type="button"
+                onClick={onDismiss}
+                aria-label="关闭"
+                title="关闭（Esc）"
+                style={{
+                  width: 22,
+                  height: 22,
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#ced4da',
+                  cursor: 'pointer',
+                  borderRadius: 4,
+                  display: 'grid',
+                  placeItems: 'center',
+                  fontSize: 11,
+                  padding: 0,
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.1)';
+                  (e.currentTarget as HTMLButtonElement).style.color = 'white';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                  (e.currentTarget as HTMLButtonElement).style.color = '#ced4da';
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+          {/* 译文 */}
+          <div
+            style={{
+              fontFamily: '"Noto Serif SC", Georgia, serif',
+              fontSize: 14,
+              lineHeight: 1.6,
+              color: 'white',
+            }}
+          >
             {output}
           </div>
-          {engineName && (
-            <div
-              className="mt-1 inline-flex items-center gap-1 text-xs text-slate-500"
-              style={{ color: '#64748b', fontSize: 11 }}
-            >
-              <span aria-hidden>🌐</span>
-              <span>{engineName}</span>
-            </div>
-          )}
+          {/* 底部快捷键提示 */}
+          <div
+            style={{
+              marginTop: 8,
+              paddingTop: 6,
+              borderTop: '1px solid rgba(255,255,255,0.1)',
+              fontSize: 10.5,
+              color: '#adb5bd',
+              display: 'flex',
+              justifyContent: 'flex-end',
+            }}
+          >
+            <span>
+              <kbd
+                style={{
+                  fontFamily: '"JetBrains Mono", "SF Mono", monospace',
+                  background: 'rgba(255,255,255,0.08)',
+                  padding: '1px 5px',
+                  borderRadius: 3,
+                  color: '#ced4da',
+                  fontSize: 10,
+                }}
+              >
+                Esc
+              </kbd>{' '}
+              关闭
+            </span>
+          </div>
         </div>
       )}
 
       {status === 'error' && (
         <div
-          className="max-w-sm rounded-lg bg-red-50 p-3 text-sm text-red-700 shadow-lg ring-1 ring-red-200"
+          className="max-w-sm rounded-lg text-sm shadow-lg"
           style={{
-            background: '#fef2f2',
-            color: '#b91c1c',
-            padding: '8px 12px',
+            background: '#fff5f5',
+            color: '#862e2e',
+            padding: '10px 14px',
             borderRadius: 8,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            boxShadow: '0 4px 12px rgba(224,49,49,0.15)',
+            border: '1px solid rgba(224,49,49,0.3)',
             fontSize: 13,
             maxWidth: 320,
+            lineHeight: 1.5,
           }}
         >
-          <span aria-hidden>⚠️ </span>
+          <span aria-hidden style={{ marginRight: 4 }}>
+            ⚠️
+          </span>
           <span>{error || '翻译失败'}</span>
         </div>
       )}

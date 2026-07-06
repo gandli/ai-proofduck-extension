@@ -93,7 +93,7 @@ test.describe('live extension', () => {
       await page.goto(`chrome-extension://${extId}/options.html`);
 
       // 等骨架加载完
-      await expect(page.getByText('校对鸭 · 设置')).toBeVisible();
+      await expect(page.getByRole('heading', { name: '设置' })).toBeVisible();
 
       // 5 个 openai-compat 预设按钮
       await expect(page.getByRole('button', { name: 'OpenAI' })).toBeVisible();
@@ -122,7 +122,7 @@ test.describe('live extension', () => {
     try {
       const page = await context.newPage();
       await page.goto(`chrome-extension://${extId}/options.html`);
-      await expect(page.getByText('校对鸭 · 设置')).toBeVisible();
+      await expect(page.getByRole('heading', { name: '设置' })).toBeVisible();
 
       await page.getByRole('button', { name: 'DeepSeek' }).click();
 
@@ -138,7 +138,7 @@ test.describe('live extension', () => {
     try {
       const page = await context.newPage();
       await page.goto(`chrome-extension://${extId}/options.html`);
-      await expect(page.getByText('校对鸭 · 设置')).toBeVisible();
+      await expect(page.getByRole('heading', { name: '设置' })).toBeVisible();
 
       await page.locator('#oaic-baseurl').fill('https://api.deepseek.com');
       await page.locator('#oaic-apikey').fill('sk-test-fake-key');
@@ -185,7 +185,7 @@ test.describe('live extension', () => {
     try {
       const page = await context.newPage();
       await page.goto(`chrome-extension://${extId}/options.html`);
-      await expect(page.getByText('校对鸭 · 设置')).toBeVisible();
+      await expect(page.getByRole('heading', { name: '设置' })).toBeVisible();
 
       // 直接在扩展页面上下文调 fetch（chrome-extension:// origin）
       const result = await page.evaluate(async () => {

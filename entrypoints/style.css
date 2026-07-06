@@ -2,10 +2,79 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 全局字体 & 品牌鸭黄 */
+/**
+ * 校对鸭全局样式
+ *
+ * 品牌 tokens 与 tailwind.config.js 中的 brand.* / ink.* 一一对应，
+ * 保留 CSS 变量是为了 SelectionBubble 这种运行在页面 Shadow DOM
+ * 里 Tailwind 可能失效时，内联样式还能引用一致的品牌值。
+ */
 :root {
-  --pd-yellow: #f5c518;
+  /* 品牌色 —— 与 public/icon.svg 同源 */
+  --brand-50:  #fffbea;
+  --brand-100: #fff9db;   /* icon 渐变起点 */
+  --brand-200: #ffec99;
+  --brand-300: #ffd43b;
+  --brand-500: #f59f00;   /* icon 主色 */
+  --brand-600: #d68b00;
+  --brand-700: #a56501;
+  --ink-600:   #495057;   /* icon 描边 */
+  --ink-500:   #6c757d;
+  --ink-800:   #212529;
+  --ink-900:   #1a1d20;
+
+  /* 语义色（黄仅品牌，不作警告） */
+  --success:      #2f9e44;
+  --success-soft: #ebfbee;
+  --danger:       #e03131;
+  --danger-soft:  #fff5f5;
+  --info:         #1971c2;
+  --info-soft:    #e7f5ff;
+
+  /* 兼容旧变量（历史遗留） */
+  --pd-yellow: var(--brand-500);
 }
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', -apple-system,
+               BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
+
+/**
+ * 品牌 CTA 按钮统一样式（Button primary variant 复用）
+ *
+ * 渐变 + 描边 + inset 高光，视觉上呼应 icon 的立体感。
+ * Tailwind 里也能用 `bg-brand-500`，但这层是给 SelectionBubble 之类
+ * Shadow DOM 场景的 fallback。
+ */
+.pd-btn-primary {
+  background: linear-gradient(180deg, var(--brand-500) 0%, var(--brand-600) 100%);
+  color: var(--ink-800);
+  border: 1px solid var(--brand-600);
+  box-shadow: 0 1px 2px rgba(245, 159, 0, 0.4),
+              inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  font-weight: 600;
+  transition: all 0.15s;
+}
+.pd-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, var(--brand-600) 0%, var(--brand-700) 100%);
+  box-shadow: 0 2px 6px rgba(245, 159, 0, 0.5);
+}
+.pd-btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* 引擎状态点：小圆点 + soft halo */
+.pd-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.pd-dot-ok   { background: var(--success); box-shadow: 0 0 0 3px var(--success-soft); }
+.pd-dot-err  { background: var(--danger);  box-shadow: 0 0 0 3px var(--danger-soft); }
+.pd-dot-off  { background: #ced4da; }
