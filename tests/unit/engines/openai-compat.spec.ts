@@ -133,6 +133,26 @@ describe('createOpenAiCompatEngine', () => {
       expect(url).toBe('https://api.deepseek.com/v1/chat/completions');
     });
 
+    it('baseUrl 已带 /v1 时不重复拼接（Gemini review：避免 /v1/v1/chat/completions 404）', async () => {
+      const fetchMock = vi.fn(async () => ({
+        ok: true,
+        json: async () => ({ choices: [{ message: { content: 'ok' } }] }),
+      })) as unknown as typeof fetch;
+      vi.stubGlobal('fetch', fetchMock);
+
+      // 场景 A: 用户填 https://api.openai.com/v1
+      mocks.config.value.baseUrl = 'https://api.openai.com/v1';
+      await createOpenAiCompatEngine().run({ mode: 'translate', text: 'a', sourceLang: 'en', targetLang: 'zh' });
+      const urlA = (fetchMock as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls[0][0];
+      expect(urlA).toBe('https://api.openai.com/v1/chat/completions');
+
+      // 场景 B: 用户填 https://api.openai.com/v1/（带尾斜杠）
+      mocks.config.value.baseUrl = 'https://api.openai.com/v1/';
+      await createOpenAiCompatEngine().run({ mode: 'translate', text: 'b', sourceLang: 'en', targetLang: 'zh' });
+      const urlB = (fetchMock as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls[1][0];
+      expect(urlB).toBe('https://api.openai.com/v1/chat/completions');
+    });
+
     it('HTTP 非 2xx 抛错，body 里带响应文本便于排查', async () => {
       const fetchMock = vi.fn(async () => ({
         ok: false,
@@ -267,6 +287,69 @@ describe('createOpenAiCompatEngine', () => {
         out.push(c);
       }
       expect(out.join('')).toBe('合并');
+    });
+
+    it('SSE 支持 CRLF 换行（Gemini review：Nginx/Cloudflare 网关必需）', async () => {
+      // 主流 API 网关会用 \r\n\r\n 作为事件边界，只识别 \n\n 会挂起
+      const encoder = new TextEncoder();
+      const sseChunks = [
+        'data: {"choices":[{"delta":{"content":"你"}}]}\r\n\r\n',
+        'data: {"choices":[{"delta":{"content":"好"}}]}\r\n\r\n',
+        'data: [DONE]\r\n\r\n',
+      ];
+      const stream = new ReadableStream({
+        start(controller) {
+          for (const c of sseChunks) controller.enqueue(encoder.encode(c));
+          controller.close();
+        },
+      });
+
+      const fetchMock = vi.fn(async () => ({ ok: true, body: stream })) as unknown as typeof fetch;
+      vi.stubGlobal('fetch', fetchMock);
+
+      const engine = createOpenAiCompatEngine();
+      const out: string[] = [];
+      for await (const c of engine.runStreaming!({
+        mode: 'translate',
+        text: 'hi',
+        sourceLang: 'en',
+        targetLang: 'zh',
+      })) {
+        out.push(c);
+      }
+      expect(out.join('')).toBe('你好');
+    });
+
+    it('调用方 break 时 reader.cancel 被调用（Gemini review：避免连接泄漏）', async () => {
+      const encoder = new TextEncoder();
+      const cancelSpy = vi.fn(async () => {});
+      // 造一个永不结束的 stream + 可观察的 cancel
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(encoder.encode('data: {"choices":[{"delta":{"content":"a"}}]}\n\n'));
+          controller.enqueue(encoder.encode('data: {"choices":[{"delta":{"content":"b"}}]}\n\n'));
+          // 故意不 close：模拟长连接
+        },
+        cancel: cancelSpy,
+      });
+
+      const fetchMock = vi.fn(async () => ({ ok: true, body: stream })) as unknown as typeof fetch;
+      vi.stubGlobal('fetch', fetchMock);
+
+      const engine = createOpenAiCompatEngine();
+      const out: string[] = [];
+      for await (const c of engine.runStreaming!({
+        mode: 'translate',
+        text: 'hi',
+        sourceLang: 'en',
+        targetLang: 'zh',
+      })) {
+        out.push(c);
+        if (out.length >= 1) break; // 拿到第一个就取消
+      }
+      // for-await-of break 会触发 iterator 的 return()，进而走 generator 的 finally
+      // 底层 reader.cancel() 被调用
+      expect(cancelSpy).toHaveBeenCalled();
     });
   });
 

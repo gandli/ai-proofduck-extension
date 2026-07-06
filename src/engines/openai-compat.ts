@@ -47,9 +47,23 @@ function buildMessages(input: EngineRunInput) {
   ];
 }
 
-/** 拼 URL：处理 trailing slash，避免 `//v1/chat/completions` */
+/**
+ * 拼 URL：处理 trailing slash + 兼容用户已填 `/v1` 后缀。
+ *
+ * 场景：用户在 Options 页可能填以下任意一种：
+ *   - https://api.openai.com          → + /v1/chat/completions
+ *   - https://api.openai.com/         → + /v1/chat/completions
+ *   - https://api.openai.com/v1       → + /chat/completions（去掉重复的 /v1）
+ *   - https://api.openai.com/v1/      → + /chat/completions
+ *
+ * 而不是拼成 https://api.openai.com/v1/v1/chat/completions（Gemini review 提出的 404 陷阱）。
+ */
 function joinUrl(baseUrl: string, path: string): string {
-  return baseUrl.replace(/\/+$/, '') + path;
+  const clean = baseUrl.replace(/\/+$/, '');
+  if (clean.endsWith('/v1') && path.startsWith('/v1/')) {
+    return clean + path.slice(3); // 去掉 path 里重复的 '/v1'
+  }
+  return clean + path;
 }
 
 export function createOpenAiCompatEngine(): Engine {
@@ -129,38 +143,61 @@ export function createOpenAiCompatEngine(): Engine {
       let buffer = '';
 
       // SSE 格式：一条事件由若干 `field: value` 行组成，事件之间空行分隔。
-      // 网络层会随意切分字节 → 必须 buffer + 找 \n\n 分隔符。
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
+      // 网络层会随意切分字节 → 必须 buffer + 找事件边界。
+      //
+      // 分隔符必须同时支持 `\n\n` 和 `\r\n\r\n`（Gemini review 提出）：
+      // 主流 API 网关（Nginx / Cloudflare / 阿里云）返回 CRLF，
+      // 只识别 LF 会导致流永远拿不到完整事件、翻译挂起。
+      //
+      // 用 try/finally 保证 reader.cancel() 释放底层连接：
+      // 用户中途取消翻译或抛错时避免 socket 泄漏（Gemini review）。
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
 
-        // 事件边界：`\n\n`
-        let idx: number;
-        while ((idx = buffer.indexOf('\n\n')) !== -1) {
-          const rawEvent = buffer.slice(0, idx);
-          buffer = buffer.slice(idx + 2);
+          while (true) {
+            const lfIdx = buffer.indexOf('\n\n');
+            const crlfIdx = buffer.indexOf('\r\n\r\n');
+            let idx = -1;
+            let boundaryLen = 0;
+            if (crlfIdx !== -1 && (lfIdx === -1 || crlfIdx < lfIdx)) {
+              idx = crlfIdx;
+              boundaryLen = 4;
+            } else if (lfIdx !== -1) {
+              idx = lfIdx;
+              boundaryLen = 2;
+            }
+            if (idx === -1) break;
 
-          // 每个事件里找 `data: ...` 行（可多行拼接，标准 SSE 允许）
-          const dataLines = rawEvent
-            .split('\n')
-            .filter((l) => l.startsWith('data:'))
-            .map((l) => l.slice(5).trimStart());
-          if (dataLines.length === 0) continue;
+            const rawEvent = buffer.slice(0, idx);
+            buffer = buffer.slice(idx + boundaryLen);
 
-          const payload = dataLines.join('\n');
-          if (payload === '[DONE]') return;
+            // 用 /\r?\n/ 分行自动兼容并去除 \r（否则 `[DONE]\r` 匹不上）
+            const dataLines = rawEvent
+              .split(/\r?\n/)
+              .filter((l) => l.startsWith('data:'))
+              .map((l) => l.slice(5).trimStart());
+            if (dataLines.length === 0) continue;
 
-          try {
-            const parsed = JSON.parse(payload) as {
-              choices?: Array<{ delta?: { content?: string } }>;
-            };
-            const delta = parsed.choices?.[0]?.delta?.content;
-            if (delta) yield delta;
-          } catch {
-            // 解析失败就跳过这个事件，不让脏数据崩掉整个流
+            const payload = dataLines.join('\n');
+            if (payload === '[DONE]') return;
+
+            try {
+              const parsed = JSON.parse(payload) as {
+                choices?: Array<{ delta?: { content?: string } }>;
+              };
+              const delta = parsed.choices?.[0]?.delta?.content;
+              if (delta) yield delta;
+            } catch {
+              // 解析失败就跳过这个事件，不让脏数据崩掉整个流
+            }
           }
         }
+      } finally {
+        // 无论正常结束、异常抛出还是调用方 break，都释放底层连接
+        await reader.cancel().catch(() => {});
       }
     },
   };
