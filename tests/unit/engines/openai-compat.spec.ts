@@ -232,6 +232,47 @@ describe('createOpenAiCompatEngine', () => {
       ).rejects.toThrow(/未配置|not configured/i);
     });
 
+    // ─── Round 4 (#465): host 权限缺失 → PermissionRequiredError ───
+    it('三项齐但 host 权限未授 → 抛 PermissionRequiredError（不发 fetch）', async () => {
+      mocks.config.value = {
+        baseUrl: 'https://api.deepseek.com',
+        apiKey: 'sk-xxx',
+        model: 'deepseek-chat',
+      };
+      mocks.mockHasHostPermission.mockResolvedValueOnce(false);
+      const fetchMock = vi.fn();
+      vi.stubGlobal('fetch', fetchMock);
+
+      await expect(
+        createOpenAiCompatEngine().run({ mode: 'translate', text: 'hi', sourceLang: 'en', targetLang: 'zh' }),
+      ).rejects.toMatchObject({
+        name: 'PermissionRequiredError',
+        origin: 'https://api.deepseek.com',
+        pattern: 'https://api.deepseek.com/*',
+      });
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('host 权限已授 → 正常发 fetch，不抛权限错误', async () => {
+      mocks.config.value = {
+        baseUrl: 'https://api.deepseek.com',
+        apiKey: 'sk-xxx',
+        model: 'deepseek-chat',
+      };
+      mocks.mockHasHostPermission.mockResolvedValue(true);
+      const fetchMock = vi.fn(async () => ({
+        ok: true,
+        json: async () => ({ choices: [{ message: { content: '你好' } }] }),
+      })) as unknown as typeof fetch;
+      vi.stubGlobal('fetch', fetchMock);
+
+      const result = await createOpenAiCompatEngine().run({
+        mode: 'translate', text: 'hi', sourceLang: 'en', targetLang: 'zh',
+      });
+      expect(result).toBe('你好');
+      expect(fetchMock).toHaveBeenCalledOnce();
+    });
+
     it.each([
       ['summarize', /摘要/],
       ['correct', /校对/],

@@ -23,6 +23,7 @@ import type { Engine, EngineMode, EngineRunInput } from './types';
 import { openaiCompatConfig } from '@core/openai-compat-config';
 import { hasHostPermission } from '@core/host-permissions';
 import { extractOriginPattern } from '@core/origin-pattern';
+import { PermissionRequiredError } from '@utils/permission-error';
 
 function systemPromptFor(input: EngineRunInput): string {
   switch (input.mode) {
@@ -73,6 +74,12 @@ export function createOpenAiCompatEngine(): Engine {
     const cfg = await openaiCompatConfig.get();
     if (!cfg.baseUrl || !cfg.apiKey || !cfg.model) {
       throw new Error('openai-compat 未配置：请在设置页填写 baseUrl / apiKey / model');
+    }
+    // Round 4 (#465): 权限守卫 —— 未授 host 则抛结构化错误，UI 展示【授权 CTA】
+    const pattern = extractOriginPattern(cfg.baseUrl);
+    const origin = new URL(cfg.baseUrl).origin;
+    if (!(await hasHostPermission(pattern))) {
+      throw new PermissionRequiredError({ origin, pattern });
     }
     return cfg;
   }
