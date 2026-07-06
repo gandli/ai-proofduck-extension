@@ -17,6 +17,7 @@
  * 缓存策略：
  *   translator 实例按 "source-target" 组合 key 缓存，避免同一对语言反复 create。
  */
+import { formatErrorMessage } from '../utils/error';
 import type { Engine, EngineMode, EngineRunInput } from './types';
 
 // Chrome 内置 Translator API 的最小类型定义（避免全依赖 @types/dom-chromium-ai）

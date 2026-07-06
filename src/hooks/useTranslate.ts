@@ -17,6 +17,7 @@
  */
 import { useCallback, useRef, useState } from 'react';
 import type { Engine } from '@engines/types';
+import { formatErrorMessage } from '../utils/error';
 
 export type TranslateStatus = 'idle' | 'loading' | 'done' | 'error';
 
@@ -76,7 +77,7 @@ export function useTranslate({ engine }: UseTranslateOptions): UseTranslateResul
       } catch (err) {
         // 已经作废的请求出错也别覆盖新状态
         if (requestId !== activeRequestIdRef.current) return;
-        setError(err instanceof Error ? err.message : String(err));
+        setError(formatErrorMessage(err, ''));
         setStatus('error');
       }
     },
