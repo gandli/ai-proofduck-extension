@@ -62,6 +62,11 @@ export function createChromeAiEngine(): ChromeAiEngine {
     if (!p) {
       p = T.create({ sourceLanguage: source, targetLanguage: target });
       cache.set(key, p);
+      // 失败的 Promise 从缓存移除，避免"一次失败永远失败"（Gemini review 建议）
+      // 场景：语言包下载失败、网络异常、availability 从 downloadable 变 unavailable
+      p.catch(() => {
+        cache.delete(key);
+      });
     }
     return p;
   }

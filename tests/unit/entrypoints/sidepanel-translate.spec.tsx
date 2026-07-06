@@ -80,4 +80,17 @@ describe('SidePanel M2 翻译交互', () => {
     const btn = screen.getByRole('button', { name: /翻译/ }) as HTMLButtonElement;
     expect(btn.disabled).toBe(true);
   });
+
+  it('源语言 === 目标语言 时按钮 disabled + 结果区提示', async () => {
+    render(<SidePanelApp engine={mockEngine()} />);
+    const input = screen.getByPlaceholderText(/粘贴|输入/) as HTMLTextAreaElement;
+    fireEvent.change(input, { target: { value: 'hi' } });
+
+    // 把源语言从"自动"改成"中文"（默认目标也是中文 → 相同）
+    fireEvent.change(screen.getByLabelText(/源语言/), { target: { value: 'zh' } });
+
+    const btn = screen.getByRole('button', { name: /翻译/ }) as HTMLButtonElement;
+    expect(btn.disabled).toBe(true);
+    expect(screen.getByText(/源语言和目标语言不能相同/)).toBeDefined();
+  });
 });

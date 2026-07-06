@@ -34,6 +34,20 @@ const TARGET_LANGS: Array<{ code: string; label: string }> = [
   { code: 'de', label: 'Deutsch' },
 ];
 
+/**
+ * 引擎缺失时的 no-op stub。
+ * 提到组件外声明，避免每次渲染重建导致 useTranslate 内的 useCallback 依赖变化。
+ * (Gemini review 建议)
+ */
+const STUB_ENGINE: Engine = {
+  id: 'chrome-ai',
+  name: 'unavailable',
+  priority: 0,
+  isAvailable: async () => false,
+  supports: () => false,
+  run: async () => '',
+};
+
 export default function SidePanelApp({ engine }: Props = {}) {
   // 惰性拿单例，避免测试环境访问 chrome API 出错
   const resolvedEngine = engine ?? getEngines().pickById('chrome-ai');
@@ -42,17 +56,8 @@ export default function SidePanelApp({ engine }: Props = {}) {
   const [source, setSource] = useState('auto'); // 'auto' 由引擎推断
   const [available, setAvailable] = useState<boolean | null>(null);
 
-  // 只要有引擎就跑 useTranslate。为 hook 稳定，引擎缺失时用 no-op stub
-  const stubEngine: Engine = {
-    id: 'chrome-ai',
-    name: 'unavailable',
-    priority: 0,
-    isAvailable: async () => false,
-    supports: () => false,
-    run: async () => '',
-  };
   const { output, status, error, translate, reset } = useTranslate({
-    engine: resolvedEngine ?? stubEngine,
+    engine: resolvedEngine ?? STUB_ENGINE,
   });
 
   // 检测引擎可用性（挂载时一次）
@@ -64,7 +69,10 @@ export default function SidePanelApp({ engine }: Props = {}) {
     resolvedEngine.isAvailable().then(setAvailable).catch(() => setAvailable(false));
   }, [resolvedEngine]);
 
-  const canTranslate = text.trim().length > 0 && status !== 'loading' && available !== false;
+  // 同语言校验：手动选定的源和目标一样时无意义（'auto' 例外，由引擎自行推断）
+  const isSameLanguage = source !== 'auto' && source === target;
+  const canTranslate =
+    text.trim().length > 0 && status !== 'loading' && available !== false && !isSameLanguage;
 
   const handleTranslate = () => {
     // 'auto' → 让引擎自己推断；chrome-ai 目前需要显式 source，暂用启发式：中→英，其他→中
@@ -154,7 +162,9 @@ export default function SidePanelApp({ engine }: Props = {}) {
         aria-label="翻译结果"
         aria-live="polite"
       >
-        {status === 'error' && error ? (
+        {isSameLanguage ? (
+          <span className="text-amber-600">源语言和目标语言不能相同</span>
+        ) : status === 'error' && error ? (
           <span className="text-rose-600">✗ {error}</span>
         ) : output ? (
           output
