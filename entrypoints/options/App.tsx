@@ -45,7 +45,23 @@ export default function OptionsApp() {
   const [freeEnabled, setFreeEnabled] = useState<boolean>(true);
 
   useEffect(() => {
+    // 初次读取
     freeTranslateEnabledStore.get().then(setFreeEnabled).catch(() => setFreeEnabled(false));
+
+    // 监听下方 FreeTranslateSection 切换开关，
+    // 保持顶部健康度卡实时同步（Gemini review: 高优先级 bug）
+    const handleStorageChange = (
+      changes: Record<string, chrome.storage.StorageChange>,
+      areaName: string,
+    ) => {
+      if (areaName === 'sync' && changes['freeTranslate.enabled'] !== undefined) {
+        setFreeEnabled(Boolean(changes['freeTranslate.enabled'].newValue));
+      }
+    };
+    chrome.storage?.onChanged?.addListener(handleStorageChange);
+    return () => {
+      chrome.storage?.onChanged?.removeListener(handleStorageChange);
+    };
   }, []);
 
   useEffect(() => {

@@ -149,8 +149,10 @@ export default function SidePanelApp({ engine }: Props = {}) {
           </h1>
         </div>
 
-        {/* 引擎徽章 + 就绪概览：让用户知道谁在干活 */}
-        {resolvedEngine && available !== false && (
+        {/* 引擎徽章 + 就绪概览：让用户知道谁在干活。
+            Gemini review: 用 available === true 而非 !== false，
+            避免检测未完成时闪现"就绪"再突然报错 */}
+        {resolvedEngine && available === true && (
           <div className="mt-2.5 flex items-center gap-2 text-xs">
             <span
               data-testid="engine-chip"
