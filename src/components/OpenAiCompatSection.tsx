@@ -104,7 +104,10 @@ export function OpenAiCompatSection() {
       setRawPermState(granted ? { status: 'granted' } : { status: 'missing' });
     };
     void refresh();
-    const unsub = onPermissionsChanged(refresh);
+    // onPermissionsChanged 期望 void 回调，refresh 返回 Promise —— 包一层避免悬空
+    const unsub = onPermissionsChanged(() => {
+      void refresh();
+    });
     return () => {
       cancelled = true;
       unsub();

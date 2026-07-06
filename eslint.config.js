@@ -6,15 +6,16 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 /**
  * ESLint flat config
  *
- * 目标：本地和 Codacy 侧都能读到 TS 类型信息，
- * 避免 `chrome.*` / `useSettingsStore` / `defineStorage` 被判 error typed。
+ * 目标：本地和 Codacy 侧都能读到 TS 类型信息 + 保持类型安全。
  *
  * 关键点：
  * 1. tseslint.configs.recommendedTypeChecked —— 启用类型感知规则
  * 2. languageOptions.parserOptions.projectService = true —— tseslint v8+
- *    自动发现 tsconfig，无需硬编码路径（wxt 会生成 .wxt/tsconfig.json）
- * 3. 排除 dist/.wxt/.output/coverage/sketches
- * 4. 测试文件放宽（fixtures/mocks 允许 any）
+ *    自动发现 tsconfig（wxt 生成 .wxt/tsconfig.json）
+ * 3. 不再全局关掉 no-unsafe-* —— 保留类型安全（采纳 CodeRabbit review）
+ * 4. no-misused-promises 只放宽 attributes（React onClick={async}），
+ *    保留 arguments/returns 检查（采纳 CodeRabbit review）
+ * 5. 测试文件放宽（fixtures/mocks 允许 any）
  */
 export default tseslint.config(
   {
@@ -39,9 +40,7 @@ export default tseslint.config(
         tsconfigRootDir: import.meta.dirname,
       },
       globals: {
-        // Chrome 扩展 API 全局
-        chrome: 'readonly',
-        // DOM/BOM
+        // DOM/BOM（@types/chrome + tsconfig.dom lib 提供 chrome/window 类型）
         window: 'readonly',
         document: 'readonly',
         navigator: 'readonly',
@@ -56,6 +55,8 @@ export default tseslint.config(
         URLSearchParams: 'readonly',
         // Node
         process: 'readonly',
+        // Web extension global（wxt 注入）
+        chrome: 'readonly',
       },
     },
     plugins: {
@@ -66,21 +67,39 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': 'warn',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-      // Codacy 也跑这条规则时的宽松处理：
-      // 我们代码里的 chrome.* 都有运行时守卫（?. 链），
-      // 类型层面 @types/chrome 已提供准确类型，无需再警告
+      // 采纳 CodeRabbit：细粒度关闭 checksVoidReturn.attributes（React onClick={async}）
+      // 但保留 arguments/returns 检查，避免悬空 Promise
+      '@typescript-eslint/no-misused-promises': [
+        'error',
+        {
+          checksConditionals: true,
+          checksVoidReturn: {
+            attributes: false, // 允许 <button onClick={async () => ...}>
+            arguments: true,
+            returns: true,
+            variables: true,
+            properties: true,
+          },
+        },
+      ],
+      '@typescript-eslint/no-explicit-any': 'warn',
+    },
+  },
+  {
+    // src/ 里 chrome API 调用密集处：允许 no-unsafe-*（类型 shim 有时不完全）
+    // 采纳 CodeRabbit：只对 entrypoints/ 和 chrome API 交互处放宽
+    files: [
+      'entrypoints/**/*.{ts,tsx}',
+      'src/utils/permissions.ts',
+      'src/core/message-bus.ts',
+      'src/stores/**/*.{ts,tsx}',
+    ],
+    rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
-      // Playwright / Testing Library / chrome.storage 回调常有
-      '@typescript-eslint/no-misused-promises': [
-        'error',
-        { checksVoidReturn: false },
-      ],
-      // 允许 as unknown as X 的类型收窄（我们对 globalThis 做转换）
-      '@typescript-eslint/no-explicit-any': 'warn',
     },
   },
   {
@@ -99,6 +118,11 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/prefer-promise-reject-errors': 'off',
       '@typescript-eslint/no-base-to-string': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
       'react-hooks/rules-of-order': 'off',
       'react-hooks/set-state-in-effect': 'off',
       'require-yield': 'off',
@@ -115,7 +139,8 @@ export default tseslint.config(
       },
     },
     rules: {
-      '@typescript-eslint/no-var-requires': 'off',
+      // no-var-requires 已弃用，用 no-require-imports（CodeRabbit review）
+      '@typescript-eslint/no-require-imports': 'off',
     },
   },
 );
