@@ -49,12 +49,15 @@ export function SelectionBubble(props: SelectionBubbleProps) {
     return () => document.removeEventListener('keydown', onKey);
   }, [onDismiss]);
 
-  // 点浮标外关闭
+  // 点浮标外关闭（Gemini review #1：Shadow DOM 里 e.target 会被 retargeting
+  // 到 host 节点，contains 就假 false 直接 dismiss；用 composedPath 拿真路径）
   useEffect(() => {
     const onMouseDown = (e: MouseEvent) => {
       const el = rootRef.current;
       if (!el) return;
-      if (!el.contains(e.target as Node)) {
+      const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
+      const isInside = path.includes(el) || el.contains(e.target as Node);
+      if (!isInside) {
         onDismiss();
       }
     };

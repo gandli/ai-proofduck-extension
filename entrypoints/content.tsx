@@ -17,6 +17,11 @@ export default defineContentScript({
   // 用 isolated world 避免和宿主页 JS 冲突（wxt 默认）
   runAt: 'document_idle',
   main() {
+    // Gemini review #6：防止 CS 被 SPA 或 hot reload 多次注入产生重复 host
+    if (document.getElementById('proofduck-selection-bubble-root')) {
+      return;
+    }
+
     // Shadow DOM 隔离样式；host 挂到 body 尾部
     const host = document.createElement('div');
     host.id = 'proofduck-selection-bubble-root';

@@ -41,7 +41,9 @@ export interface UseSelectionResult {
  */
 function readSelection(minLength: number): UseSelectionResult {
   const sel = window.getSelection();
-  const text = sel?.toString() ?? '';
+  const raw = sel?.toString() ?? '';
+  // Gemini review #5：过滤纯空白选区（拖蓝末尾空格 / 换行 / tab）
+  const text = raw.trim();
 
   if (text.length < minLength || !sel || sel.rangeCount === 0) {
     return { selectedText: '', rect: null };
@@ -73,6 +75,7 @@ export function useSelection(options: UseSelectionOptions = {}): UseSelectionRes
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let rafId: number | null = null;
     let mounted = true;
 
     const apply = () => {
@@ -82,8 +85,12 @@ export function useSelection(options: UseSelectionOptions = {}): UseSelectionRes
     };
 
     const onChange = () => {
+      // Gemini review #4：拖蓝时 selectionchange 高频触发，
+      // getBoundingClientRect 每次都会同步 reflow → layout thrashing。
+      // debounceMs<=0 时用 rAF 把 DOM 读推到下一帧渲染前。
       if (debounceMs <= 0) {
-        apply();
+        if (rafId !== null) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(apply);
         return;
       }
       if (timer !== null) clearTimeout(timer);
@@ -94,6 +101,7 @@ export function useSelection(options: UseSelectionOptions = {}): UseSelectionRes
     return () => {
       mounted = false;
       if (timer !== null) clearTimeout(timer);
+      if (rafId !== null) cancelAnimationFrame(rafId);
       document.removeEventListener('selectionchange', onChange);
     };
   }, [minLength, debounceMs]);

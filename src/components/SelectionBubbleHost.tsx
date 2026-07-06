@@ -8,7 +8,7 @@
  *
  * 单独抽出让 content script 主文件保持精简，也方便单测。
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSelection } from '@hooks/useSelection';
 import { getEngines } from '@core/engines';
 import type { Engine } from '@engines/types';
@@ -28,6 +28,13 @@ export function SelectionBubbleHost(props: SelectionBubbleHostProps) {
 
   // 追踪选区
   const { selectedText, rect } = useSelection({ minLength, debounceMs: 100 });
+
+  // Gemini review #2：用 ref 追最新选中，防异步翻译回来时用户已经换选区
+  // 导致旧文本的译文覆盖新状态
+  const selectedTextRef = useRef(selectedText);
+  useEffect(() => {
+    selectedTextRef.current = selectedText;
+  }, [selectedText]);
 
   // 独立"活动会话"：用户新选一段就重置状态
   const [status, setStatus] = useState<BubbleStatus>('idle');
@@ -58,6 +65,8 @@ export function SelectionBubbleHost(props: SelectionBubbleHostProps) {
     try {
       // 生产走 pickBest；测试用注入
       const resolved = engine ?? (await getEngines().pickBest());
+      // Gemini review #2：pickBest 可能是异步的，等它回来时用户可能已经换了选区
+      if (selectedTextRef.current !== text) return;
       if (!resolved) {
         setStatus('error');
         setError('没有可用的翻译引擎，请到扩展设置里配置');
@@ -70,11 +79,15 @@ export function SelectionBubbleHost(props: SelectionBubbleHostProps) {
         sourceLang: undefined,
         targetLang,
       });
+      // 翻译回来后再校验一次，避免慢链路引擎（云端 API）覆盖新状态
+      if (selectedTextRef.current !== text) return;
       // Engine.run 直接返回 string
       const finalText = typeof result === 'string' ? result : String(result ?? '');
       setOutput(finalText);
       setStatus('success');
     } catch (e) {
+      // 出错时也要校验，避免旧请求的错误覆盖新状态
+      if (selectedTextRef.current !== text) return;
       setStatus('error');
       const msg = e instanceof Error ? e.message : String(e);
       setError(msg);

@@ -158,4 +158,32 @@ describe('SelectionBubble', () => {
     fireEvent.mouseDown(screen.getByText('你好'));
     expect(onDismiss).not.toHaveBeenCalled();
   });
+
+  // ========================
+  // Gemini review #1: Shadow DOM 里 e.target 会被 retargeting 到 host 节点，
+  // 用 composedPath 判断"点击是否在浮标内"才准确
+  // ========================
+  it('composedPath 包含浮标根节点时 → 判定为内部点击，不 dismiss（Shadow DOM 场景）', () => {
+    const onDismiss = vi.fn();
+    render(
+      <SelectionBubble
+        selectedText="hello"
+        rect={rect}
+        status="success"
+        output="你好"
+        onTrigger={vi.fn()}
+        onDismiss={onDismiss}
+      />
+    );
+    const bubble = document.querySelector('[data-proofduck-bubble]') as HTMLElement;
+    // 模拟 Shadow DOM 场景：event.target 被 retarget 到宿主页 body（外部），
+    // 但 composedPath 里包含浮标根节点 → 应该判定为内部
+    const evt = new MouseEvent('mousedown', { bubbles: true });
+    Object.defineProperty(evt, 'target', { value: document.body });
+    Object.defineProperty(evt, 'composedPath', {
+      value: () => [bubble, document.body, document],
+    });
+    document.dispatchEvent(evt);
+    expect(onDismiss).not.toHaveBeenCalled();
+  });
 });
