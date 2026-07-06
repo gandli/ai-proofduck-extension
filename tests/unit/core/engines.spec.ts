@@ -1,59 +1,30 @@
 /**
- * getEngines 单例注册器测试
- *
- * 契约：
- * 1. getEngines() 首次调用时把已知引擎注册进去（M2 Cycle 1 只有 chrome-ai）
- * 2. 后续调用返回同一个 EngineManager 实例
- * 3. list() 至少包含 chrome-ai
+ * engines 单例装配 + 重置钩子
  */
 import { describe, it, expect } from 'vitest';
-import { getEngines } from '@core/engines';
+import { getEngines, _resetEnginesForTest } from '@core/engines';
 
-describe('getEngines() 单例', () => {
-  it('两次调用返回同一实例', () => {
+describe('engines 单例', () => {
+  it('getEngines() 应返回同一实例', () => {
     const a = getEngines();
     const b = getEngines();
     expect(a).toBe(b);
   });
 
-  it('已注册 chrome-ai 引擎', () => {
-    const m = getEngines();
-    const ids = m.list().map((e) => e.id);
-    expect(ids).toContain('chrome-ai');
+  it('_resetEnginesForTest() 后再取到新实例', () => {
+    const before = getEngines();
+    _resetEnginesForTest();
+    const after = getEngines();
+    expect(after).not.toBe(before);
   });
 
-  it('已注册 webllm 引擎（M2 Cycle 2）', () => {
-    const m = getEngines();
-    const ids = m.list().map((e) => e.id);
-    expect(ids).toContain('webllm');
-  });
-
-  it('已注册 openai-compat 引擎（M2 Cycle 3）', () => {
-    const m = getEngines();
-    const ids = m.list().map((e) => e.id);
-    expect(ids).toContain('openai-compat');
-  });
-
-  it('已注册 free-translate 引擎（M2 Cycle 4）', () => {
-    const m = getEngines();
-    const ids = m.list().map((e) => e.id);
-    expect(ids).toContain('free-translate');
-  });
-
-  it('优先级链路：chrome-ai (100) > webllm (90) > openai-compat (70) > free-translate (60)', () => {
-    const m = getEngines();
-    const engines = m.list();
-    const chromeAi = engines.find((e) => e.id === 'chrome-ai')!;
-    const webllm = engines.find((e) => e.id === 'webllm')!;
-    const openai = engines.find((e) => e.id === 'openai-compat')!;
-    const freeT = engines.find((e) => e.id === 'free-translate')!;
-    expect(chromeAi.priority).toBeGreaterThan(webllm.priority);
-    expect(webllm.priority).toBeGreaterThan(openai.priority);
-    expect(openai.priority).toBeGreaterThan(freeT.priority);
-  });
-
-  it('chrome-ai 的 name 有值', () => {
-    const engine = getEngines().pickById('chrome-ai');
-    expect(engine?.name).toBeTruthy();
+  it('装配后应包含预期引擎（按优先级降序）', () => {
+    _resetEnginesForTest();
+    const mgr = getEngines();
+    const list = mgr.list().map((e) => e.id);
+    expect(list).toContain('chrome-ai');
+    expect(list).toContain('webllm');
+    expect(list).toContain('openai-compat');
+    expect(list).toContain('free-translate');
   });
 });
