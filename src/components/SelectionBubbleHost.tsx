@@ -8,7 +8,7 @@
  *
  * 单独抽出让 content script 主文件保持精简，也方便单测。
  */
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useSelection } from '@hooks/useSelection';
 import { getEngines } from '@core/engines';
 import type { Engine } from '@engines/types';
@@ -42,25 +42,22 @@ export function SelectionBubbleHost(props: SelectionBubbleHostProps) {
   const [engineName, setEngineName] = useState('');
   // dismiss 后不再显示，直到新选区
   const [dismissed, setDismissed] = useState(false);
-  // 记录当前"活跃选中文本"——切换时重置状态
-  const [activeText, setActiveText] = useState('');
 
-  // 选中文本变化：重置状态 + 让在飞的翻译请求全部作废（requestId +1）
-  useEffect(() => {
-    if (selectedText !== activeText) {
-      // 一批相关 setState 同步触发；React 会合并为一次 render，
-      // 不会形成级联，disable set-state-in-effect 规则
-      /* eslint-disable react-hooks/set-state-in-effect */
-      setActiveText(selectedText);
-      setStatus('idle');
-      setOutput('');
-      setError('');
-      setEngineName('');
-      setDismissed(false);
-      /* eslint-enable react-hooks/set-state-in-effect */
-      requestIdRef.current += 1; // 使所有 pending 请求失效
-    }
-  }, [selectedText, activeText]);
+  // 追踪 selectedText 的上一次值 —— 用渲染阶段状态重置替代 useEffect（Gemini review）
+  // React 官方模式：https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  // 好处：省一次渲染 + 消除 set-state-in-effect 警告 + 消除视觉闪烁
+  const [prevSelectedText, setPrevSelectedText] = useState(selectedText);
+  if (selectedText !== prevSelectedText) {
+    setPrevSelectedText(selectedText);
+    setStatus('idle');
+    setOutput('');
+    setError('');
+    setEngineName('');
+    setDismissed(false);
+    // 使所有 pending 请求失效（在渲染阶段自增 ref 是有意的：让马上要 read 的 handler 一定拿到最新值）
+    // eslint-disable-next-line react-hooks/refs -- 与状态重置同步的 ref bump 是模式的一部分
+    requestIdRef.current += 1;
+  }
 
   async function handleTrigger(_text: string) {
     // 领当前请求令牌；只有这个令牌全程未变，本次结果才允许写状态
