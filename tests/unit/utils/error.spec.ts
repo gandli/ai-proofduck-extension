@@ -24,6 +24,21 @@ describe('formatErrorMessage', () => {
     expect(formatErrorMessage({}, 'fallback')).toBe('fallback');
   });
 
+  it('含 message 属性的裸对象（chrome.runtime.lastError / 反序列化后的 Error）→ 返回 message', () => {
+    // Gemini review 高严重度：Chrome 扩展跨进程传递会丢失 Error 原型
+    expect(formatErrorMessage({ message: 'Extension context invalidated' })).toBe('Extension context invalidated');
+    expect(formatErrorMessage({ message: 'No listeners' })).toBe('No listeners');
+  });
+
+  it('对象的 message 是空串 → 走后续兜底', () => {
+    // 空 message 没信息量，落到 String(err) → '[object Object]' → fallback
+    expect(formatErrorMessage({ message: '' }, 'FB')).toBe('FB');
+  });
+
+  it('对象的 message 是非字符串（number/object）→ 走后续兜底', () => {
+    expect(formatErrorMessage({ message: 42 }, 'FB')).toBe('FB');
+  });
+
   it('对象有 toString 时返回其结果', () => {
     const err = {
       toString() {
