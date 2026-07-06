@@ -1,17 +1,20 @@
 /**
- * SidePanel App (M2 Cycle 1): 双栏翻译主战场
+ * SidePanel App (M2 Cycle 4c): 双栏翻译主战场，引擎自动兜底
  *
  * 布局：
  *   ┌ 品牌 header ─────────────────┐
  *   │ 校对鸭 · 侧边栏               │
- *   ├─── (不可用时) 提示横幅 ─────┤
+ *   │ 引擎徽章：xxx                 │
+ *   ├─── (无可用引擎时) 提示横幅 ─┤
  *   ├── 目标语言 selector ─────────┤
  *   ├── 输入 textarea ─────────────┤
  *   ├── [翻译] [清空] ──────────────┤
  *   └── 输出结果（流式渲染） ───────┘
  *
- * DI：engine 从 props 传入，方便测试。
- *     生产环境由 main.tsx 从 getEngines().pickById('chrome-ai') 拿。
+ * DI：engine 从 props 传入，方便测试。生产从 EngineManager.pickBest() 兜底选。
+ *
+ * Bug #P0 修复：早期版本硬编码 pickById('chrome-ai')，Chrome 138 以下就废了整个扩展。
+ * 现在走 pickBest() 自动选出**当前可用**的最高优先级引擎。
  */
 import { useEffect, useState } from 'react';
 import { Button } from '@components/Button';
@@ -20,7 +23,7 @@ import { getEngines } from '@core/engines';
 import type { Engine } from '@engines/types';
 
 interface Props {
-  /** 依赖注入。测试用 mock；生产由 main.tsx 传 getEngines().pickById('chrome-ai') */
+  /** 依赖注入。测试用 mock；生产由 useEffect 从 pickBest() 拿 */
   engine?: Engine;
 }
 
@@ -49,18 +52,42 @@ const STUB_ENGINE: Engine = {
 };
 
 export default function SidePanelApp({ engine }: Props = {}) {
-  // 惰性拿单例，避免测试环境访问 chrome API 出错
-  const resolvedEngine = engine ?? getEngines().pickById('chrome-ai');
   const [text, setText] = useState('');
   const [target, setTarget] = useState('zh');
   const [source, setSource] = useState('auto'); // 'auto' 由引擎推断
   const [available, setAvailable] = useState<boolean | null>(null);
 
+  // 引擎的选择过程本身可能是异步的（pickBest 要 await isAvailable）
+  // 用 state 保存 resolved 结果
+  const [resolvedEngine, setResolvedEngine] = useState<Engine | null>(engine ?? null);
+
+  // 当没有传 engine（生产环境），异步选一个最好的
+  useEffect(() => {
+    if (engine) {
+      // 测试注入路径：直接用
+      setResolvedEngine(engine);
+      return;
+    }
+    // 生产路径：走 pickBest() 兜底
+    let cancelled = false;
+    getEngines()
+      .pickBest()
+      .then((e) => {
+        if (!cancelled) setResolvedEngine(e);
+      })
+      .catch(() => {
+        if (!cancelled) setResolvedEngine(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [engine]);
+
   const { output, status, error, translate, reset } = useTranslate({
     engine: resolvedEngine ?? STUB_ENGINE,
   });
 
-  // 检测引擎可用性（挂载时一次）
+  // 检测当前所选引擎可用性
   useEffect(() => {
     if (!resolvedEngine) {
       setAvailable(false);
@@ -87,14 +114,39 @@ export default function SidePanelApp({ engine }: Props = {}) {
         <h1 className="text-lg font-semibold">校对鸭 · 侧边栏</h1>
       </header>
 
+      {/* 引擎徽章：让用户知道谁在干活 */}
+      {resolvedEngine && available !== false && (
+        <div className="text-xs text-slate-500 flex items-center gap-1">
+          <span>引擎：</span>
+          <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+            {resolvedEngine.name}
+          </span>
+        </div>
+      )}
+
       {available === false && (
         <div
-          className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800"
+          className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800 space-y-1"
           role="alert"
         >
-          Chrome AI 内置翻译不可用。请升级到 Chrome 138+ 并在
-          <code className="mx-1 px-1 bg-amber-100 rounded">chrome://flags</code>
-          启用 "Translation API"。
+          <div className="font-medium">没有可用引擎</div>
+          <div>
+            请去
+            <a
+              href="options.html"
+              target="_blank"
+              rel="noreferrer"
+              className="mx-1 underline text-amber-900"
+            >
+              设置页
+            </a>
+            配置 OpenAI 兼容 API，或启用免费翻译兜底。
+          </div>
+          <div className="text-xs text-amber-700">
+            也可升级到 Chrome 138+ 并在{' '}
+            <code className="mx-0.5 px-1 bg-amber-100 rounded">chrome://flags</code>
+            启用 "Translation API" 用本地 AI。
+          </div>
         </div>
       )}
 
