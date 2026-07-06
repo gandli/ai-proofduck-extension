@@ -46,21 +46,25 @@ export default function OptionsApp() {
 
   useEffect(() => {
     // 初次读取
-    freeTranslateEnabledStore.get().then(setFreeEnabled).catch(() => setFreeEnabled(false));
+    freeTranslateEnabledStore.get().then(setFreeEnabled).catch(() => {
+      setFreeEnabled(false);
+    });
 
     // 监听下方 FreeTranslateSection 切换开关，
     // 保持顶部健康度卡实时同步（Gemini review: 高优先级 bug）
+    const c: typeof chrome | undefined = (globalThis as { chrome?: typeof chrome }).chrome;
     const handleStorageChange = (
       changes: Record<string, chrome.storage.StorageChange>,
       areaName: string,
     ) => {
-      if (areaName === 'sync' && changes['freeTranslate.enabled'] !== undefined) {
-        setFreeEnabled(Boolean(changes['freeTranslate.enabled'].newValue));
+      const change = changes['freeTranslate.enabled'];
+      if (areaName === 'sync' && change !== undefined) {
+        setFreeEnabled(Boolean(change.newValue));
       }
     };
-    chrome.storage?.onChanged?.addListener(handleStorageChange);
+    c?.storage?.onChanged?.addListener(handleStorageChange);
     return () => {
-      chrome.storage?.onChanged?.removeListener(handleStorageChange);
+      c?.storage?.onChanged?.removeListener(handleStorageChange);
     };
   }, []);
 
@@ -85,14 +89,14 @@ export default function OptionsApp() {
     };
   }, []);
 
-  const engineMeta: Array<{ id: string; name: string; hint: (h: Health) => string }> = [
+  const engineMeta: { id: string; name: string; hint: (h: Health) => string }[] = [
     { id: 'chrome-ai', name: 'Chrome AI', hint: (h) => (h === 'ok' ? '设备端就绪' : '不支持') },
     { id: 'webllm', name: 'WebLLM', hint: (h) => (h === 'ok' ? '已就绪' : 'WebGPU 不可用') },
     { id: 'openai-compat', name: 'OpenAI 兼容', hint: (h) => (h === 'ok' ? '已配置' : '未配置') },
     {
       id: 'free-translate',
       name: '免费兜底',
-      hint: () => (freeEnabled ? '已启用' : '未启用'),
+      hint: (_h) => (freeEnabled ? '已启用' : '未启用'),
     },
   ];
 

@@ -24,18 +24,25 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  * 每个 variant 的 className 必须包含 variant 名（如 'primary'），
  * 因为 Button.spec.tsx 会断言 `btn.className.includes('primary')`。
  * 不要为了美观而删掉 'pd-btn-primary' 这种带 variant 名的类。
+ *
+ * 使用 Map 而非普通对象 —— 避免 eslint-plugin-security 的
+ * detect-object-injection 误报（variant 是 union，实际不可能注入）。
  */
-const VARIANT_CLASS: Record<ButtonVariant, string> = {
-  primary: 'pd-btn pd-btn-primary',
-  ghost:
+const VARIANT_CLASS: ReadonlyMap<ButtonVariant, string> = new Map([
+  ['primary', 'pd-btn pd-btn-primary'],
+  [
+    'ghost',
     'pd-btn pd-btn-ghost bg-transparent text-ink-600 hover:bg-ink-50 hover:text-ink-800 border border-transparent',
-  secondary:
+  ],
+  [
+    'secondary',
     'pd-btn pd-btn-secondary bg-white text-ink-700 border border-ink-200 hover:border-ink-400 hover:text-ink-800',
-};
+  ],
+]);
 
 export function Button({ variant = 'primary', className, children, ...rest }: ButtonProps) {
   const cls = [
-    VARIANT_CLASS[variant],
+    VARIANT_CLASS.get(variant) ?? '',
     'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md text-sm font-medium',
     'focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1',
     'disabled:opacity-55 disabled:cursor-not-allowed',

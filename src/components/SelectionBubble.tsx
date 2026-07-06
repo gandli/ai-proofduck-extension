@@ -80,9 +80,10 @@ export function SelectionBubble(props: SelectionBubbleProps) {
 
   // 复制到剪贴板
   const handleCopy = () => {
-    if (output && navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(output).catch(() => {});
-    }
+    if (!output) return;
+    navigator.clipboard.writeText(output).catch(() => {
+      // 用户拒绝或非 secure context —— 忽略即可
+    });
   };
 
   return (

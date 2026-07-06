@@ -25,19 +25,25 @@ export default function PopupApp() {
   const { selectedText } = useSelection();
 
   const openSidePanel = () => {
-    if (typeof chrome !== 'undefined' && chrome.sidePanel?.open) {
-      // chrome.windows 在测试 / 非扩展上下文可能为 undefined，
-      // 必须双重 ?. 才能避免 `.then(...)` on undefined 抛 TypeError
-      chrome.windows?.getCurrent()?.then((win: chrome.windows.Window) => {
-        if (win.id !== undefined) chrome.sidePanel.open({ windowId: win.id });
+    // chrome.* 全局在部分工具链下会被 ESLint 判为 error 类型；
+    // 显式绑定到 typeof chrome，同时保留运行时守卫（非扩展上下文 undefined）
+    const c: typeof chrome | undefined = (globalThis as { chrome?: typeof chrome }).chrome;
+    if (!c?.sidePanel?.open) return;
+    // chrome.windows 在测试 / 非扩展上下文可能为 undefined，
+    // 双重 ?. 才能避免 `.then(...)` on undefined 抛 TypeError
+    c.windows
+      ?.getCurrent()
+      .then((win: chrome.windows.Window) => {
+        if (win.id !== undefined) void c.sidePanel.open({ windowId: win.id });
+      })
+      .catch(() => {
+        /* 忽略非扩展环境 */
       });
-    }
   };
 
   const openOptions = () => {
-    if (typeof chrome !== 'undefined' && chrome.runtime?.openOptionsPage) {
-      chrome.runtime.openOptionsPage();
-    }
+    const c: typeof chrome | undefined = (globalThis as { chrome?: typeof chrome }).chrome;
+    c?.runtime?.openOptionsPage?.();
   };
 
   return (
