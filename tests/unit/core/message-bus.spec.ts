@@ -90,5 +90,34 @@ describe('message-bus', () => {
 
       expect(handler).not.toHaveBeenCalled();
     });
+
+    it('handler 返回 Promise 时保持通道开启（关键：Chrome onMessage 契约）', async () => {
+      // 这个测试锁定 Gemini review 指出的坑：
+      // 如果 handler 是 async 但 listener 直接返回 Promise，Chrome 会当真值关闭通道。
+      // 我们的实现必须在检测到 Promise 时显式 return true。
+      // 通过检查监听器函数签名的返回行为验证。
+      type Bus = { 'echo': string };
+      const bus = defineMessages<Bus>();
+
+      let capturedReturn: unknown;
+      const originalAdd = fakeBrowser.runtime.onMessage.addListener;
+      const wrappedAdd = vi.fn((fn: unknown) => {
+        // 用一个包装函数窥探真实 listener 的返回值
+        const wrapper = (msg: unknown, s: unknown, sr: unknown) => {
+          capturedReturn = (fn as (m: unknown, s: unknown, sr: unknown) => unknown)(msg, s, sr);
+          return capturedReturn;
+        };
+        return originalAdd.call(fakeBrowser.runtime.onMessage, wrapper as never);
+      });
+      fakeBrowser.runtime.onMessage.addListener = wrappedAdd as never;
+
+      try {
+        bus.on('echo', async () => 'reply');
+        await fakeBrowser.runtime.sendMessage({ type: 'echo', payload: 'hi' } as never);
+        expect(capturedReturn).toBe(true);
+      } finally {
+        fakeBrowser.runtime.onMessage.addListener = originalAdd;
+      }
+    });
   });
 });

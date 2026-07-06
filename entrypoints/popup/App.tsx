@@ -12,7 +12,9 @@ export default function PopupApp() {
 
   const openSidePanel = () => {
     if (typeof chrome !== 'undefined' && chrome.sidePanel?.open) {
-      chrome.windows?.getCurrent().then((win: chrome.windows.Window) => {
+      // chrome.windows 在测试 / 非扩展上下文可能为 undefined，
+      // 必须双重 ?. 才能避免 `.then(...)` on undefined 抛 TypeError
+      chrome.windows?.getCurrent()?.then((win: chrome.windows.Window) => {
         if (win.id !== undefined) chrome.sidePanel.open({ windowId: win.id });
       });
     }

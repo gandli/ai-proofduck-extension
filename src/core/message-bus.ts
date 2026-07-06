@@ -57,7 +57,11 @@ export function defineMessages<M extends MessageSchema>(): MessageBus<M> {
     },
 
     on(type, handler) {
-      const listener = (message: unknown) => {
+      const listener = (
+        message: unknown,
+        _sender: chrome.runtime.MessageSender,
+        sendResponse?: (response: unknown) => void,
+      ) => {
         // 防御：忽略非我们定义的 envelope
         if (
           typeof message !== 'object' ||
@@ -68,7 +72,25 @@ export function defineMessages<M extends MessageSchema>(): MessageBus<M> {
           return undefined;
         }
         const env = message as Envelope<string, unknown>;
-        return handler(env.payload as M[typeof type]);
+        const result = handler(env.payload as M[typeof type]);
+
+        // 关键：Chrome onMessage 的 handler 若返回 Promise，Chrome 会把它当真值
+        // 直接关闭 message 通道 —— 发送方拿不到异步结果。
+        // 正确做法：显式 return true 保持通道开启，Promise resolve 后调 sendResponse。
+        // sendResponse 在测试环境（fakeBrowser）可能未提供，做防御式判断。
+        if (result instanceof Promise) {
+          result
+            .then((res) => sendResponse?.(res))
+            .catch((err: unknown) => {
+              console.error('[message-bus] handler failed:', err);
+              sendResponse?.({ error: err instanceof Error ? err.message : String(err) });
+            });
+          return true;
+        }
+        if (result !== undefined) {
+          sendResponse?.(result);
+        }
+        return undefined;
       };
 
       chrome.runtime.onMessage.addListener(listener);
