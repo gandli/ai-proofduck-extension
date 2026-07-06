@@ -306,7 +306,7 @@ export function OpenAiCompatSection() {
         <button
           type="button"
           onClick={handleSave}
-          className="px-3 py-1.5 rounded-md text-sm font-medium bg-yellow-400 text-black hover:bg-yellow-500"
+          className="pd-btn pd-btn-primary px-3 py-1.5 rounded-md text-sm font-medium"
         >
           保存
         </button>

@@ -282,8 +282,9 @@ test.describe('full-ui-flow · 完整 UI 交互 BUG 猎手', () => {
       await page.goto(`chrome-extension://${extId}/sidepanel.html`);
       await page.waitForTimeout(800);
 
-      // 检查引擎徽章出现
-      await expect(page.getByText(/引擎：/)).toBeVisible({ timeout: 3000 });
+      // 检查引擎徽章出现（v0.4 UI 重设计后使用 data-testid 定位，
+      // 因为 header 里删掉了 "引擎：" 前缀，改为纯 chip 更简洁）
+      await expect(page.getByTestId('engine-chip')).toBeVisible({ timeout: 3000 });
 
       await page.locator('textarea').fill('Machine learning is fascinating.');
       await page.locator('#target-lang').selectOption('zh');

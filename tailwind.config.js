@@ -7,16 +7,52 @@ export default {
   theme: {
     extend: {
       colors: {
+        /**
+         * === 校对鸭品牌色（与 public/icon.svg 完全一致） ===
+         *
+         * icon.svg 渐变:
+         *   background: linear-gradient(135deg, #fff9db → #f59f00)
+         *   stroke:     #495057
+         *
+         * scale 参考 Mantine 设计系统的 yellow palette，保证：
+         * - brand-100 ↔ icon 渐变起点
+         * - brand-500 ↔ icon 主色
+         * - ink-900   ↔ icon 描边
+         */
         brand: {
-          orange: '#ff5a11',
-          'orange-light': '#fff5eb',
-          'orange-dark': '#e04800',
-          'dark-bg': '#1a1a2e',
-          'dark-surface': '#2d2d44',
-        }
+          50:  '#fffbea',
+          100: '#fff9db',   // icon 渐变起点
+          200: '#ffec99',
+          300: '#ffd43b',
+          400: '#fcc419',
+          500: '#f59f00',   // icon 主色（品牌黄）
+          600: '#d68b00',
+          700: '#a56501',
+          800: '#7d4c00',
+          900: '#553300',
+        },
+        ink: {
+          50:  '#f8f9fa',
+          100: '#e9ecef',
+          200: '#dee2e6',
+          300: '#ced4da',
+          400: '#adb5bd',
+          500: '#6c757d',
+          600: '#495057',   // icon 描边
+          700: '#343a40',
+          800: '#212529',
+          900: '#1a1d20',
+        },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['Inter', 'PingFang SC', 'Microsoft YaHei', 'system-ui', '-apple-system', 'sans-serif'],
+        serif: ['"Noto Serif SC"', 'Georgia', 'serif'],
+        mono: ['"JetBrains Mono"', '"SF Mono"', 'Consolas', 'monospace'],
+      },
+      boxShadow: {
+        'brand': '0 1px 2px rgba(245,159,0,0.4), inset 0 1px 0 rgba(255,255,255,0.4)',
+        'brand-lg': '0 4px 12px rgba(245,159,0,0.28)',
+        'card': '0 1px 2px rgba(73,80,87,0.05), 0 4px 12px rgba(73,80,87,0.06)',
       },
       keyframes: {
         slideInDown: {
