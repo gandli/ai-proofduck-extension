@@ -12,10 +12,11 @@
  * 依赖注入：hook 接受 engine 参数，测试用 mock 引擎。
  * 引擎「可用性」的探测由 UI 层负责（不在此 hook 契约里）。
  */
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useTranslate } from '@hooks/useTranslate';
 import type { Engine } from '@engines/types';
+import { TranslationCache } from '@utils/cache';
 
 function makeMockEngine(overrides: Partial<Engine> = {}): Engine {
   return {
@@ -33,8 +34,11 @@ function makeMockEngine(overrides: Partial<Engine> = {}): Engine {
 }
 
 describe('useTranslate', () => {
+  // 测试之间要清缓存，避免相同 text 命中导致引擎不跑
+  // 直接把默认 cache 关掉更简单——传 cache: null
+  const noCacheOpts = { cache: null as null };
   it('初始状态', () => {
-    const { result } = renderHook(() => useTranslate({ engine: makeMockEngine() }));
+    const { result } = renderHook(() => useTranslate({ engine: makeMockEngine(), ...noCacheOpts }));
     expect(result.current.output).toBe('');
     expect(result.current.status).toBe('idle');
     expect(result.current.error).toBeNull();
@@ -42,7 +46,7 @@ describe('useTranslate', () => {
 
   it('翻译流式更新 output，完成后 status=done', async () => {
     const engine = makeMockEngine();
-    const { result } = renderHook(() => useTranslate({ engine }));
+    const { result } = renderHook(() => useTranslate({ engine, ...noCacheOpts }));
 
     await act(async () => {
       await result.current.translate('hi', { source: 'en', target: 'zh' });
@@ -59,7 +63,7 @@ describe('useTranslate', () => {
         throw new Error('翻译失败：模型未下载');
       },
     });
-    const { result } = renderHook(() => useTranslate({ engine }));
+    const { result } = renderHook(() => useTranslate({ engine, ...noCacheOpts }));
 
     await act(async () => {
       await result.current.translate('hi', { source: 'en', target: 'zh' });
@@ -70,7 +74,7 @@ describe('useTranslate', () => {
   });
 
   it('reset() 清空状态', async () => {
-    const { result } = renderHook(() => useTranslate({ engine: makeMockEngine() }));
+    const { result } = renderHook(() => useTranslate({ engine: makeMockEngine(), ...noCacheOpts }));
 
     await act(async () => {
       await result.current.translate('hi', { source: 'en', target: 'zh' });
@@ -86,7 +90,7 @@ describe('useTranslate', () => {
   it('引擎无 runStreaming 时降级到 run()', async () => {
     const runFn = vi.fn(async () => 'once-only');
     const engine = makeMockEngine({ runStreaming: undefined, run: runFn });
-    const { result } = renderHook(() => useTranslate({ engine }));
+    const { result } = renderHook(() => useTranslate({ engine, ...noCacheOpts }));
 
     await act(async () => {
       await result.current.translate('hi', { source: 'en', target: 'zh' });
@@ -110,7 +114,7 @@ describe('useTranslate', () => {
         yield 'second'; // 这个 chunk 到达时用户已经 reset 了
       },
     });
-    const { result } = renderHook(() => useTranslate({ engine }));
+    const { result } = renderHook(() => useTranslate({ engine, ...noCacheOpts }));
 
     // 启动翻译（不 await）
     let translatePromise: Promise<void>;
@@ -134,5 +138,84 @@ describe('useTranslate', () => {
     // 旧请求的 second chunk 不应该覆盖 idle
     expect(result.current.output).toBe('');
     expect(result.current.status).toBe('idle');
+  });
+
+  describe('缓存集成', () => {
+    it('第二次相同请求命中缓存 → 引擎只被调用一次', async () => {
+      const runSpy = vi.fn(async ({ text }: { text: string }) => `[T] ${text}`);
+      const engine = makeMockEngine({ run: runSpy, runStreaming: undefined });
+      const cache = new TranslationCache();
+      const { result } = renderHook(() => useTranslate({ engine, cache }));
+
+      await act(async () => {
+        await result.current.translate('hi', { source: 'en', target: 'zh' });
+      });
+      expect(runSpy).toHaveBeenCalledTimes(1);
+      expect(result.current.output).toBe('[T] hi');
+
+      // 第二次同 text/同语言对 → 命中缓存
+      await act(async () => {
+        await result.current.translate('hi', { source: 'en', target: 'zh' });
+      });
+      expect(runSpy).toHaveBeenCalledTimes(1); // 没有第二次调用
+      expect(result.current.output).toBe('[T] hi');
+      expect(result.current.status).toBe('done');
+    });
+
+    it('语言对不同 → 不命中缓存，引擎重新调用', async () => {
+      const runSpy = vi.fn(async ({ text }: { text: string }) => `[T] ${text}`);
+      const engine = makeMockEngine({ run: runSpy, runStreaming: undefined });
+      const cache = new TranslationCache();
+      const { result } = renderHook(() => useTranslate({ engine, cache }));
+
+      await act(async () => {
+        await result.current.translate('hi', { source: 'en', target: 'zh' });
+      });
+      await act(async () => {
+        await result.current.translate('hi', { source: 'en', target: 'fr' });
+      });
+      expect(runSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('cache=null → 完全不用缓存（相同请求也重跑）', async () => {
+      const runSpy = vi.fn(async ({ text }: { text: string }) => `[T] ${text}`);
+      const engine = makeMockEngine({ run: runSpy, runStreaming: undefined });
+      const { result } = renderHook(() => useTranslate({ engine, cache: null }));
+
+      await act(async () => {
+        await result.current.translate('hi', { source: 'en', target: 'zh' });
+      });
+      await act(async () => {
+        await result.current.translate('hi', { source: 'en', target: 'zh' });
+      });
+      expect(runSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('引擎抛错时不写入缓存 → 下次重试仍会调引擎', async () => {
+      let callCount = 0;
+      const engine = makeMockEngine({
+        runStreaming: undefined,
+        run: async ({ text }) => {
+          callCount++;
+          if (callCount === 1) throw new Error('boom');
+          return `[T] ${text}`;
+        },
+      });
+      const cache = new TranslationCache();
+      const { result } = renderHook(() => useTranslate({ engine, cache }));
+
+      await act(async () => {
+        await result.current.translate('hi', { source: 'en', target: 'zh' });
+      });
+      expect(result.current.status).toBe('error');
+
+      // 第二次应该重试（不能因为第一次失败缓存了什么破值）
+      await act(async () => {
+        await result.current.translate('hi', { source: 'en', target: 'zh' });
+      });
+      expect(callCount).toBe(2);
+      expect(result.current.status).toBe('done');
+      expect(result.current.output).toBe('[T] hi');
+    });
   });
 });

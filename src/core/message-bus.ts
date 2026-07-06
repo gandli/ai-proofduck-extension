@@ -14,6 +14,8 @@
  * content 侧：  bus.send('engine:translate', { text: 'hi' })
  */
 
+import { formatErrorMessage } from '@utils/error';
+
 /** 消息 schema 约束：key 是消息类型字符串，value 是 payload 类型 */
 export type MessageSchema = Record<string, unknown>;
 
@@ -48,7 +50,7 @@ export function defineMessages<M extends MessageSchema>(): MessageBus<M> {
       } catch (err) {
         // Chrome 在无监听器 / 上下文断开时抛 "No listeners" / "Extension context invalidated"
         // 这是常见场景（如 sidepanel 关闭时 content 发消息），静默处理，返回 undefined
-        const message = err instanceof Error ? err.message : String(err);
+        const message = formatErrorMessage(err);
         if (message.includes('No listeners') || message.includes('context invalidated')) {
           return undefined;
         }
@@ -83,7 +85,7 @@ export function defineMessages<M extends MessageSchema>(): MessageBus<M> {
             .then((res) => sendResponse?.(res))
             .catch((err: unknown) => {
               console.error('[message-bus] handler failed:', err);
-              sendResponse?.({ error: err instanceof Error ? err.message : String(err) });
+              sendResponse?.({ error: formatErrorMessage(err) });
             });
           return true;
         }

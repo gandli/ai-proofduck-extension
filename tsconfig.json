@@ -12,7 +12,8 @@
       "@hooks/*": ["./src/hooks/*"],
       "@components/*": ["./src/components/*"],
       "@engines/*": ["./src/engines/*"],
-      "@i18n/*": ["./src/i18n/*"]
+      "@i18n/*": ["./src/i18n/*"],
+      "@utils/*": ["./src/utils/*"]
     }
   },
   "exclude": ["dist", ".output", "node_modules"]
