@@ -1,0 +1,27 @@
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#e6fcf5','primaryBorderColor':'#0ca678','fontFamily':'-apple-system,PingFang SC,sans-serif'}}}%%
+flowchart LR
+  classDef start fill:#fff9db,stroke:#f59f00,color:#5c3c00
+  classDef check fill:#e7f5ff,stroke:#1c7ed6,color:#0b5394
+  classDef eng fill:#f3f0ff,stroke:#7048e8,color:#4c3399
+  classDef done fill:#e6fcf5,stroke:#0ca678,color:#087f5b
+  classDef fail fill:#ffe3e3,stroke:#e03131,color:#a61e4d
+
+  IN([📝 用户请求<br/>mode + text]):::start
+
+  IN --> Q1{chrome-ai<br/>Translator/Prompt<br/>可用?}:::check
+  Q1 -->|✓ available| R1[chrome-ai<br/>on-device 秒回]:::eng
+  Q1 -->|✗| Q2
+
+  Q2{WebGPU 且<br/>模型已缓存?}:::check
+  Q2 -->|✓| R2[webllm<br/>Qwen2.5-1.5B<br/>本地隐私]:::eng
+  Q2 -->|✗| Q3
+
+  Q3{用户配了<br/>OpenAI-compat<br/>apiKey?}:::check
+  Q3 -->|✓| R3[openai-compat<br/>BYOK 流式]:::eng
+  Q3 -->|✗ 且是 translate| R4[free-translate<br/>Google 兜底]:::eng
+  Q3 -->|✗ 其他模式| ERR[❌ 无可用引擎<br/>提示用户配置]:::fail
+
+  R1 --> OUT([✅ 返回翻译结果]):::done
+  R2 --> OUT
+  R3 --> OUT
+  R4 --> OUT
