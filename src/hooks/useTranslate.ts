@@ -17,6 +17,8 @@
  */
 import { useCallback, useRef, useState } from 'react';
 import type { Engine } from '@engines/types';
+import { formatErrorMessage } from '@utils/error';
+import { TranslationCache, makeCacheKey } from '@utils/cache';
 
 export type TranslateStatus = 'idle' | 'loading' | 'done' | 'error';
 
@@ -30,9 +32,20 @@ export interface UseTranslateResult {
 
 export interface UseTranslateOptions {
   engine: Engine;
+  /**
+   * 可注入缓存实例；默认使用全局共享的缓存（跨 hook 实例复用）。
+   * 传 null 可禁用缓存（测试或用户显式关闭时使用）。
+   */
+  cache?: TranslationCache | null;
 }
 
-export function useTranslate({ engine }: UseTranslateOptions): UseTranslateResult {
+// 全局默认缓存：整个扩展生命周期内的翻译结果共享
+const defaultCache = new TranslationCache();
+
+export function useTranslate({ engine, cache }: UseTranslateOptions): UseTranslateResult {
+  // undefined = 用默认；null = 显式禁用；否则用注入的
+  const activeCache = cache === undefined ? defaultCache : cache;
+
   const [output, setOutput] = useState('');
   const [status, setStatus] = useState<TranslateStatus>('idle');
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +60,24 @@ export function useTranslate({ engine }: UseTranslateOptions): UseTranslateResul
       setError(null);
       setStatus('loading');
 
+      // ⚡ 缓存命中路径：直接返回，跳过引擎
+      // key 组装用 makeCacheKey 保证：mode + 语言对 + 文本 一致就命中
+      const cacheKey = makeCacheKey({
+        mode: 'translate',
+        text,
+        sourceLang: opts.source,
+        targetLang: opts.target,
+      });
+      const cached = activeCache?.get(cacheKey);
+      if (cached !== undefined) {
+        if (requestId !== activeRequestIdRef.current) return;
+        setOutput(cached);
+        setStatus('done');
+        return;
+      }
+
       try {
+        let finalText = '';
         if (engine.runStreaming) {
           let acc = '';
           for await (const chunk of engine.runStreaming({
@@ -61,6 +91,7 @@ export function useTranslate({ engine }: UseTranslateOptions): UseTranslateResul
             acc += chunk;
             setOutput(acc);
           }
+          finalText = acc;
         } else {
           const result = await engine.run({
             mode: 'translate',
@@ -70,17 +101,20 @@ export function useTranslate({ engine }: UseTranslateOptions): UseTranslateResul
           });
           if (requestId !== activeRequestIdRef.current) return;
           setOutput(result);
+          finalText = result;
         }
         if (requestId !== activeRequestIdRef.current) return;
         setStatus('done');
+        // 只有成功且请求仍然有效才写缓存（避免污染）
+        if (finalText) activeCache?.set(cacheKey, finalText);
       } catch (err) {
         // 已经作废的请求出错也别覆盖新状态
         if (requestId !== activeRequestIdRef.current) return;
-        setError(err instanceof Error ? err.message : String(err));
+        setError(formatErrorMessage(err, '翻译失败'));
         setStatus('error');
       }
     },
-    [engine],
+    [engine, activeCache],
   );
 
   const reset = useCallback(() => {

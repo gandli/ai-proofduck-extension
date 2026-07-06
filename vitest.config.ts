@@ -14,6 +14,7 @@ export default defineConfig({
       '@components': path.resolve(__dirname, './src/components'),
       '@engines': path.resolve(__dirname, './src/engines'),
       '@i18n': path.resolve(__dirname, './src/i18n'),
+      '@utils': path.resolve(__dirname, './src/utils'),
     },
   },
   test: {
