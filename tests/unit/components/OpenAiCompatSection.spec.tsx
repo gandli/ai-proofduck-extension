@@ -31,6 +31,18 @@ vi.mock('@core/openai-compat-config', () => {
   };
 });
 
+// Round 5 (#465): mock host-permissions util 供授权 UI 测试
+const permsMocks = vi.hoisted(() => ({
+  has: vi.fn(async () => false),
+  request: vi.fn(async () => true),
+  onChange: vi.fn(() => () => {}),
+}));
+vi.mock('@core/host-permissions', () => ({
+  hasHostPermission: permsMocks.has,
+  requestHostPermission: permsMocks.request,
+  onPermissionsChanged: permsMocks.onChange,
+}));
+
 // 单独引用 mock 以便在测试里操纵/断言
 import * as configModule from '@core/openai-compat-config';
 const configMock = configModule as unknown as {
@@ -48,6 +60,12 @@ describe('OpenAiCompatSection', () => {
     configMock.__mockState.value = { baseUrl: '', apiKey: '', model: '' };
     configMock.openaiCompatConfig.get.mockClear();
     configMock.openaiCompatConfig.set.mockClear();
+    permsMocks.has.mockClear();
+    permsMocks.request.mockClear();
+    permsMocks.onChange.mockClear();
+    permsMocks.has.mockResolvedValue(false);
+    permsMocks.request.mockResolvedValue(true);
+    permsMocks.onChange.mockImplementation(() => () => {});
     vi.unstubAllGlobals();
   });
 
@@ -193,6 +211,89 @@ describe('OpenAiCompatSection', () => {
     await user.click(screen.getByRole('button', { name: '测试连接' }));
     await waitFor(() => {
       expect(screen.getByText(/Failed to fetch/)).toBeInTheDocument();
+    });
+  });
+
+  // ─── Round 5 (#465): host 权限授权 UI ───
+  describe('host permission 授权（#465）', () => {
+    it('baseUrl 空 → 不显示授权 UI', async () => {
+      configMock.__mockState.value = { baseUrl: '', apiKey: '', model: '' };
+      render(<OpenAiCompatSection />);
+      await waitFor(() => expect(screen.getByLabelText('API Base URL')).toBeInTheDocument());
+      expect(screen.queryByRole('button', { name: /授权|授予|permission/i })).not.toBeInTheDocument();
+    });
+
+    it('baseUrl 已填但未授权 → 显示黄色警告 + 授权按钮', async () => {
+      configMock.__mockState.value = {
+        baseUrl: 'https://api.deepseek.com',
+        apiKey: 'sk-xxx',
+        model: 'deepseek-chat',
+      };
+      permsMocks.has.mockResolvedValue(false);
+      render(<OpenAiCompatSection />);
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /授权.*api\.deepseek\.com/i })).toBeInTheDocument();
+      });
+      expect(permsMocks.has).toHaveBeenCalledWith('https://api.deepseek.com/*');
+    });
+
+    it('baseUrl 已授权 → 显示绿色✅已授权', async () => {
+      configMock.__mockState.value = {
+        baseUrl: 'https://api.deepseek.com',
+        apiKey: 'sk-xxx',
+        model: 'deepseek-chat',
+      };
+      permsMocks.has.mockResolvedValue(true);
+      render(<OpenAiCompatSection />);
+      await waitFor(() => {
+        expect(screen.getByText(/已授权/)).toBeInTheDocument();
+      });
+      // 组件把 host 放进 <code> 分节点了，用 querySelector 兜底
+      expect(document.body.textContent).toContain('api.deepseek.com');
+      expect(screen.queryByRole('button', { name: /^授权/i })).not.toBeInTheDocument();
+    });
+
+    it('点授权按钮 → 调 requestHostPermission，成功后切换为已授权', async () => {
+      const user = userEvent.setup();
+      configMock.__mockState.value = {
+        baseUrl: 'https://api.deepseek.com',
+        apiKey: 'sk-xxx',
+        model: 'deepseek-chat',
+      };
+      permsMocks.has.mockResolvedValue(false);
+      permsMocks.request.mockResolvedValue(true);
+      render(<OpenAiCompatSection />);
+
+      const btn = await screen.findByRole('button', { name: /授权.*api\.deepseek\.com/i });
+      // 授权成功后组件会重新查权限；先让第 2 次 has 返 true
+      permsMocks.has.mockResolvedValue(true);
+      await user.click(btn);
+
+      expect(permsMocks.request).toHaveBeenCalledWith('https://api.deepseek.com/*');
+      await waitFor(() => {
+        expect(screen.getByText(/已授权/)).toBeInTheDocument();
+      });
+    });
+
+    it('点授权但用户拒绝 → 保留授权按钮 + 提示', async () => {
+      const user = userEvent.setup();
+      configMock.__mockState.value = {
+        baseUrl: 'https://api.deepseek.com',
+        apiKey: 'sk-xxx',
+        model: 'deepseek-chat',
+      };
+      permsMocks.has.mockResolvedValue(false);
+      permsMocks.request.mockResolvedValue(false);
+      render(<OpenAiCompatSection />);
+
+      const btn = await screen.findByRole('button', { name: /授权.*api\.deepseek\.com/i });
+      await user.click(btn);
+
+      await waitFor(() => {
+        expect(screen.getByText(/授权被拒绝|拒绝了|denied/i)).toBeInTheDocument();
+      });
+      // 按钮仍在，用户可重试
+      expect(screen.getByRole('button', { name: /授权.*api\.deepseek\.com/i })).toBeInTheDocument();
     });
   });
 });

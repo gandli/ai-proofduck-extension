@@ -13,6 +13,7 @@ import { useSelection } from '@hooks/useSelection';
 import { getEngines } from '@core/engines';
 import type { Engine } from '@engines/types';
 import { SelectionBubble, type BubbleStatus } from './SelectionBubble';
+import { isPermissionRequiredError } from '@utils/permission-error';
 
 export interface SelectionBubbleHostProps {
   /** 测试可注入固定引擎；生产走 pickBest() */
@@ -87,6 +88,12 @@ export function SelectionBubbleHost(props: SelectionBubbleHostProps) {
     } catch (e) {
       if (myRequestId !== requestIdRef.current) return; // 已过期
       setStatus('error');
+      // Round 6 (#465): 权限错误 → UX 引导用户去 Options 授权
+      if (isPermissionRequiredError(e)) {
+        const origin = (e as { origin: string }).origin;
+        setError(`扩展缺少访问 ${origin} 的权限。请到「扩展设置」页点【授权】按钮授权后重试。`);
+        return;
+      }
       const msg = e instanceof Error ? e.message : String(e);
       setError(msg);
     }
