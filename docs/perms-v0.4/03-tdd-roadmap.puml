@@ -1,0 +1,69 @@
+@startuml
+!theme plain
+title TDD 6 轮 tracer bullet · v0.4 权限收窄
+
+skinparam backgroundColor #FAFAFA
+skinparam activity {
+  BackgroundColor       #FFFFFF
+  BorderColor           #1976D2
+  DiamondBackgroundColor #FFF9C4
+  DiamondBorderColor    #F57F17
+}
+
+start
+
+partition "Round 1 · origin-pattern 纯函数" {
+  :RED · tests/unit/core/origin-pattern.spec.ts (8 cases);
+  :GREEN · src/core/origin-pattern.ts;
+  :单测 8/8 通过;
+}
+
+partition "Round 2 · host-permissions util" {
+  :RED · tests/unit/core/host-permissions.spec.ts (10 cases);
+  note right
+    覆盖：
+    ・ chrome.permissions.contains 包装
+    ・ chrome.permissions.request 包装
+    ・ onAdded / onRemoved 订阅
+    ・ chrome API 缺席时 fail open
+  end note
+  :GREEN · src/core/host-permissions.ts;
+  :单测 18/18 通过;
+}
+
+partition "Round 3 · openai-compat.isAvailable() 收紧" {
+  :RED · openai-compat.spec.ts 新增 3 cases;
+  note right
+    ・ 三项齐 + 已授权 → true
+    ・ 三项齐 + 未授权 → false
+    ・ isAvailable 每次都动态查权限
+  end note
+  :GREEN · openai-compat.ts 集成 hasHostPermission;
+  :单测 196+/196+ 通过;
+}
+
+partition "Round 4 · openai-compat.run() 抛结构化错误" {
+  :RED · 新增 2 cases (PermissionRequiredError);
+  :GREEN · src/utils/error.ts 加 PermissionRequiredError\n+ engine 抛错;
+  :单测通过;
+}
+
+partition "Round 5 · OpenAiCompatSection 授权 UI" {
+  :RED · 组件测试 · 未授权时展示『授权』按钮;
+  :GREEN · 组件消费 hasHostPermission + requestHostPermission;
+  :单测通过;
+}
+
+partition "Round 6 · SidePanel/Bubble 错误 UX + manifest 变更 + E2E" {
+  :RED · SidePanel/Bubble 拿到 PermissionRequiredError 显示 CTA;
+  :GREEN · 新增 PermissionRequiredNotice 组件;
+  :manifest: <all_urls> → optional_host_permissions;
+  :Playwright E2E 全流程验证\n(装扩展 → 填 baseUrl → 授权 → 翻译成功);
+  :全部单测 + E2E 通过;
+}
+
+:v0.4 发布 + 关闭 issue #465;
+
+stop
+
+@enduml

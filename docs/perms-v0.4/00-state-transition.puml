@@ -1,0 +1,54 @@
+@startuml
+!theme plain
+title 权限模型状态迁移 · v0.3.2 → v0.4
+
+skinparam backgroundColor #FAFAFA
+skinparam state {
+  BackgroundColor<<current>>  #FFEBEE
+  BorderColor<<current>>       #D32F2F
+  BackgroundColor<<target>>    #E8F5E9
+  BorderColor<<target>>        #2E7D32
+  FontStyle bold
+}
+
+state "v0.3.2 · 当前" as v032 <<current>> {
+  state "install-time 授予" as install032
+  state "扩展装完 = 全网 fetch 权限" as active032
+  state "CWS 审核 · 严格路径" as cws032
+  state "用户看到\n『访问所有网站』警告" as warn032
+
+  install032 --> active032 : 装扩展\n(host_permissions=<all_urls>)
+  active032 --> cws032 : 上架审核
+  active032 --> warn032 : 用户体验
+}
+
+state "v0.4 · 目标" as v04 <<target>> {
+  state "install-time 授予\n(硬编码的引擎域名)" as install04
+  state "chrome.storage 里\n有 openai-compat 配置" as stored04
+  state "运行时按需请求\n(baseUrl origin)" as runtime04
+  state "翻译成功 · 权限最小化" as active04
+  state "用户可撤销单个域名" as revoke04
+
+  install04 --> stored04 : 用户填 baseUrl\n+ apiKey + model
+  stored04 --> runtime04 : 首次翻译 or\n Options 页『授权』按钮
+  runtime04 --> active04 : 用户在弹窗\n点『允许』
+  runtime04 --> stored04 : 用户拒绝\n(fallback 提示 UX)
+  active04 --> revoke04 : Options 页『撤销』
+  revoke04 --> stored04 : 撤销后配置仍在\n下次翻译再弹权限
+}
+
+note bottom of v032
+  <b>问题（Gemini review · #464）</b>
+  ・ <all_urls> 触发 CWS 加严审核
+  ・ 权限过宽，安全审计吃亏
+  ・ 用户装扩展看警告易紧张
+end note
+
+note bottom of v04
+  <b>收益</b>
+  ・ CWS 审核走标准路径
+  ・ 权限最小化（<b>只授权用户实际用的域名</b>）
+  ・ 用户对信任模型有完全控制
+end note
+
+@enduml

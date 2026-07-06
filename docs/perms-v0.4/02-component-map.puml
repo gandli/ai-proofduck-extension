@@ -1,0 +1,77 @@
+@startuml
+!theme plain
+title 模块依赖 · v0.4 权限收窄改造范围
+
+skinparam backgroundColor #FAFAFA
+skinparam component {
+  BackgroundColor<<new>>       #E8F5E9
+  BorderColor<<new>>            #2E7D32
+  BackgroundColor<<changed>>   #FFF3E0
+  BorderColor<<changed>>        #E65100
+  BackgroundColor<<untouched>> #E3F2FD
+  BorderColor<<untouched>>      #1565C0
+  FontStyle bold
+}
+
+package "manifest / 构建" {
+  [wxt.config.ts] <<changed>>
+}
+
+package "核心 util (src/core/)" {
+  [origin-pattern.ts] <<new>>
+  [host-permissions.ts] <<new>>
+  [openai-compat-config.ts] <<untouched>>
+  [engine-manager.ts] <<untouched>>
+}
+
+package "引擎实现 (src/engines/)" {
+  [openai-compat.ts] <<changed>>
+  [free-translate.ts] <<untouched>>
+  [webllm.ts] <<untouched>>
+  [chrome-ai.ts] <<untouched>>
+}
+
+package "UI 组件 (src/components/, entrypoints/)" {
+  [OpenAiCompatSection.tsx] <<changed>>
+  [PermissionRequiredNotice.tsx] <<new>>
+  [SidePanel/App.tsx] <<changed>>
+  [SelectionBubbleHost.tsx] <<changed>>
+}
+
+package "错误类型 (src/utils/)" {
+  [error.ts] <<changed>>
+}
+
+package "测试" {
+  [tests/unit/core/origin-pattern.spec.ts] <<new>>
+  [tests/unit/core/host-permissions.spec.ts] <<new>>
+  [tests/unit/engines/openai-compat.spec.ts] <<changed>>
+  [tests/e2e/permissions-flow.spec.ts] <<new>>
+}
+
+' 依赖关系
+[origin-pattern.ts]        ..> [host-permissions.ts]      : 生成 pattern
+[origin-pattern.ts]        ..> [openai-compat.ts]         : 生成 pattern
+[host-permissions.ts]      ..> [openai-compat.ts]         : contains/request
+[host-permissions.ts]      ..> [OpenAiCompatSection.tsx]  : UI 授权按钮
+[error.ts]                 ..> [openai-compat.ts]         : PermissionRequiredError
+[error.ts]                 ..> [PermissionRequiredNotice.tsx] : 识别错误类型
+[PermissionRequiredNotice.tsx] ..> [SidePanel/App.tsx]    : 未授权 UX
+[PermissionRequiredNotice.tsx] ..> [SelectionBubbleHost.tsx] : 未授权 UX
+
+[wxt.config.ts]            ..> [host-permissions.ts]      : optional_host_permissions
+
+' 测试 → 被测（补 vision review 意见）
+[tests/unit/core/origin-pattern.spec.ts]      ..> [origin-pattern.ts]        : 覆盖
+[tests/unit/core/host-permissions.spec.ts]    ..> [host-permissions.ts]      : 覆盖
+[tests/unit/engines/openai-compat.spec.ts]    ..> [openai-compat.ts]         : 覆盖
+[tests/e2e/permissions-flow.spec.ts]          ..> [OpenAiCompatSection.tsx]  : 端到端
+
+legend right
+  |= 颜色 |= 语义 |
+  | <#E8F5E9>■</#E8F5E9> | 新增 |
+  | <#FFF3E0>■</#FFF3E0> | 修改 |
+  | <#E3F2FD>■</#E3F2FD> | 保持不变 |
+endlegend
+
+@enduml

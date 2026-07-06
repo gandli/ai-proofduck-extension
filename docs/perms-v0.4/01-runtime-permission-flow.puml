@@ -1,0 +1,67 @@
+@startuml
+!theme plain
+title 运行时按需授权 · 端到端时序
+
+skinparam backgroundColor #FAFAFA
+skinparam sequence {
+  ArrowColor         #1976D2
+  ActorBorderColor   #1976D2
+  LifeLineBackgroundColor #E3F2FD
+  ParticipantBackgroundColor #E3F2FD
+  ParticipantBorderColor #1976D2
+}
+
+actor "用户" as U
+participant "Options / SidePanel\n(React UI)" as UI
+participant "openai-compat\nengine.isAvailable" as ENG
+participant "host-permissions\nutil" as UTIL
+participant "chrome.permissions\nAPI" as CHROME
+participant "第三方 API\n(user's baseUrl)" as API
+
+== 首次使用 · 填配置 ==
+
+U -> UI : 打开 Options\n填 baseUrl / apiKey / model
+UI -> UI : openaiCompatConfig.set()
+UI -> UTIL : hasHostPermission(originPattern)
+UTIL -> CHROME : permissions.contains\n({origins: [...]})
+CHROME --> UTIL : false
+UTIL --> UI : false
+UI -> U : 显示『需要授权此域名』按钮
+
+== 用户点『授权』触发 request ==
+
+U -> UI : 点『授权 api.deepseek.com』
+UI -> UTIL : requestHostPermission(originPattern)
+UTIL -> CHROME : permissions.request\n({origins: [...]})
+CHROME -> U : 弹权限窗\n『允许 / 拒绝』
+U --> CHROME : 允许
+CHROME --> UTIL : true
+UTIL --> UI : true
+UI -> U : ✅ 授权成功\n『可以翻译了』
+
+== 翻译 · 已授权路径 ==
+
+U -> UI : 点『翻译』
+UI -> ENG : engine.run(input)
+ENG -> UTIL : hasHostPermission(originPattern)
+UTIL --> ENG : true
+ENG -> API : POST /v1/chat/completions
+API --> ENG : 200 { choices: [...] }
+ENG --> UI : "机器学习是..."
+UI --> U : 展示译文
+
+== 翻译 · 用户在 Chrome 设置里撤销权限 ==
+
+U -> CHROME : chrome://extensions\n关掉此站点权限
+CHROME -> UTIL : onRemoved 事件
+UTIL -> UI : notify permissions changed
+UI -> UI : 刷新 isAvailable 缓存
+
+U -> UI : 再次点『翻译』
+UI -> ENG : engine.run(input)
+ENG -> UTIL : hasHostPermission
+UTIL --> ENG : false
+ENG --> UI : throw PermissionRequiredError\n{ origin, pattern }
+UI -> U : 展示『权限已被撤销，重新授权』CTA\n(可再走 request 流程)
+
+@enduml
