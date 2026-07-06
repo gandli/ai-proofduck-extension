@@ -1,4 +1,3 @@
 {
-  "args": ["--no-sandbox"],
-  "executablePath": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+  "args": ["--no-sandbox"]
 }
