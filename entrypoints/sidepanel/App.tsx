@@ -43,8 +43,10 @@ const STUB_ENGINE: Engine = {
   id: 'chrome-ai',
   name: 'unavailable',
   priority: 0,
+  // eslint-disable-next-line @typescript-eslint/require-await -- 契约签名要求 Promise
   isAvailable: async () => false,
   supports: () => false,
+  // eslint-disable-next-line @typescript-eslint/require-await -- 契约签名要求 Promise
   run: async () => '',
 };
 
@@ -64,7 +66,9 @@ export default function SidePanelApp({ engine }: Props = {}) {
   // 当没有传 engine（生产环境），异步选一个最好的
   useEffect(() => {
     if (engine) {
-      // 测试注入路径：直接用
+      // 测试注入路径：直接用（同步 setState in effect 是可接受的，
+      // 因为条件仅在挂载/prop 变化时命中，不产生级联）
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setResolvedEngine(engine);
       setIsResolving(false);
       return;
@@ -72,7 +76,7 @@ export default function SidePanelApp({ engine }: Props = {}) {
     // 生产路径：走 pickBest() 兜底
     let cancelled = false;
     setIsResolving(true);
-    getEngines()
+    void getEngines()
       .pickBest()
       .then((e: Engine | null) => {
         if (!cancelled) {
@@ -99,10 +103,16 @@ export default function SidePanelApp({ engine }: Props = {}) {
   useEffect(() => {
     if (isResolving) return;
     if (!resolvedEngine) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAvailable(false);
       return;
     }
-    resolvedEngine.isAvailable().then(setAvailable).catch(() => setAvailable(false));
+    void resolvedEngine
+      .isAvailable()
+      .then(setAvailable)
+      .catch(() => {
+        setAvailable(false);
+      });
   }, [resolvedEngine, isResolving]);
 
   // 同语言校验：手动选定的源和目标一样时无意义（'auto' 例外，由引擎自行推断）
@@ -113,7 +123,7 @@ export default function SidePanelApp({ engine }: Props = {}) {
   const handleTranslate = () => {
     // 'auto' → 让引擎自己推断；chrome-ai 目前需要显式 source，暂用启发式：中→英，其他→中
     const src = source === 'auto' ? (target === 'zh' ? 'en' : 'zh') : source;
-    translate(text, { source: src, target });
+    void translate(text, { source: src, target });
   };
 
   // 交换语言：auto 时不能交换（无源语言）

@@ -69,7 +69,7 @@ export function defineMessages<M extends MessageSchema>(): MessageBus<M> {
           typeof message !== 'object' ||
           message === null ||
           !('type' in message) ||
-          (message as { type: unknown }).type !== type
+          (message).type !== type
         ) {
           return undefined;
         }

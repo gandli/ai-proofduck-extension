@@ -63,7 +63,7 @@ export function OpenAiCompatSection() {
   // 首次挂载回填
   useEffect(() => {
     let mounted = true;
-    openaiCompatConfig.get().then((cfg) => {
+    void openaiCompatConfig.get().then((cfg) => {
       if (!mounted) return;
       setBaseUrl(cfg.baseUrl);
       setApiKey(cfg.apiKey);
@@ -91,6 +91,7 @@ export function OpenAiCompatSection() {
   useEffect(() => {
     let cancelled = false;
     if (!hostPattern) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPermState({ status: 'unknown' });
       return;
     }
@@ -99,7 +100,7 @@ export function OpenAiCompatSection() {
       if (cancelled) return;
       setPermState(granted ? { status: 'granted' } : { status: 'missing' });
     };
-    refresh();
+    void refresh();
     const unsub = onPermissionsChanged(refresh);
     return () => {
       cancelled = true;
@@ -161,7 +162,7 @@ export function OpenAiCompatSection() {
     } catch (err) {
       setTestState({ status: 'error', message: formatErrorMessage(err) });
     }
-  }, [baseUrl, apiKey, model]);
+  }, [baseUrl, apiKey]);
 
   if (!loaded) {
     // 简单 skeleton：等 storage 拉完再显示表单，避免"空 → 填了 → 又清空"的闪烁

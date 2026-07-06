@@ -221,12 +221,12 @@ export function SelectionBubble(props: SelectionBubbleProps) {
                   padding: 0,
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.1)';
-                  (e.currentTarget as HTMLButtonElement).style.color = 'white';
+                  (e.currentTarget).style.background = 'rgba(255,255,255,0.1)';
+                  (e.currentTarget).style.color = 'white';
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-                  (e.currentTarget as HTMLButtonElement).style.color = '#ced4da';
+                  (e.currentTarget).style.background = 'transparent';
+                  (e.currentTarget).style.color = '#ced4da';
                 }}
               >
                 📋
@@ -250,12 +250,12 @@ export function SelectionBubble(props: SelectionBubbleProps) {
                   padding: 0,
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.1)';
-                  (e.currentTarget as HTMLButtonElement).style.color = 'white';
+                  (e.currentTarget).style.background = 'rgba(255,255,255,0.1)';
+                  (e.currentTarget).style.color = 'white';
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-                  (e.currentTarget as HTMLButtonElement).style.color = '#ced4da';
+                  (e.currentTarget).style.background = 'transparent';
+                  (e.currentTarget).style.color = '#ced4da';
                 }}
               >
                 ✕

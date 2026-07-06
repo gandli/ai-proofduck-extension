@@ -20,7 +20,7 @@ export function FreeTranslateSection() {
 
   useEffect(() => {
     let mounted = true;
-    enabledItem.get().then((v) => {
+    void enabledItem.get().then((v) => {
       if (!mounted) return;
       setEnabled(v);
       setLoaded(true);

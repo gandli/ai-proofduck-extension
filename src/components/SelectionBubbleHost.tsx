@@ -48,12 +48,16 @@ export function SelectionBubbleHost(props: SelectionBubbleHostProps) {
   // 选中文本变化：重置状态 + 让在飞的翻译请求全部作废（requestId +1）
   useEffect(() => {
     if (selectedText !== activeText) {
+      // 一批相关 setState 同步触发；React 会合并为一次 render，
+      // 不会形成级联，disable set-state-in-effect 规则
+      /* eslint-disable react-hooks/set-state-in-effect */
       setActiveText(selectedText);
       setStatus('idle');
       setOutput('');
       setError('');
       setEngineName('');
       setDismissed(false);
+      /* eslint-enable react-hooks/set-state-in-effect */
       requestIdRef.current += 1; // 使所有 pending 请求失效
     }
   }, [selectedText, activeText]);

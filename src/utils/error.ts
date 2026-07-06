@@ -28,6 +28,7 @@ export function formatErrorMessage(err: unknown, fallback = '未知错误'): str
   }
 
   // 兜底：走 String(err)；但 `[object Object]` 无信息 → fallback
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- 这里就是要探测默认 toString
   const s = String(err);
   if (s === '[object Object]') return fallback;
   return s;
