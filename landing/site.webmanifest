@@ -1,0 +1,16 @@
+{
+  "name": "校对鸭",
+  "short_name": "校对鸭",
+  "description": "浏览器里的隐私 AI 翻译 / 校对助手",
+  "icons": [
+    { "src": "/favicon-16.png", "sizes": "16x16", "type": "image/png" },
+    { "src": "/favicon-32.png", "sizes": "32x32", "type": "image/png" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/icon-128.png", "sizes": "128x128", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "theme_color": "#f59f00",
+  "background_color": "#fff9db",
+  "display": "standalone",
+  "start_url": "/"
+}

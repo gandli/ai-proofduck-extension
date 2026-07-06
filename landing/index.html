@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>校对鸭 · 浏览器里的隐私 AI 翻译 / 校对助手</title>
+  <meta name="description" content="校对鸭是一款开源 Chrome 扩展：4 引擎智能路由，Chrome AI/WebLLM 本地推理，隐私优先，BYOK 支持任意 OpenAI 兼容 API。" />
+  <meta name="keywords" content="校对鸭,proofduck,Chrome扩展,AI翻译,隐私,WebLLM,Chrome AI,OpenAI,BYOK" />
+  <meta name="author" content="gandli" />
+  <meta name="theme-color" content="#f59f00" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="校对鸭" />
+  <meta property="og:title" content="校对鸭 · 浏览器里的隐私 AI 翻译 / 校对助手" />
+  <meta property="og:description" content="4 引擎智能路由 · Chrome AI/WebLLM 本地推理 · 隐私优先 · BYOK 支持任意 OpenAI 兼容 API" />
+  <meta property="og:image" content="https://proofduck.dev/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="校对鸭 - AI 翻译 / 校对 Chrome 扩展" />
+  <meta property="og:url" content="https://proofduck.dev" />
+  <meta property="og:locale" content="zh_CN" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="校对鸭 · 浏览器里的隐私 AI 翻译助手" />
+  <meta name="twitter:description" content="4 引擎智能路由 · 本地推理 · 隐私优先 · BYOK" />
+  <meta name="twitter:image" content="https://proofduck.dev/og-image.png" />
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+      background: linear-gradient(135deg, #fff9db 0%, #fff5f5 50%, #e7f5ff 100%);
+      min-height: 100vh;
+      color: #212529;
+      line-height: 1.6;
+    }
+    .container { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+    /* Hero */
+    .hero { padding: 80px 0 60px; text-align: center; }
+    .logo { width: 128px; height: 128px; margin: 0 auto 24px; }
+    .title { font-size: clamp(36px, 6vw, 60px); font-weight: 800; color: #212529; margin-bottom: 16px; }
+    .tagline { font-size: clamp(18px, 2.5vw, 24px); color: #495057; margin-bottom: 40px; }
+    .cta-group { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 28px; border-radius: 12px; font-size: 16px; font-weight: 600;
+      text-decoration: none; transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-primary { background: #f59f00; color: white; box-shadow: 0 4px 12px rgba(245,159,0,0.3); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245,159,0,0.4); }
+    .btn-secondary { background: white; color: #212529; border: 2px solid #dee2e6; }
+    .btn-secondary:hover { border-color: #495057; }
+
+    /* Features */
+    .features { padding: 60px 0; }
+    .section-title { font-size: 32px; font-weight: 700; text-align: center; margin-bottom: 48px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+    .card {
+      background: white; padding: 32px; border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      transition: transform 0.2s;
+    }
+    .card:hover { transform: translateY(-4px); }
+    .card-icon { font-size: 36px; margin-bottom: 16px; }
+    .card-title { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
+    .card-desc { color: #495057; }
+
+    /* Engines */
+    .engines { padding: 60px 0; background: rgba(255,255,255,0.5); border-radius: 24px; margin: 40px 0; }
+    .engine-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .engine {
+      background: white; padding: 24px; border-radius: 12px;
+      border-left: 4px solid #f59f00; display: flex; flex-direction: column; gap: 8px;
+    }
+    .engine-name { font-weight: 700; font-size: 18px; }
+    .engine-priority { font-size: 12px; color: #adb5bd; }
+    .engine-desc { color: #495057; font-size: 14px; }
+    .engine.chrome-ai { border-color: #1c7ed6; }
+    .engine.webllm { border-color: #7048e8; }
+    .engine.openai-compat { border-color: #0ca678; }
+    .engine.free-translate { border-color: #f59f00; }
+
+    /* Footer */
+    footer { padding: 40px 0; text-align: center; color: #868e96; }
+    footer a { color: #495057; text-decoration: none; margin: 0 8px; }
+    footer a:hover { color: #212529; }
+
+    @media (max-width: 640px) { .hero { padding: 48px 0 32px; } .logo { width: 96px; height: 96px; } }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <div class="container">
+      <img src="/icon-128.png" alt="校对鸭 Logo" class="logo" />
+      <h1 class="title">校对鸭 <span style="color:#f59f00;">🦆</span></h1>
+      <p class="tagline">浏览器里的隐私 AI 翻译 / 校对助手 · 4 引擎智能路由</p>
+      <div class="cta-group">
+        <a href="https://chromewebstore.google.com/" class="btn btn-primary">
+          <span>🚀</span> 添加到 Chrome
+        </a>
+        <a href="https://github.com/gandli/ai-proofduck-extension" class="btn btn-secondary">
+          <span>⭐</span> GitHub
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="container">
+      <h2 class="section-title">为什么选校对鸭？</h2>
+      <div class="grid">
+        <div class="card">
+          <div class="card-icon">🔒</div>
+          <div class="card-title">隐私优先</div>
+          <p class="card-desc">Chrome AI 与 WebLLM 全部在浏览器本地推理，一个字节都不离开你的电脑。</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🎯</div>
+          <div class="card-title">智能路由</div>
+          <p class="card-desc">按优先级自动选引擎：本地 → BYOK → 免费兜底，永远有可用回路。</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🔑</div>
+          <div class="card-title">BYOK 自由</div>
+          <p class="card-desc">支持 OpenAI / DeepSeek / Groq / vLLM 等一切 OpenAI 兼容 API，密钥永远在本地。</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🫧</div>
+          <div class="card-title">划词即翻</div>
+          <p class="card-desc">任意网页划词，气泡即时翻译。Shadow DOM + composedPath，稳如老鸭。</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">⚡</div>
+          <div class="card-title">开源可审</div>
+          <p class="card-desc">MIT 协议 · 247 单测 · 30 E2E · Codacy 静态扫描 · CodeRabbit AI 复审。</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🌏</div>
+          <div class="card-title">中文优化</div>
+          <p class="card-desc">默认 Qwen2.5-1.5B 本地模型，中文原生训练，比 Llama 更懂你的语气。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="engines">
+    <div class="container">
+      <h2 class="section-title">4 引擎路由</h2>
+      <div class="engine-list">
+        <div class="engine chrome-ai">
+          <div class="engine-name">🤖 chrome-ai</div>
+          <div class="engine-priority">优先级 100 · Chrome 内置</div>
+          <div class="engine-desc">Chrome 138+ 原生 Translator/Prompt API，秒回不联网。</div>
+        </div>
+        <div class="engine webllm">
+          <div class="engine-name">🧠 webllm</div>
+          <div class="engine-priority">优先级 90 · WebGPU 本地</div>
+          <div class="engine-desc">Qwen2.5-1.5B 首次下载 950MB，之后完全离线。</div>
+        </div>
+        <div class="engine openai-compat">
+          <div class="engine-name">🔗 openai-compat</div>
+          <div class="engine-priority">优先级 80 · BYOK 云端</div>
+          <div class="engine-desc">用你自己的 key 调 GPT/DeepSeek/Groq，流式响应。</div>
+        </div>
+        <div class="engine free-translate">
+          <div class="engine-name">🆓 free-translate</div>
+          <div class="engine-priority">优先级 10 · 免费兜底</div>
+          <div class="engine-desc">Google 公开翻译端点，无 key 也能用。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p>
+        <a href="https://github.com/gandli/ai-proofduck-extension">GitHub</a> ·
+        <a href="https://github.com/gandli/ai-proofduck-extension/releases">Releases</a> ·
+        <a href="https://github.com/gandli/ai-proofduck-extension/blob/main/CHANGELOG.md">CHANGELOG</a> ·
+        <a href="https://github.com/gandli/ai-proofduck-extension/blob/main/LICENSE">MIT License</a>
+      </p>
+      <p style="margin-top:12px;font-size:14px;">© 2026 校对鸭 · Made with 🦆 by <a href="https://github.com/gandli">gandli</a></p>
+    </div>
+  </footer>
+</body>
+</html>
