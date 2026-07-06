@@ -1,8 +1,12 @@
 /**
- * Engine 接口 —— M2 各引擎的契约
+ * Engine 接口 —— 5 大引擎的统一契约
  *
- * M1 只定义 shape，真正实现（chrome-ai / webllm / wasm / openai-compat / free-translate）
- * 在 M2 分别落地。
+ * 演化历史：
+ * - M1: 定义 shape，纯骨架
+ * - M2: 扩展 runStreaming（流式输出灵魂）
+ *
+ * 5 大引擎按此接口分别实现：
+ *   chrome-ai / webllm / wasm / openai-compat / free-translate
  */
 
 export type EngineId = 'chrome-ai' | 'webllm' | 'wasm' | 'openai-compat' | 'free-translate';
@@ -12,7 +16,10 @@ export type EngineMode = 'translate' | 'summarize' | 'correct' | 'polish' | 'exp
 export interface EngineRunInput {
   mode: EngineMode;
   text: string;
+  /** 目标语言 BCP47 code（如 'zh'、'en'） */
   targetLang?: string;
+  /** 源语言（可选，未提供时由引擎自行检测） */
+  sourceLang?: string;
   maxTokens?: number;
 }
 
@@ -21,12 +28,17 @@ export interface Engine {
   id: EngineId;
   /** 展示名（i18n 由上层做） */
   name: string;
-  /** 优先级：越大越优先，默认由 EngineManager 按此排序 */
+  /** 优先级：越大越优先，EngineManager.pickBest 按此排序 */
   priority: number;
-  /** 检测当前环境是否具备该引擎（如 chrome.ai API 存在 / WebGPU 可用） */
+  /** 检测当前环境是否具备该引擎 */
   isAvailable: () => Promise<boolean>;
-  /** 是否支持某种模式（如翻译引擎不支持"扩写"） */
+  /** 是否支持某种模式（如纯翻译引擎不支持 "扩写"） */
   supports: (mode: EngineMode) => boolean;
-  /** 执行推理 */
+  /** 一次性执行推理，返回完整字符串 */
   run: (input: EngineRunInput) => Promise<string>;
+  /**
+   * 流式执行（可选）—— 返回逐 chunk 的 AsyncIterable
+   * 不实现时上层降级到 run() 一次性调用
+   */
+  runStreaming?: (input: EngineRunInput) => AsyncIterable<string>;
 }
