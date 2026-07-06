@@ -29,12 +29,10 @@ export function SelectionBubbleHost(props: SelectionBubbleHostProps) {
   // 追踪选区
   const { selectedText, rect } = useSelection({ minLength, debounceMs: 100 });
 
-  // Gemini review #2：用 ref 追最新选中，防异步翻译回来时用户已经换选区
-  // 导致旧文本的译文覆盖新状态
-  const selectedTextRef = useRef(selectedText);
-  useEffect(() => {
-    selectedTextRef.current = selectedText;
-  }, [selectedText]);
+  // Gemini/CodeRabbit review：用请求令牌（比 text 比对更严）解决异步竞态
+  // - 用户取消再重选同一段：text 相等但状态已被 idle 重置，selectedText 比对会漏
+  // - requestId 每次会话变化时 +1，pending 请求回来对不上就直接丢
+  const requestIdRef = useRef(0);
 
   // 独立"活动会话"：用户新选一段就重置状态
   const [status, setStatus] = useState<BubbleStatus>('idle');
@@ -46,7 +44,7 @@ export function SelectionBubbleHost(props: SelectionBubbleHostProps) {
   // 记录当前"活跃选中文本"——切换时重置状态
   const [activeText, setActiveText] = useState('');
 
-  // 选中文本变化：重置状态
+  // 选中文本变化：重置状态 + 让在飞的翻译请求全部作废（requestId +1）
   useEffect(() => {
     if (selectedText !== activeText) {
       setActiveText(selectedText);
@@ -55,18 +53,20 @@ export function SelectionBubbleHost(props: SelectionBubbleHostProps) {
       setError('');
       setEngineName('');
       setDismissed(false);
+      requestIdRef.current += 1; // 使所有 pending 请求失效
     }
   }, [selectedText, activeText]);
 
-  async function handleTrigger(text: string) {
+  async function handleTrigger(_text: string) {
+    // 领当前请求令牌；只有这个令牌全程未变，本次结果才允许写状态
+    const myRequestId = ++requestIdRef.current;
     setStatus('loading');
     setError('');
     setOutput('');
     try {
       // 生产走 pickBest；测试用注入
       const resolved = engine ?? (await getEngines().pickBest());
-      // Gemini review #2：pickBest 可能是异步的，等它回来时用户可能已经换了选区
-      if (selectedTextRef.current !== text) return;
+      if (myRequestId !== requestIdRef.current) return; // 已过期
       if (!resolved) {
         setStatus('error');
         setError('没有可用的翻译引擎，请到扩展设置里配置');
@@ -75,19 +75,17 @@ export function SelectionBubbleHost(props: SelectionBubbleHostProps) {
       setEngineName(resolved.name);
       const result = await resolved.run({
         mode: 'translate',
-        text,
+        text: _text,
         sourceLang: undefined,
         targetLang,
       });
-      // 翻译回来后再校验一次，避免慢链路引擎（云端 API）覆盖新状态
-      if (selectedTextRef.current !== text) return;
+      if (myRequestId !== requestIdRef.current) return; // 已过期
       // Engine.run 直接返回 string
       const finalText = typeof result === 'string' ? result : String(result ?? '');
       setOutput(finalText);
       setStatus('success');
     } catch (e) {
-      // 出错时也要校验，避免旧请求的错误覆盖新状态
-      if (selectedTextRef.current !== text) return;
+      if (myRequestId !== requestIdRef.current) return; // 已过期
       setStatus('error');
       const msg = e instanceof Error ? e.message : String(e);
       setError(msg);
