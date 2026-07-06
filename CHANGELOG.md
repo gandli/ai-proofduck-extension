@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.3.1] - 2026-07-06 · Patch
+
+### 🚨 Fixed — P0：免费翻译引擎在扩展页面被 CORS 拒
+
+`manifest.json` 缺少 `host_permissions`，导致扩展页面（SidePanel / Popup / Options）
+调用免费翻译引擎（Google 公开端点）时被 CORS 静默拦截，翻译永远卡在 loading。
+
+- `wxt.config.ts` 添加 `host_permissions: ['https://translate.googleapis.com/*']`
+- 通过端到端 demo spec 验证：SidePanel 翻译 "Machine learning is amazing." → "机器学习是惊人的。"
+- 划词浮标翻译 60 字英文 → "机器学习是人工智能的一个子领域。"
+
+### Added — 端到端 demo 契约
+
+- `tests/e2e/demo.spec.ts`：全功能截图 + 录屏 spec，用作发版前 smoke test
+  - Stub `navigator.gpu` 避免 pickBest 落到 WebLLM 卡 950MB 模型下载
+  - 起本地 HTTP server（file:// 不注入 CS）
+  - 用中文关键词（"机器"/"学习"/"智能"/"人工"）验证真实译文而非仅"有中文字符"
+
 ## [v0.3.0] - 2026-07-06
 
 **划词浮标**——从"必须打开侧边栏"升级到"网页任何地方选中即翻"。
