@@ -34,14 +34,22 @@ describe('getEngines() 单例', () => {
     expect(ids).toContain('openai-compat');
   });
 
-  it('优先级顺序：chrome-ai (100) > webllm (90) > openai-compat (70)', () => {
+  it('已注册 free-translate 引擎（M2 Cycle 4）', () => {
+    const m = getEngines();
+    const ids = m.list().map((e) => e.id);
+    expect(ids).toContain('free-translate');
+  });
+
+  it('优先级链路：chrome-ai (100) > webllm (90) > openai-compat (70) > free-translate (60)', () => {
     const m = getEngines();
     const engines = m.list();
     const chromeAi = engines.find((e) => e.id === 'chrome-ai')!;
     const webllm = engines.find((e) => e.id === 'webllm')!;
     const openai = engines.find((e) => e.id === 'openai-compat')!;
+    const freeT = engines.find((e) => e.id === 'free-translate')!;
     expect(chromeAi.priority).toBeGreaterThan(webllm.priority);
     expect(webllm.priority).toBeGreaterThan(openai.priority);
+    expect(openai.priority).toBeGreaterThan(freeT.priority);
   });
 
   it('chrome-ai 的 name 有值', () => {
