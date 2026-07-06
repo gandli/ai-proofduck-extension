@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.3.0] - 2026-07-06
+
+**划词浮标**——从"必须打开侧边栏"升级到"网页任何地方选中即翻"。
+参照 DeepL / 沉浸式翻译的浮标交互模式。**193 单测 + 14 E2E** 护航。
+
+### Added — 划词浮标
+
+- **SelectionBubble 组件**：4 态状态机（idle/loading/success/error），选区右下角定位
+- **useSelection v2**：暴露 `rect: DOMRect` 供浮标定位，`minLength` 防单字符误触，rAF 拖蓝节流
+- **content script**：`entrypoints/content.tsx` 挂 Shadow DOM 避免宿主页样式污染
+- **EngineManager 集成**：点浮标 → `pickBest()` → 走已配置引擎链
+- **E2E 真扩展验证**：Playwright launchPersistentContext + 本地 HTTP + Shadow DOM 断言
+
+### Fixed — Gemini/CodeRabbit review 修复
+
+- **Shadow DOM 事件重定向**：用 `composedPath()` 判定点击是否在浮标内（原生 contains 在 Shadow 里假 false）
+- **异步竞态**：`requestIdRef` 令牌 pickBest / run / catch 三处校验，取消选中再选同一段也不会覆盖新状态
+- **拖蓝 layout thrashing**：debounceMs=0 时用 `requestAnimationFrame` 推到下一帧
+- **纯空白选区**：`.trim()` 过滤空格/换行/tab
+- **content script 重复注入**：SPA / hot reload 时 main() 里 `getElementById` 幂等
+
+### Known limitations（明确 punt 到 v0.4）
+
+- Shadow DOM 里 Tailwind CSS 未生效——当前 inline style 兜底
+- 浮标越视口边缘不翻转
+- 页面滚动时浮标不跟随（rect 是选中瞬间快照）
+- build 6.24 MB → 11.96 MB（content script 打包 react + engines）
+
 ## [v0.2.0] - 2026-07-06
 
 TDD 全量重构 + 完整四层引擎链路。装完扩展**零配置即可翻译**，高级用户
