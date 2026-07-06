@@ -139,7 +139,16 @@ export function TranslationTab({
         {/* 字符数显示 */}
         <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
           <span aria-live="polite">{charCount} 字符</span>
-          <span>⌘ + Enter {t('tabSubmit')}</span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-200 rounded text-gray-600 font-sans text-[10px]">
+              {typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl'}
+            </kbd>
+            <span>+</span>
+            <kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-200 rounded text-gray-600 font-sans text-[10px]">
+              Enter
+            </kbd>
+            <span className="ml-1">{t('tabSubmit')}</span>
+          </span>
         </div>
       </div>
 
