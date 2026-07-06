@@ -28,12 +28,20 @@ describe('getEngines() 单例', () => {
     expect(ids).toContain('webllm');
   });
 
-  it('优先级顺序：chrome-ai (100) > webllm (90)', () => {
+  it('已注册 openai-compat 引擎（M2 Cycle 3）', () => {
+    const m = getEngines();
+    const ids = m.list().map((e) => e.id);
+    expect(ids).toContain('openai-compat');
+  });
+
+  it('优先级顺序：chrome-ai (100) > webllm (90) > openai-compat (70)', () => {
     const m = getEngines();
     const engines = m.list();
     const chromeAi = engines.find((e) => e.id === 'chrome-ai')!;
     const webllm = engines.find((e) => e.id === 'webllm')!;
+    const openai = engines.find((e) => e.id === 'openai-compat')!;
     expect(chromeAi.priority).toBeGreaterThan(webllm.priority);
+    expect(webllm.priority).toBeGreaterThan(openai.priority);
   });
 
   it('chrome-ai 的 name 有值', () => {
