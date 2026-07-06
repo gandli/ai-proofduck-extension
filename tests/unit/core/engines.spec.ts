@@ -22,6 +22,20 @@ describe('getEngines() 单例', () => {
     expect(ids).toContain('chrome-ai');
   });
 
+  it('已注册 webllm 引擎（M2 Cycle 2）', () => {
+    const m = getEngines();
+    const ids = m.list().map((e) => e.id);
+    expect(ids).toContain('webllm');
+  });
+
+  it('优先级顺序：chrome-ai (100) > webllm (90)', () => {
+    const m = getEngines();
+    const engines = m.list();
+    const chromeAi = engines.find((e) => e.id === 'chrome-ai')!;
+    const webllm = engines.find((e) => e.id === 'webllm')!;
+    expect(chromeAi.priority).toBeGreaterThan(webllm.priority);
+  });
+
   it('chrome-ai 的 name 有值', () => {
     const engine = getEngines().pickById('chrome-ai');
     expect(engine?.name).toBeTruthy();

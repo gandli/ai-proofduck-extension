@@ -11,6 +11,7 @@
  */
 import { createEngineManager } from './engine-manager';
 import { createChromeAiEngine } from '@engines/chrome-ai';
+import { createWebLlmEngine } from '@engines/webllm';
 import type { EngineManager } from './engine-manager';
 
 let instance: EngineManager | undefined;
@@ -18,12 +19,13 @@ let instance: EngineManager | undefined;
 export function getEngines(): EngineManager {
   if (!instance) {
     instance = createEngineManager();
-    instance.register(createChromeAiEngine());
+    // 注册顺序 = 优先级顺序（数字大的优先）
+    instance.register(createChromeAiEngine()); // 100: 最快最准
+    instance.register(createWebLlmEngine());   //  90: WebGPU 兜底，通用能力
     // M2 后续 cycle：
-    //   instance.register(createWebLlmEngine());
-    //   instance.register(createWasmEngine());
-    //   instance.register(createOpenAiCompatEngine());
-    //   instance.register(createFreeTranslateEngine());
+    //   instance.register(createWasmEngine());       // 80: 更弱环境兜底
+    //   instance.register(createOpenAiCompatEngine()); // 70: 用户配 API key
+    //   instance.register(createFreeTranslateEngine()); // 60: 最后兜底
   }
   return instance;
 }
