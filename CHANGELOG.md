@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.3.2] - 2026-07-06 · Patch (P0 covering all engines)
+
+### 🚨 Fixed — P0：v0.3.1 只修了 free-translate 一条链路，另外 3 条也是 CORS 死的
+
+v0.3.1 加了 `translate.googleapis.com` 修好 free-translate；但**其他 3 个引擎在扩展页面同样会被 CORS 静默拦截**：
+
+| 引擎 | 被拦的域名 |
+|---|---|
+| `free-translate` | `translate.googleapis.com` ✅（v0.3.1 已修） |
+| `webllm` | `huggingface.co`（权重）+ `raw.githubusercontent.com`（WASM 库） |
+| `openai-compat` | 用户任意 baseUrl（`api.openai.com` / `api.deepseek.com` / `api.groq.com` / 本地 vLLM 端点...） |
+| `chrome-ai` | 走 Chrome 内置 `Translator` API，不 fetch，不受影响 ✅ |
+
+### 修复
+
+`wxt.config.ts` 补齐所有引擎需要的 `host_permissions`：
+
+```typescript
+host_permissions: [
+  'https://translate.googleapis.com/*',        // free-translate
+  'https://huggingface.co/*',                  // webllm 权重
+  'https://raw.githubusercontent.com/*',       // webllm WASM 库
+  '<all_urls>',                                 // openai-compat（用户任意 baseUrl）
+],
+```
+
+**关于 `<all_urls>`**：openai-compat 的 `baseUrl` 完全由用户在 Options 页填入（可能是 OpenAI 官方 / DeepSeek / Groq / 内网 vLLM / 本地 Ollama...），无法枚举。安全模型：API Key 由用户自己持有并只写入 `chrome.storage.local`，扩展本身不发送任何数据到第三方。`<all_urls>` 只是让 fetch 不被 CORS 拒，不代表扩展会主动扫描全网。
+
 ## [v0.3.1] - 2026-07-06 · Patch
 
 ### 🚨 Fixed — P0：免费翻译引擎在扩展页面被 CORS 拒

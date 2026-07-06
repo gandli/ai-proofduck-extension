@@ -25,8 +25,14 @@ export default defineConfig({
     default_locale: 'zh_CN',
     permissions: ['sidePanel', 'storage', 'activeTab'],
     host_permissions: [
-      // 免费翻译引擎的 Google 端点 — 否则扩展页面 fetch 会被 CORS 拒
+      // free-translate 引擎：Google 公开翻译端点
       'https://translate.googleapis.com/*',
+      // webllm 引擎：MLC 模型权重（HuggingFace）+ WASM 库（GitHub raw）
+      'https://huggingface.co/*',
+      'https://raw.githubusercontent.com/*',
+      // openai-compat 引擎：用户可配置任意 baseUrl（OpenAI / DeepSeek / Groq / 本地 vLLM 等）
+      // 用 <all_urls> 是因为 baseUrl 完全由用户决定，无法枚举；安全性由用户对 API Key 的持有托底
+      '<all_urls>',
     ],
     icons: {
       '16': 'icons/icon-16.png',
