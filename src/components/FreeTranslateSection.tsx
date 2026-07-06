@@ -51,18 +51,30 @@ export function FreeTranslateSection() {
         </p>
       </header>
 
-      <label className="inline-flex items-center gap-3 cursor-pointer">
-        {/* 用原生 checkbox + role="switch" 让 a11y 与测试都简单 */}
-        <input
-          type="checkbox"
-          role="switch"
-          aria-label="启用免费翻译兜底"
-          checked={enabled}
-          onChange={handleToggle}
-          className="h-5 w-5 rounded accent-yellow-400 cursor-pointer"
+      <button
+        type="button"
+        role="switch"
+        aria-checked={enabled}
+        aria-label="启用免费翻译兜底"
+        onClick={handleToggle}
+        className={[
+          'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+          'focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1',
+          enabled ? 'bg-yellow-400' : 'bg-slate-300',
+        ].join(' ')}
+      >
+        {/* 圆点 thumb */}
+        <span
+          aria-hidden="true"
+          className={[
+            'inline-block h-4 w-4 rounded-full bg-white shadow transition-transform',
+            enabled ? 'translate-x-6' : 'translate-x-1',
+          ].join(' ')}
         />
-        <span className="text-sm">{enabled ? '已启用' : '已关闭'}</span>
-      </label>
+      </button>
+      <span className="ml-2 text-sm align-middle text-slate-700">
+        {enabled ? '已启用' : '已关闭'}
+      </span>
     </section>
   );
 }
