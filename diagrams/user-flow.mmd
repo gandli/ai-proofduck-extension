@@ -1,0 +1,24 @@
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#e7f5ff','fontFamily':'-apple-system,PingFang SC,sans-serif'}}}%%
+sequenceDiagram
+  autonumber
+  actor U as 👤 用户
+  participant Web as 🌐 任意网页
+  participant CS as 🫧 SelectionBubble<br/>(Content Script)
+  participant BG as ⚙️ Background SW
+  participant EM as 🎯 EngineManager
+  participant E as 🤖 引擎 (chrome-ai)
+
+  U->>Web: 划选英文文本
+  Web->>CS: selectionchange
+  CS->>CS: composedPath 判定<br/>+ requestId 令牌
+  CS-->>U: 显示气泡 [翻译]
+
+  U->>CS: 点击「翻译」
+  CS->>BG: postMessage<br/>{mode:'translate', text}
+  BG->>EM: run(input)
+  EM->>EM: pickBest by mode
+  EM->>E: engine.run(input)
+  E-->>EM: "你好世界"
+  EM-->>BG: {text, from:'chrome-ai'}
+  BG-->>CS: 结果
+  CS-->>U: 气泡内展示译文

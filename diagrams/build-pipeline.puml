@@ -1,0 +1,48 @@
+@startuml
+!theme cerulean-outline
+skinparam backgroundColor #FAFAFA
+skinparam roundCorner 12
+skinparam defaultFontName "PingFang SC"
+skinparam ArrowColor #495057
+title 校对鸭 · 构建与发布管线
+
+|#e7f5ff|开发者|
+start
+:git branch feat/*;
+:编辑 src/ · TDD;
+
+|#fff9db|本地验证|
+:bun run compile\n(tsc --noEmit); <<#fff9db>>
+:bun run test\n(vitest 247/247); <<#fff9db>>
+:bun run build\n(wxt build → dist/chrome-mv3/); <<#fff9db>>
+:bun x playwright test\n(30+ E2E); <<#fff9db>>
+
+|#e6fcf5|CI 门禁|
+:git push;
+:gh pr create;
+fork
+  :build.yml\ntsc + test + zip; <<#e6fcf5>>
+fork again
+  :Codacy\n静态分析; <<#e6fcf5>>
+fork again
+  :GitGuardian\n凭据扫描; <<#e6fcf5>>
+fork again
+  :CodeRabbit\nAI review; <<#e6fcf5>>
+end fork
+
+|#e7f5ff|开发者|
+if (全绿?) then (是)
+  :gh pr merge --squash --admin\n--delete-branch;
+else (否)
+  :修复 → 再推;
+  detach
+endif
+
+|#f3f0ff|发布|
+:git tag v0.x.0; <<#f3f0ff>>
+:bun run zip\n→ ai-proofduck-extension-x.y.z-chrome.zip; <<#f3f0ff>>
+:gh release create; <<#f3f0ff>>
+:上架 Chrome Web Store; <<#f3f0ff>>
+stop
+
+@enduml

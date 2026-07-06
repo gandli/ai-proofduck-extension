@@ -1,0 +1,55 @@
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#fff9db','primaryBorderColor':'#f59f00','primaryTextColor':'#212529','lineColor':'#495057','fontFamily':'-apple-system,BlinkMacSystemFont,PingFang SC,sans-serif'}}}%%
+graph TB
+  classDef user fill:#e7f5ff,stroke:#1c7ed6,color:#0b5394
+  classDef ui fill:#fff9db,stroke:#f59f00,color:#5c3c00
+  classDef core fill:#e6fcf5,stroke:#0ca678,color:#087f5b
+  classDef engine fill:#f3f0ff,stroke:#7048e8,color:#4c3399
+  classDef ext fill:#fff0f6,stroke:#d6336c,color:#a61e4d
+
+  U([👤 用户]):::user
+
+  subgraph EXT[🦆 校对鸭 · MV3 扩展]
+    direction TB
+    CS[Content Script<br/>SelectionBubble]:::ui
+    SP[SidePanel<br/>翻译面板]:::ui
+    OP[Options 页<br/>引擎/BYOK 配置]:::ui
+    PU[Popup<br/>快捷入口]:::ui
+    BG[Background SW<br/>message-bus]:::ui
+
+    EM{{EngineManager<br/>优先级路由}}:::core
+    STG[(chrome.storage.local<br/>apiKey / settings)]:::core
+
+    E1[chrome-ai<br/>P=100]:::engine
+    E2[webllm<br/>P=90]:::engine
+    E3[openai-compat<br/>P=70]:::engine
+    E4[free-translate<br/>P=60]:::engine
+  end
+
+  API1[Translator API<br/>Chrome 内置]:::ext
+  API2[WebGPU<br/>Qwen2.5-1.5B]:::ext
+  API3[OpenAI / DeepSeek /<br/>Groq / vLLM ...]:::ext
+  API4[Google translate_a]:::ext
+
+  U -->|① 划词| CS
+  U -->|② 打开| SP
+  U -->|② 打开| PU
+  U -->|③ 配置| OP
+
+  CS <-->|message-bus| BG
+  SP <-->|message-bus| BG
+  PU <-->|message-bus| BG
+  OP <-->|message-bus| BG
+
+  BG --> EM
+  OP -.->|保存| STG
+  EM -.->|读取| STG
+
+  EM -->|pickBest by mode| E1
+  EM -->|fallback| E2
+  EM -->|fallback| E3
+  EM -->|fallback| E4
+
+  E1 -.->|on-device| API1
+  E2 -.->|on-device| API2
+  E3 -.->|BYOK| API3
+  E4 -.->|free| API4
