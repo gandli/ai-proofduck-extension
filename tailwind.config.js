@@ -2,7 +2,7 @@
 export default {
   content: [
     "./entrypoints/**/*.{html,ts,tsx}",
-    "./components/**/*.{html,ts,tsx}",
+    "./src/**/*.{html,ts,tsx}",
   ],
   theme: {
     extend: {
