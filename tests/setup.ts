@@ -7,6 +7,8 @@
 import { afterEach, beforeEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import { fakeBrowser } from 'wxt/testing';
+// 让 toHaveValue / toBeInTheDocument / toBeDisabled 等 DOM matcher 全局可用
+import '@testing-library/jest-dom/vitest';
 
 beforeEach(() => {
   fakeBrowser.reset();
