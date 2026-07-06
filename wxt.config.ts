@@ -40,6 +40,12 @@ export default defineConfig({
     // openai-compat 引擎：用户可配置任意 baseUrl（OpenAI / DeepSeek / Groq / 本地 vLLM 等）
     // 用户在 Options 页填了 baseUrl 后，UI 会引导点【授权】触发 chrome.permissions.request
     optional_host_permissions: ['<all_urls>'],
+    // webllm 引擎需要 WASM 运行时（wasm-unsafe-eval 是 MV3 官方允许的最小 WASM 权限，
+    // 不等于 unsafe-eval，仅允许 WebAssembly.instantiate；不允许 eval() 字符串代码）
+    content_security_policy: {
+      extension_pages:
+        "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';",
+    },
     icons: {
       '16': 'icons/icon-16.png',
       '32': 'icons/icon-32.png',
