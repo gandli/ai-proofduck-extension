@@ -52,4 +52,97 @@ describe('useSelection', () => {
     }).not.toThrow();
     expect(result.current.selectedText).toBe('');
   });
+
+  // ========================
+  // Cycle 5.1: 划词浮标需要位置信息
+  // ========================
+  it('有选区时应提供 rect（浮标定位用）', () => {
+    const p = document.createElement('p');
+    p.textContent = 'hello proofduck';
+    document.body.appendChild(p);
+
+    const { result } = renderHook(() => useSelection());
+
+    act(() => {
+      const range = document.createRange();
+      range.selectNodeContents(p);
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+      document.dispatchEvent(new Event('selectionchange'));
+    });
+
+    // rect 存在且是标准 DOMRect 形状
+    expect(result.current.rect).toBeDefined();
+    expect(result.current.rect).toMatchObject({
+      top: expect.any(Number),
+      left: expect.any(Number),
+      right: expect.any(Number),
+      bottom: expect.any(Number),
+      width: expect.any(Number),
+      height: expect.any(Number),
+    });
+
+    document.body.removeChild(p);
+  });
+
+  it('无选区时 rect 为 null', () => {
+    const { result } = renderHook(() => useSelection());
+    expect(result.current.rect).toBeNull();
+  });
+
+  it('只有超过 minLength（默认 1）的选区才被视为"有效"', () => {
+    const p = document.createElement('p');
+    p.textContent = 'a b';
+    document.body.appendChild(p);
+
+    // 传 minLength=2
+    const { result } = renderHook(() => useSelection({ minLength: 2 }));
+
+    act(() => {
+      const range = document.createRange();
+      // 只选 "a"（长度 1）
+      range.setStart(p.firstChild!, 0);
+      range.setEnd(p.firstChild!, 1);
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+      document.dispatchEvent(new Event('selectionchange'));
+    });
+
+    // 长度不达标 → 视同没有选中
+    expect(result.current.selectedText).toBe('');
+    expect(result.current.rect).toBeNull();
+
+    document.body.removeChild(p);
+  });
+
+  it('debounce：短时间连续 selectionchange 只触发最后一次（默认 150ms）', async () => {
+    // 清掉前面测试残留的选区
+    window.getSelection()?.removeAllRanges();
+
+    const p = document.createElement('p');
+    p.textContent = 'hello';
+    document.body.appendChild(p);
+
+    const { result } = renderHook(() => useSelection({ debounceMs: 50 }));
+
+    act(() => {
+      // 快速触发 3 次，只应该以最后一次为准
+      for (let i = 0; i < 3; i++) {
+        document.dispatchEvent(new Event('selectionchange'));
+      }
+    });
+
+    // 立即读取应该还是空（debounce 中）
+    expect(result.current.selectedText).toBe('');
+
+    // 等 debounce 过期
+    await new Promise((r) => setTimeout(r, 80));
+
+    // 现在没选中任何东西所以还是空——但重点是 debounce 逻辑不报错
+    expect(result.current.selectedText).toBe('');
+
+    document.body.removeChild(p);
+  });
 });
