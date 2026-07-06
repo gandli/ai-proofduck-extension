@@ -9,10 +9,17 @@
  * - "测试连接" 按钮 GET {baseUrl}/v1/models 带 Bearer 头，展示结果
  * - "保存" 写回 storage 并显示"已保存"2s
  * - 加载态：首屏拉 storage 期间用 skeleton 占位
+ * - Round 5 (#465): baseUrl 填了但 host 未授权 → 黄色警告 + 授权按钮
  */
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { openaiCompatConfig } from '@core/openai-compat-config';
 import { formatErrorMessage } from '@utils/error';
+import {
+  hasHostPermission,
+  requestHostPermission,
+  onPermissionsChanged,
+} from '@core/host-permissions';
+import { extractOriginPattern } from '@core/origin-pattern';
 
 interface Preset {
   name: string;
@@ -35,6 +42,14 @@ type TestState =
   | { status: 'success'; modelCount: number }
   | { status: 'error'; message: string };
 
+// Round 5 (#465): 授权状态机
+type PermState =
+  | { status: 'unknown' }              // 首次未查完 / baseUrl 空
+  | { status: 'granted' }
+  | { status: 'missing' }              // 缺权限，可点【授权】
+  | { status: 'requesting' }
+  | { status: 'denied' };              // 用户点了拒绝
+
 export function OpenAiCompatSection() {
   const [loaded, setLoaded] = useState(false);
   const [baseUrl, setBaseUrl] = useState('');
@@ -43,6 +58,7 @@ export function OpenAiCompatSection() {
   const [showKey, setShowKey] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
   const [testState, setTestState] = useState<TestState>({ status: 'idle' });
+  const [permState, setPermState] = useState<PermState>({ status: 'unknown' });
 
   // 首次挂载回填
   useEffect(() => {
@@ -60,6 +76,59 @@ export function OpenAiCompatSection() {
   }, []);
 
   const canTest = Boolean(baseUrl && apiKey && model);
+
+  // Round 5 (#465): 从 baseUrl 计算 match pattern（畸形 URL 时短路，避免弹权限对话框）
+  const hostPattern = useMemo(() => {
+    if (!baseUrl) return null;
+    try {
+      return extractOriginPattern(baseUrl);
+    } catch {
+      return null;
+    }
+  }, [baseUrl]);
+
+  // Round 5 (#465): baseUrl 变化时重查权限；同时监听 chrome.permissions 变化事件
+  useEffect(() => {
+    let cancelled = false;
+    if (!hostPattern) {
+      setPermState({ status: 'unknown' });
+      return;
+    }
+    const refresh = async () => {
+      const granted = await hasHostPermission(hostPattern);
+      if (cancelled) return;
+      setPermState(granted ? { status: 'granted' } : { status: 'missing' });
+    };
+    refresh();
+    const unsub = onPermissionsChanged(refresh);
+    return () => {
+      cancelled = true;
+      unsub();
+    };
+  }, [hostPattern]);
+
+  // 计算显示用 origin（去掉 /*）
+  const hostOrigin = useMemo(() => {
+    if (!baseUrl) return '';
+    try {
+      return new URL(baseUrl).host;
+    } catch {
+      return '';
+    }
+  }, [baseUrl]);
+
+  const handleAuthorize = useCallback(async () => {
+    if (!hostPattern) return;
+    setPermState({ status: 'requesting' });
+    const granted = await requestHostPermission(hostPattern);
+    // 授权对话框关掉后重查一次（onPermissionsChanged 会补一次，这里保双保险）
+    if (granted) {
+      const confirmed = await hasHostPermission(hostPattern);
+      setPermState(confirmed ? { status: 'granted' } : { status: 'denied' });
+    } else {
+      setPermState({ status: 'denied' });
+    }
+  }, [hostPattern]);
 
   const handleSave = useCallback(async () => {
     await openaiCompatConfig.set({ baseUrl, apiKey, model });
@@ -147,6 +216,45 @@ export function OpenAiCompatSection() {
           placeholder="https://api.deepseek.com"
           className="w-full rounded-md border border-slate-300 p-2 text-sm font-mono"
         />
+        {/* Round 5 (#465): host 权限状态 */}
+        {hostPattern && hostOrigin && permState.status === 'missing' && (
+          <div className="mt-2 p-2 rounded-md bg-amber-50 border border-amber-300 text-xs">
+            <p className="text-amber-800 mb-2">
+              ⚠️ 校对鸭还没获得访问 <code className="font-mono">{hostOrigin}</code> 的权限，翻译请求会被浏览器拦截。
+            </p>
+            <button
+              type="button"
+              onClick={handleAuthorize}
+              className="px-2.5 py-1 rounded-md text-xs font-medium bg-amber-500 text-white hover:bg-amber-600"
+            >
+              授权访问 {hostOrigin}
+            </button>
+          </div>
+        )}
+        {hostPattern && hostOrigin && permState.status === 'requesting' && (
+          <div className="mt-2 p-2 rounded-md bg-slate-50 border border-slate-300 text-xs text-slate-600">
+            正在请求授权...
+          </div>
+        )}
+        {hostPattern && hostOrigin && permState.status === 'granted' && (
+          <p className="mt-2 text-xs text-emerald-600">
+            ✅ 已授权访问 <code className="font-mono">{hostOrigin}</code>
+          </p>
+        )}
+        {hostPattern && hostOrigin && permState.status === 'denied' && (
+          <div className="mt-2 p-2 rounded-md bg-rose-50 border border-rose-300 text-xs">
+            <p className="text-rose-800 mb-2">
+              ❌ 授权被拒绝，翻译无法访问 <code className="font-mono">{hostOrigin}</code>。
+            </p>
+            <button
+              type="button"
+              onClick={handleAuthorize}
+              className="px-2.5 py-1 rounded-md text-xs font-medium bg-amber-500 text-white hover:bg-amber-600"
+            >
+              授权访问 {hostOrigin}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* apiKey */}

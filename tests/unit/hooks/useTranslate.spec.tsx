@@ -73,6 +73,30 @@ describe('useTranslate', () => {
     expect(result.current.error).toMatch(/翻译失败/);
   });
 
+  it('Round 6 (#465): PermissionRequiredError → 报"缺少访问 X 的权限"引导授权', async () => {
+    const { PermissionRequiredError } = await import('@utils/permission-error');
+    const engine = makeMockEngine({
+      async *runStreaming() {
+        throw new PermissionRequiredError({
+          origin: 'https://api.deepseek.com',
+          pattern: 'https://api.deepseek.com/*',
+        });
+      },
+    });
+    const { result } = renderHook(() => useTranslate({ engine, ...noCacheOpts }));
+
+    await act(async () => {
+      await result.current.translate('hi', { source: 'en', target: 'zh' });
+    });
+
+    expect(result.current.status).toBe('error');
+    // 关键：错误信息里含域名，且引导用户去授权
+    expect(result.current.error).toContain('api.deepseek.com');
+    expect(result.current.error).toMatch(/授权|扩展设置/);
+    // 不应该是通用的 "翻译失败"
+    expect(result.current.error).not.toMatch(/^翻译失败$/);
+  });
+
   it('reset() 清空状态', async () => {
     const { result } = renderHook(() => useTranslate({ engine: makeMockEngine(), ...noCacheOpts }));
 

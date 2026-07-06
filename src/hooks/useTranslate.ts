@@ -18,6 +18,7 @@
 import { useCallback, useRef, useState } from 'react';
 import type { Engine } from '@engines/types';
 import { formatErrorMessage } from '@utils/error';
+import { isPermissionRequiredError } from '@utils/permission-error';
 import { TranslationCache, makeCacheKey } from '@utils/cache';
 
 export type TranslateStatus = 'idle' | 'loading' | 'done' | 'error';
@@ -110,7 +111,13 @@ export function useTranslate({ engine, cache }: UseTranslateOptions): UseTransla
       } catch (err) {
         // 已经作废的请求出错也别覆盖新状态
         if (requestId !== activeRequestIdRef.current) return;
-        setError(formatErrorMessage(err, '翻译失败'));
+        // Round 6 (#465): 权限错误 → UX 引导用户去 Options 授权
+        if (isPermissionRequiredError(err)) {
+          const origin = (err as { origin: string }).origin;
+          setError(`扩展缺少访问 ${origin} 的权限，请到「扩展设置」页点【授权】按钮授权后重试`);
+        } else {
+          setError(formatErrorMessage(err, '翻译失败'));
+        }
         setStatus('error');
       }
     },
