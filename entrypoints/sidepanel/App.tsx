@@ -58,25 +58,34 @@ export default function SidePanelApp({ engine }: Props = {}) {
   const [available, setAvailable] = useState<boolean | null>(null);
 
   // 引擎的选择过程本身可能是异步的（pickBest 要 await isAvailable）
-  // 用 state 保存 resolved 结果
+  // 用 state 保存 resolved 结果 + isResolving 避免闪烁"没有可用引擎"横幅（Gemini review）
   const [resolvedEngine, setResolvedEngine] = useState<Engine | null>(engine ?? null);
+  const [isResolving, setIsResolving] = useState(!engine);
 
   // 当没有传 engine（生产环境），异步选一个最好的
   useEffect(() => {
     if (engine) {
       // 测试注入路径：直接用
       setResolvedEngine(engine);
+      setIsResolving(false);
       return;
     }
     // 生产路径：走 pickBest() 兜底
     let cancelled = false;
+    setIsResolving(true);
     getEngines()
       .pickBest()
-      .then((e) => {
-        if (!cancelled) setResolvedEngine(e);
+      .then((e: Engine | null) => {
+        if (!cancelled) {
+          setResolvedEngine(e);
+          setIsResolving(false);
+        }
       })
       .catch(() => {
-        if (!cancelled) setResolvedEngine(null);
+        if (!cancelled) {
+          setResolvedEngine(null);
+          setIsResolving(false);
+        }
       });
     return () => {
       cancelled = true;
@@ -87,14 +96,15 @@ export default function SidePanelApp({ engine }: Props = {}) {
     engine: resolvedEngine ?? STUB_ENGINE,
   });
 
-  // 检测当前所选引擎可用性
+  // 检测当前所选引擎可用性（isResolving 期间不判定，避免闪烁 Gemini review）
   useEffect(() => {
+    if (isResolving) return;
     if (!resolvedEngine) {
       setAvailable(false);
       return;
     }
     resolvedEngine.isAvailable().then(setAvailable).catch(() => setAvailable(false));
-  }, [resolvedEngine]);
+  }, [resolvedEngine, isResolving]);
 
   // 同语言校验：手动选定的源和目标一样时无意义（'auto' 例外，由引擎自行推断）
   const isSameLanguage = source !== 'auto' && source === target;

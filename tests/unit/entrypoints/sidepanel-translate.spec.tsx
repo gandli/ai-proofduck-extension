@@ -97,10 +97,43 @@ describe('SidePanel M2 翻译交互', () => {
   // ========================
   // Bug #P0: SidePanel 应该走 pickBest() 兜底，不能写死 chrome-ai
   // ========================
-  it('未传 engine prop 时 → 应从 EngineManager 选**当前可用最优**（不是硬编码 chrome-ai）', async () => {
-    // 场景：Chrome 138 以下用户，chrome-ai 不可用，但 free-translate 可用
-    // 期望：SidePanel 自动选到 free-translate，UI 应该能工作，不显示"不可用"
+  it('未传 engine prop 时 → 应调用 EngineManager.pickBest() 而非 pickById（Gemini review）', async () => {
+    // 这个测试真正覆盖 P0 修复：不传 engine，mock getEngines 拿 pickBest 调用凭据
+    const pickBest = vi.fn().mockResolvedValue({
+      id: 'free-translate',
+      name: '免费翻译',
+      priority: 60,
+      isAvailable: async () => true,
+      supports: () => true,
+      run: async ({ text }: { text: string }) => `[free]${text}`,
+      async *runStreaming({ text }: { text: string }) {
+        for (const ch of `[free]${text}`) yield ch;
+      },
+    });
+    const pickById = vi.fn().mockReturnValue(null);
+    vi.doMock('@core/engines', () => ({
+      getEngines: () => ({ pickBest, pickById, register: vi.fn(), list: () => [] }),
+      _resetEnginesForTest: () => {},
+    }));
 
+    // 重新 import 让 doMock 生效
+    vi.resetModules();
+    const mod = await import('../../../entrypoints/sidepanel/App');
+    const FreshApp = mod.default;
+    render(<FreshApp />);
+
+    await waitFor(() => {
+      // 关键契约：pickBest 被调用，pickById 不该被调用
+      expect(pickBest).toHaveBeenCalled();
+      expect(pickById).not.toHaveBeenCalled();
+    });
+
+    vi.doUnmock('@core/engines');
+    vi.resetModules();
+  });
+
+  it('传入 engine prop 时 → 应直接用它，不查 EngineManager（DI 路径）', async () => {
+    // 保底：DI 路径不能意外走 EngineManager
     const freeEngine = mockEngine({
       id: 'free-translate',
       name: '免费翻译',
@@ -113,14 +146,6 @@ describe('SidePanel M2 翻译交互', () => {
     });
 
     render(<SidePanelApp engine={freeEngine} />);
-
-    // 不应显示"Chrome AI 不可用"（因为 free-translate 可以顶上）
-    await waitFor(() => {
-      // 等 isAvailable 检查跑完
-      const btn = screen.getByRole('button', { name: /翻译/ }) as HTMLButtonElement;
-      // 空输入 disabled 是对的，但不能因为 available===false 而 disabled
-      expect(btn.disabled).toBe(true); // 空文本
-    });
 
     // 输入后能翻译（意味着可用性判断没错杀）
     const input = screen.getByPlaceholderText(/粘贴|输入/) as HTMLTextAreaElement;

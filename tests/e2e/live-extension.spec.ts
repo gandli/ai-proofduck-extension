@@ -43,24 +43,32 @@ async function launchWithExt(): Promise<{
     ],
   });
 
-  // 收集控制台错误
-  context.on('console', (msg) => {
-    if (msg.type() === 'error') {
-      errors.push(`[${msg.type()}] ${msg.text()}`);
+  // Gemini review: 启动后任何一步失败都要 close + cleanup，否则 Chromium 进程泄漏
+  try {
+    // 收集控制台错误
+    context.on('console', (msg) => {
+      if (msg.type() === 'error') {
+        errors.push(`[${msg.type()}] ${msg.text()}`);
+      }
+    });
+    context.on('weberror', (err) => {
+      errors.push(`[weberror] ${err.error().message}`);
+    });
+
+    // 等 service worker 就绪拿 extension id
+    let [worker] = context.serviceWorkers();
+    if (!worker) {
+      worker = await context.waitForEvent('serviceworker', { timeout: 10_000 });
     }
-  });
-  context.on('weberror', (err) => {
-    errors.push(`[weberror] ${err.error().message}`);
-  });
+    const extId = worker.url().split('/')[2];
 
-  // 等 service worker 就绪拿 extension id
-  let [worker] = context.serviceWorkers();
-  if (!worker) {
-    worker = await context.waitForEvent('serviceworker', { timeout: 10_000 });
+    return { context, extId, userDataDir, errors };
+  } catch (err) {
+    // 启动到一半失败：关闭浏览器、清临时目录
+    await context.close().catch(() => {});
+    rmSync(userDataDir, { recursive: true, force: true });
+    throw err;
   }
-  const extId = worker.url().split('/')[2];
-
-  return { context, extId, userDataDir, errors };
 }
 
 async function teardown(ctx: BrowserContext, dir: string) {
