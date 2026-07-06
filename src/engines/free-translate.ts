@@ -82,6 +82,12 @@ export function createFreeTranslateEngine(): Engine {
 
       const sourceLang = input.sourceLang || 'auto';
       const targetLang = input.targetLang;
+      // targetLang 在 EngineRunInput 上是可选的（其他 mode 未必需要），
+      // 但对翻译来说必填。否则会拼出 tl=undefined 让 Google 端点 400。
+      // Gemini review 提出。
+      if (!targetLang) {
+        throw new Error('free-translate: 缺少目标语言参数 targetLang');
+      }
 
       // dt=t 只要翻译文本；client=gtx 是公开可用的 Chrome 翻译扩展 client id
       const url =

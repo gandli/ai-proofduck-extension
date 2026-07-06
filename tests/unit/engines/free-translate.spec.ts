@@ -226,6 +226,14 @@ describe('free-translate engine', () => {
     expect(url).toContain('q=hi%20%26%20bye');
   });
 
+  it('run: 缺少 targetLang → 抛错（避免 tl=undefined）', async () => {
+    // Gemini review 提出的场景：EngineRunInput.targetLang 是可选的
+    const eng = createFreeTranslateEngine();
+    await expect(
+      eng.run({ mode: 'translate', text: 'hi', sourceLang: 'en' }),
+    ).rejects.toThrow(/缺少目标语言参数/);
+  });
+
   it('runStreaming: 未实现（undefined）', () => {
     const eng = createFreeTranslateEngine();
     expect(eng.runStreaming).toBeUndefined();
