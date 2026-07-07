@@ -155,28 +155,32 @@ export function OpenAiCompatSection() {
       const stripped = baseUrl.replace(/\/+$/, '');
       const url = stripped.endsWith('/v1') ? `${stripped}/models` : `${stripped}/v1/models`;
       // v0.5.3 P0-1: 15s 超时，避免用户填错 baseUrl 时 UI 永久 loading
+      // Gemini review：timeout 必须覆盖 body 读取（json/text 也是网络阻塞），
+      // 所以 clearTimeout 放最外层 finally 而不是 fetch 的 finally
       const controller = new AbortController();
       const timer = setTimeout(
         () => controller.abort(new DOMException('test connection timeout 15s', 'TimeoutError')),
         15_000,
       );
-      let resp: Response;
       try {
-        resp = await fetch(url, {
+        const resp = await fetch(url, {
           signal: controller.signal,
           headers: { Authorization: `Bearer ${apiKey}` },
         });
+        if (!resp.ok) {
+          const body = await resp.text().catch(() => '');
+          setTestState({
+            status: 'error',
+            message: `HTTP ${resp.status} ${body}`.slice(0, 200),
+          });
+          return;
+        }
+        const data = (await resp.json()) as { data?: unknown[] };
+        const count = Array.isArray(data?.data) ? data.data.length : 0;
+        setTestState({ status: 'success', modelCount: count });
       } finally {
         clearTimeout(timer);
       }
-      if (!resp.ok) {
-        const body = await resp.text().catch(() => '');
-        setTestState({ status: 'error', message: `HTTP ${resp.status} ${body}`.slice(0, 200) });
-        return;
-      }
-      const data = (await resp.json()) as { data?: unknown[] };
-      const count = Array.isArray(data?.data) ? data.data.length : 0;
-      setTestState({ status: 'success', modelCount: count });
     } catch (err) {
       setTestState({ status: 'error', message: formatErrorMessage(err) });
     }

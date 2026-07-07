@@ -18,6 +18,7 @@
  * - baseUrl / model 存 sync，可以跨设备
  * - apiKey 只存 local（openai-compat-config.ts 里硬约束）
  * - 不在日志里打印 key
+ * - 网关 4xx body 可能 echo Authorization 头，拼错误信息前必须脱敏（Gemini review）
  */
 import type { Engine, EngineMode, EngineRunInput } from './types';
 import { openaiCompatConfig } from '@core/openai-compat-config';
@@ -25,6 +26,23 @@ import { hasHostPermission } from '@core/host-permissions';
 import { extractOriginPattern } from '@core/origin-pattern';
 import { PermissionRequiredError } from '@utils/permission-error';
 import { createFetchAbortHandle } from '@utils/fetch-abort';
+
+/**
+ * 脱敏错误响应体，避免网关 echo 的 API key / Bearer token 泄露到日志或 UI。
+ * 覆盖：OpenAI sk-*、Anthropic sk-ant-*、通用 Bearer 头。
+ */
+const SANITIZE_PATTERNS: Array<[RegExp, string]> = [
+  [/sk-[A-Za-z0-9_-]{20,}/g, 'sk-***REDACTED***'],
+  [/sk-ant-[A-Za-z0-9_-]{20,}/g, 'sk-ant-***REDACTED***'],
+  [/Bearer\s+[A-Za-z0-9._-]{16,}/gi, 'Bearer ***REDACTED***'],
+];
+
+function sanitizeErrorBody(text: string): string {
+  return SANITIZE_PATTERNS.reduce((acc, [re, repl]) => acc.replace(re, repl), text);
+}
+
+/** SSE 单个事件之间的 buffer 最大长度（防恶意/异常上游无边界推送 → OOM） */
+const MAX_SSE_BUFFER = 1_048_576; // 1 MiB
 
 function systemPromptFor(input: EngineRunInput): string {
   switch (input.mode) {
@@ -126,7 +144,7 @@ export function createOpenAiCompatEngine(): Engine {
         });
         if (!resp.ok) {
           const text = await resp.text().catch(() => '');
-          throw new Error(`openai-compat HTTP ${resp.status}: ${text.slice(0, 200)}`);
+          throw new Error(`openai-compat HTTP ${resp.status}: ${sanitizeErrorBody(text.slice(0, 200))}`);
         }
         const data = (await resp.json()) as { choices?: Array<{ message?: { content?: string } }> };
         const content = data.choices?.[0]?.message?.content;
@@ -159,7 +177,7 @@ export function createOpenAiCompatEngine(): Engine {
         });
         if (!resp.ok) {
           const text = await resp.text().catch(() => '');
-          throw new Error(`openai-compat HTTP ${resp.status}: ${text.slice(0, 200)}`);
+          throw new Error(`openai-compat HTTP ${resp.status}: ${sanitizeErrorBody(text.slice(0, 200))}`);
         }
         if (!resp.body) {
           throw new Error('openai-compat 响应缺少 body（SSE 不可读）');
@@ -168,6 +186,7 @@ export function createOpenAiCompatEngine(): Engine {
         const reader = resp.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
+        let firstChunkReceived = false;
 
         // SSE 格式：一条事件由若干 `field: value` 行组成，事件之间空行分隔。
         // 网络层会随意切分字节 → 必须 buffer + 找事件边界。
@@ -178,11 +197,25 @@ export function createOpenAiCompatEngine(): Engine {
         //
         // 用 try/finally 保证 reader.cancel() 释放底层连接：
         // 用户中途取消翻译或抛错时避免 socket 泄漏（Gemini review）。
+        //
+        // v0.5.3 修 Gemini review #501：
+        //   1. 首 chunk 到达后立即 cleanup 超时 timer——长文流式不能被 30s 误杀
+        //      （超时是"服务端 hang 住不响应"的兜底，一旦有数据就说明通道活着）
+        //   2. buffer 超 1 MiB 抛错——防恶意/异常上游无边界推送导致 SW OOM
         try {
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
+            if (!firstChunkReceived) {
+              firstChunkReceived = true;
+              abortH.cleanup(); // 首 chunk 后卸掉 30s 兜底，流式长文不再被误杀
+            }
             buffer += decoder.decode(value, { stream: true });
+            if (buffer.length > MAX_SSE_BUFFER) {
+              throw new Error(
+                `openai-compat SSE buffer 超过 ${MAX_SSE_BUFFER} bytes 无事件边界，可能上游异常`,
+              );
+            }
 
             while (true) {
               const lfIdx = buffer.indexOf('\n\n');

@@ -100,6 +100,8 @@ export function createFreeTranslateEngine(): Engine {
         const resp = await fetch(url, { signal: abortH.signal });
         if (!resp.ok) {
           const body = await resp.text().catch(() => '');
+          // free-translate 是无鉴权公开端点，body 里不会有 apiKey，
+          // 但 200 字符截断+统一格式保持一致
           throw new Error(`free-translate HTTP ${resp.status}: ${body.slice(0, 200)}`);
         }
 
