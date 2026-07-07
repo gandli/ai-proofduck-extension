@@ -98,17 +98,29 @@ export class TranslationCache {
 }
 
 /**
- * 缓存键组装：mode + 语言对 + 文本
+ * 缓存键组装：engineId + model + mode + 语言对 + 文本
+ *
+ * v0.5.3 P1-3：加入 engineId + model 两个维度。
+ * 原因：不同引擎（chrome-ai / webllm / openai-compat）翻译同一句结果不同；
+ * 同一 openai-compat 换 model（gpt-4o vs qwen-turbo）结果也不同。
+ * 不加会跨引擎/跨模型污染缓存 → 用户切模型秒回旧结果，以为新模型没生效。
+ *
  * 语言字段省略时归一化为 'auto'，让 UI 层的 sourceLang=undefined
- * 和显式选 'auto' 命中同一条缓存
+ * 和显式选 'auto' 命中同一条缓存。
+ *
+ * engineId / model 省略也归一化为 'default'，向后兼容老调用点。
  */
 export function makeCacheKey(input: {
   mode: string;
   text: string;
   sourceLang?: string;
   targetLang?: string;
+  engineId?: string;
+  model?: string;
 }): string {
+  const engine = input.engineId ?? 'default';
+  const model = input.model ?? 'default';
   const source = input.sourceLang ?? 'auto';
   const target = input.targetLang ?? 'auto';
-  return `${input.mode}|${source}|${target}|${input.text}`;
+  return `${engine}|${model}|${input.mode}|${source}|${target}|${input.text}`;
 }

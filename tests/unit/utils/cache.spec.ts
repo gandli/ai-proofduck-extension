@@ -139,4 +139,38 @@ describe('makeCacheKey', () => {
     const k2 = makeCacheKey({ mode: 'translate', text: 'hi', targetLang: 'zh' });
     expect(k1).toBe(k2);
   });
+
+  // v0.5.3 P1-3: engineId + model 维度
+  describe('engineId / model 维度（P1-3）', () => {
+    const base = { mode: 'translate', text: 'hello', sourceLang: 'en', targetLang: 'zh' };
+
+    it('不同 engineId → 不同 key（防跨引擎污染）', () => {
+      const k1 = makeCacheKey({ ...base, engineId: 'chrome-ai' });
+      const k2 = makeCacheKey({ ...base, engineId: 'openai-compat' });
+      expect(k1).not.toBe(k2);
+    });
+
+    it('不同 model → 不同 key（同一 openai-compat 换 gpt-4o vs qwen 应 miss）', () => {
+      const k1 = makeCacheKey({ ...base, engineId: 'openai-compat', model: 'gpt-4o' });
+      const k2 = makeCacheKey({ ...base, engineId: 'openai-compat', model: 'qwen-turbo' });
+      expect(k1).not.toBe(k2);
+    });
+
+    it('engineId + model 都同 → 命中', () => {
+      const k1 = makeCacheKey({ ...base, engineId: 'openai-compat', model: 'gpt-4o' });
+      const k2 = makeCacheKey({ ...base, engineId: 'openai-compat', model: 'gpt-4o' });
+      expect(k1).toBe(k2);
+    });
+
+    it('省略 engineId/model → 归一化为 default（向后兼容老调用点）', () => {
+      const k1 = makeCacheKey(base);
+      const k2 = makeCacheKey({ ...base, engineId: 'default', model: 'default' });
+      expect(k1).toBe(k2);
+    });
+
+    it('key 前缀顺序：engine|model|mode|...（供人肉排查缓存问题）', () => {
+      const k = makeCacheKey({ ...base, engineId: 'webllm', model: 'llama-3' });
+      expect(k.startsWith('webllm|llama-3|translate|')).toBe(true);
+    });
+  });
 });
