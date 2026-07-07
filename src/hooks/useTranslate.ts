@@ -71,12 +71,15 @@ export function useTranslate({ engine, cache }: UseTranslateOptions): UseTransla
       setStatus('loading');
 
       // ⚡ 缓存命中路径：直接返回，跳过引擎
-      // key 组装用 makeCacheKey 保证：mode + 语言对 + 文本 一致就命中
+      // key 组装用 makeCacheKey 保证：engine + model + mode + 语言对 + 文本 一致就命中
+      // v0.5.3 P1-3：加 engineId 避免跨引擎污染（openai-compat/chrome-ai/webllm 各自缓存）
       const cacheKey = makeCacheKey({
         mode: 'translate',
         text,
         sourceLang: opts.source,
         targetLang: opts.target,
+        engineId: engine.id,
+        model: engine.model,
       });
       const cached = activeCache?.get(cacheKey);
       if (cached !== undefined) {

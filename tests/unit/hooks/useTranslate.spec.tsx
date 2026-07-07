@@ -241,6 +241,80 @@ describe('useTranslate', () => {
       expect(result.current.status).toBe('done');
       expect(result.current.output).toBe('[T] hi');
     });
+
+    // v0.5.3 P1-3: engineId 维度隔离
+    it('相同 text/lang 换 engineId → 不命中缓存（防跨引擎污染）', async () => {
+      const cache = new TranslationCache();
+
+      // 引擎 A：chrome-ai
+      const engineA = makeMockEngine({
+        id: 'chrome-ai',
+        runStreaming: undefined,
+        run: async ({ text }) => `[chrome-ai] ${text}`,
+      });
+      const hookA = renderHook(() => useTranslate({ engine: engineA, cache }));
+      await act(async () => {
+        await hookA.result.current.translate('hi', { source: 'en', target: 'zh' });
+      });
+      expect(hookA.result.current.output).toBe('[chrome-ai] hi');
+
+      // 引擎 B：openai-compat（同 text/lang）
+      let bRanTimes = 0;
+      const engineB = makeMockEngine({
+        id: 'openai-compat',
+        runStreaming: undefined,
+        run: async ({ text }) => {
+          bRanTimes++;
+          return `[openai] ${text}`;
+        },
+      });
+      const hookB = renderHook(() => useTranslate({ engine: engineB, cache }));
+      await act(async () => {
+        await hookB.result.current.translate('hi', { source: 'en', target: 'zh' });
+      });
+
+      // 关键断言：B 真的跑了（没被 A 的缓存污染），拿到 B 自己的结果
+      expect(bRanTimes).toBe(1);
+      expect(hookB.result.current.output).toBe('[openai] hi');
+    });
+
+    // v0.5.3 P1-3: model 维度隔离（Gemini review 补充）
+    it('相同 engineId 换 model → 不命中缓存（防跨模型污染）', async () => {
+      const cache = new TranslationCache();
+
+      // 引擎 A：openai-compat + gpt-4o
+      const engineA = makeMockEngine({
+        id: 'openai-compat',
+        model: 'gpt-4o',
+        runStreaming: undefined,
+        run: async ({ text }) => `[gpt-4o] ${text}`,
+      });
+      const hookA = renderHook(() => useTranslate({ engine: engineA, cache }));
+      await act(async () => {
+        await hookA.result.current.translate('hi', { source: 'en', target: 'zh' });
+      });
+      expect(hookA.result.current.output).toBe('[gpt-4o] hi');
+
+      // 引擎 B：同一 openai-compat 但换 qwen-turbo
+      let bRanTimes = 0;
+      const engineB = makeMockEngine({
+        id: 'openai-compat',
+        model: 'qwen-turbo',
+        runStreaming: undefined,
+        run: async ({ text }) => {
+          bRanTimes++;
+          return `[qwen] ${text}`;
+        },
+      });
+      const hookB = renderHook(() => useTranslate({ engine: engineB, cache }));
+      await act(async () => {
+        await hookB.result.current.translate('hi', { source: 'en', target: 'zh' });
+      });
+
+      // 断言：换 model 真的重跑，拿到 qwen 结果（未修复时会直接返回 [gpt-4o] hi）
+      expect(bRanTimes).toBe(1);
+      expect(hookB.result.current.output).toBe('[qwen] hi');
+    });
   });
 
   // v0.5.3 P0-1: fetch 超时 / AbortController 传播

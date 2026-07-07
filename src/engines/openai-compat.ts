@@ -97,10 +97,24 @@ export function createOpenAiCompatEngine(): Engine {
     return cfg;
   }
 
-  return {
-    id: 'openai-compat',
+  // v0.5.3 P1-3: 用 storage watch 维护 model 的同步快照
+  // 供 engine.model getter 立刻返回，makeCacheKey 才能感知模型切换
+  let currentModelSync: string | undefined = undefined;
+  void openaiCompatConfig.get().then((c) => {
+    currentModelSync = c.model || undefined;
+  });
+  openaiCompatConfig.watch((c) => {
+    currentModelSync = c.model || undefined;
+  });
+
+  const engine = {
+    id: 'openai-compat' as const,
     name: 'OpenAI 兼容 · 云端 / 自建（BYOK）',
     priority: 70,
+    // v0.5.3 P1-3: model 通过 getter 动态反映当前 config
+    get model(): string | undefined {
+      return currentModelSync;
+    },
 
     async isAvailable(): Promise<boolean> {
       const { baseUrl, apiKey, model } = await openaiCompatConfig.get();
@@ -259,4 +273,6 @@ export function createOpenAiCompatEngine(): Engine {
       }
     },
   };
+
+  return engine;
 }

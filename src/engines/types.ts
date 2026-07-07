@@ -36,6 +36,12 @@ export interface Engine {
   id: EngineId;
   /** 展示名（i18n 由上层做） */
   name: string;
+  /**
+   * 当前使用的模型标识（可选）。
+   * openai-compat 场景下同一引擎会切换 gpt-4o / qwen-turbo 等，
+   * 加进 cacheKey 才能防跨模型污染（v0.5.3 P1-3 Gemini review）。
+   */
+  model?: string;
   /** 优先级：越大越优先，EngineManager.pickBest 按此排序 */
   priority: number;
   /** 检测当前环境是否具备该引擎 */
