@@ -62,6 +62,59 @@ describe('createFetchAbortHandle', () => {
   it('默认超时为 30s', () => {
     expect(DEFAULT_FETCH_TIMEOUT_MS).toBe(30_000);
   });
+
+  // v0.5.5 P3-C（审计 v3 tail）：fetch-abort.ts L56-68 · AbortSignal.any 缺失时降级路径
+  // Node 20+ 有 AbortSignal.any 原生实现，正常路径 L53 anyFn 分支覆盖；
+  // 生产也可能跑在没 AbortSignal.any 的老环境（旧 Safari / Node <19），
+  // 需专门 stub 强制走 L56-68 手动 addEventListener 转发降级
+  describe('AbortSignal.any 不可用时的降级路径', () => {
+    let originalAny: unknown;
+
+    beforeEach(() => {
+      originalAny = (AbortSignal as unknown as { any?: unknown }).any;
+      // 强制走手动 forward 降级
+      (AbortSignal as unknown as { any?: unknown }).any = undefined;
+    });
+
+    afterEach(() => {
+      (AbortSignal as unknown as { any?: unknown }).any = originalAny;
+    });
+
+    it('userSignal 未 abort → 走 addEventListener 转发', () => {
+      const user = new AbortController();
+      const h = createFetchAbortHandle(user.signal, 5000);
+      try {
+        expect(h.signal.aborted).toBe(false);
+        user.abort(new DOMException('user cancel', 'AbortError'));
+        expect(h.signal.aborted).toBe(true);
+      } finally {
+        // Gemini review 采纳：try/finally 防定时器泄漏（fake timers 环境下尤其重要）
+        h.cleanup();
+      }
+    });
+
+    it('userSignal 已 abort → 降级立即触发 timeoutCtl.abort + clearTimeout', () => {
+      const user = new AbortController();
+      user.abort(new DOMException('user cancel', 'AbortError'));
+      const h = createFetchAbortHandle(user.signal, 5000);
+      try {
+        expect(h.signal.aborted).toBe(true);
+      } finally {
+        h.cleanup();
+      }
+    });
+
+    it('无 userSignal → combined = timeoutCtl.signal 分支', () => {
+      const h = createFetchAbortHandle(undefined, 100);
+      try {
+        expect(h.signal.aborted).toBe(false);
+        vi.advanceTimersByTime(101);
+        expect(h.signal.aborted).toBe(true);
+      } finally {
+        h.cleanup();
+      }
+    });
+  });
 });
 
 describe('isAbortError / isTimeoutError', () => {
