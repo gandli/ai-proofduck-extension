@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [v0.5.4] - 2026-07-07 · 全量审计 v2 · 12/12 findings 全绿
 
-跟进 v0.5.3 后 fuck-my-shit-mountain skill 触发的第二轮全量审计，12 findings 全部结账。
+跟进 v0.5.3 后由深度审计 skill（`fuck-my-shit-mountain`）触发的第二轮全量审计，12 findings 全部结账。
 
 ### 🔴 P1 · Critical 修复（3 项）
 
