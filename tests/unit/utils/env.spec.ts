@@ -74,6 +74,11 @@ describe('isE2EBuild', () => {
     expect(await loadIsE2EBuild('yes')).toBe(false);
   });
 
+  // 关于 env.ts L27 `typeof raw !== 'string'` 分支：
+  // Vite 的 define/env 注入会把所有 VITE_* 前缀值 stringify，vitest 里
+  // vi.stubEnv 也强制 string 参数。生产运行时 raw 几乎不可能是非 string，
+  // 该分支是 defensive dead code，不追单测覆盖。
+
   // 断言原始 env 未被污染
   it('测试后 env 恢复原状', () => {
     expect(import.meta.env).toEqual(originalEnv);

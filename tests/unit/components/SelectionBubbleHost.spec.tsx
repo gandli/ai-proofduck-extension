@@ -160,6 +160,39 @@ describe('SelectionBubbleHost', () => {
     // 反证：不应出现 [object Object]（说明 formatErrorMessage 正确提取了 message）
     const container = document.body;
     expect(container.textContent).not.toContain('[object Object]');
+    document.body.removeChild(p);
+  });
+
+  // v0.5.5 P3-C（审计 v3 tail）：SelectionBubbleHost.tsx L95-97
+  // 权限错误分支 → 提示用户去扩展设置授权
+  it('engine.run 抛 PermissionRequiredError → 气泡显示授权引导', async () => {
+    const p = document.createElement('p');
+    p.textContent = 'hi';
+    document.body.appendChild(p);
+
+    const engine = makeMockEngine({
+      run: (async () => {
+        // 跨进程 rehydrated 形态（无原型），触发 isPermissionRequiredError 双通道
+        throw {
+          name: 'PermissionRequiredError',
+          origin: 'https://api.deepseek.com/',
+          pattern: 'https://api.deepseek.com/*',
+          message: 'permission missing',
+        } as unknown as Error;
+      }) as never,
+    });
+
+    render(<SelectionBubbleHost engine={engine} />);
+    act(() => selectText(p));
+    await waitFor(() => screen.getByRole('button', { name: /翻译/ }));
+    fireEvent.click(screen.getByRole('button', { name: /翻译/ }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/扩展缺少访问 https:\/\/api\.deepseek\.com\/ 的权限/),
+      ).toBeInTheDocument();
+    });
+    expect(screen.getByText(/扩展设置.+授权/)).toBeInTheDocument();
 
     document.body.removeChild(p);
   });
