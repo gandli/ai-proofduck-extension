@@ -9,7 +9,8 @@
  * - useSelection 返回 selectedText 时展示预览
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { renderAct } from '@test-helpers/render';
 import PopupApp from '../../../entrypoints/popup/App';
 
 // mock useSelection —— 默认无选中
@@ -29,8 +30,8 @@ describe('PopupApp 行为', () => {
     vi.restoreAllMocks();
   });
 
-  it('渲染 header + 两个 CTA 按钮', () => {
-    render(<PopupApp />);
+  it('渲染 header + 两个 CTA 按钮', async () => {
+    await renderAct(<PopupApp />);
     expect(screen.getByText('校对鸭')).toBeDefined();
     expect(screen.getByText(/贴心写作小助手/)).toBeDefined();
     expect(screen.getByRole('button', { name: /打开侧边栏/ })).toBeDefined();
@@ -46,7 +47,7 @@ describe('PopupApp 行为', () => {
       runtime: {},
     };
 
-    render(<PopupApp />);
+    await renderAct(<PopupApp />);
     fireEvent.click(screen.getByRole('button', { name: /打开侧边栏/ }));
 
     await waitFor(() => {
@@ -55,21 +56,21 @@ describe('PopupApp 行为', () => {
     });
   });
 
-  it('点击"设置"调用 chrome.runtime.openOptionsPage', () => {
+  it('点击"设置"调用 chrome.runtime.openOptionsPage', async () => {
     const openOptionsPage = vi.fn().mockResolvedValue(undefined);
     (globalThis as { chrome?: unknown }).chrome = {
       runtime: { openOptionsPage },
     };
 
-    render(<PopupApp />);
+    await renderAct(<PopupApp />);
     fireEvent.click(screen.getByRole('button', { name: /设置/ }));
 
     expect(openOptionsPage).toHaveBeenCalled();
   });
 
-  it('chrome.sidePanel 缺失时不抛异常（非扩展上下文）', () => {
+  it('chrome.sidePanel 缺失时不抛异常（非扩展上下文）', async () => {
     (globalThis as { chrome?: unknown }).chrome = undefined;
-    render(<PopupApp />);
+    await renderAct(<PopupApp />);
 
     // 不应抛
     expect(() =>
@@ -87,7 +88,7 @@ describe('PopupApp 行为', () => {
       runtime: {},
     };
 
-    render(<PopupApp />);
+    await renderAct(<PopupApp />);
     fireEvent.click(screen.getByRole('button', { name: /打开侧边栏/ }));
 
     await waitFor(() => expect(getCurrent).toHaveBeenCalled());
@@ -103,7 +104,7 @@ describe('PopupApp 行为', () => {
       runtime: {},
     };
 
-    render(<PopupApp />);
+    await renderAct(<PopupApp />);
     fireEvent.click(screen.getByRole('button', { name: /打开侧边栏/ }));
 
     // 等下一轮 microtask 完成，验证不会 unhandled rejection
@@ -124,7 +125,7 @@ describe('PopupApp · 选中态', () => {
 
     const mod = await import('../../../entrypoints/popup/App');
     const FreshApp = mod.default;
-    render(<FreshApp />);
+    await renderAct(<FreshApp />);
 
     expect(screen.getByText('已选中')).toBeDefined();
     vi.doUnmock('@hooks/useSelection');
@@ -132,8 +133,8 @@ describe('PopupApp · 选中态', () => {
 });
 
 describe('PopupApp · v0.5.2 UX polish', () => {
-  it('容器宽度使用 w-80 (320px) 而非 w-72 (288px)，避免长引擎名截断', () => {
-    const { container } = render(<PopupApp />);
+  it('容器宽度使用 w-80 (320px) 而非 w-72 (288px)，避免长引擎名截断', async () => {
+    const { container } = await renderAct(<PopupApp />);
     const root = container.querySelector('.bg-beige-50');
     expect(root?.className).toContain('w-80');
     expect(root?.className).not.toContain('w-72');

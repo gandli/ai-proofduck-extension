@@ -15,6 +15,7 @@ export default defineConfig({
       '@engines': path.resolve(__dirname, './src/engines'),
       '@i18n': path.resolve(__dirname, './src/i18n'),
       '@utils': path.resolve(__dirname, './src/utils'),
+      '@test-helpers': path.resolve(__dirname, './tests/helpers'),
     },
   },
   test: {

@@ -12,7 +12,8 @@
  * 用 dependency injection 把 engine 传进去，测试给 mock。
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { screen, waitFor, fireEvent } from '@testing-library/react';
+import { renderAct } from '@test-helpers/render';
 import SidePanelApp from '../../../entrypoints/sidepanel/App';
 import type { Engine } from '@engines/types';
 
@@ -33,14 +34,14 @@ function mockEngine(overrides: Partial<Engine> = {}): Engine {
 
 describe('SidePanel M2 翻译交互', () => {
   it('渲染输入 textarea + 目标语言选择器 + 翻译按钮', async () => {
-    render(<SidePanelApp engine={mockEngine()} />);
+    await renderAct(<SidePanelApp engine={mockEngine()} />);
     expect(screen.getByPlaceholderText(/粘贴|输入/)).toBeDefined();
     expect(screen.getByLabelText(/目标语言|target/i)).toBeDefined();
     expect(screen.getByRole('button', { name: /翻译/ })).toBeDefined();
   });
 
   it('输入 + 点击翻译 → 显示翻译结果', async () => {
-    render(<SidePanelApp engine={mockEngine()} />);
+    await renderAct(<SidePanelApp engine={mockEngine()} />);
     const input = screen.getByPlaceholderText(/粘贴|输入/) as HTMLTextAreaElement;
     fireEvent.change(input, { target: { value: 'hello world' } });
     fireEvent.click(screen.getByRole('button', { name: /翻译/ }));
@@ -52,7 +53,7 @@ describe('SidePanel M2 翻译交互', () => {
 
   it('Chrome AI 不可用时显示提示横幅', async () => {
     const engine = mockEngine({ isAvailable: async () => false });
-    render(<SidePanelApp engine={engine} />);
+    await renderAct(<SidePanelApp engine={engine} />);
 
     await waitFor(() => {
       expect(screen.getByText(/不可用|升级|Chrome 138/)).toBeDefined();
@@ -65,7 +66,7 @@ describe('SidePanel M2 翻译交互', () => {
         throw new Error('模型未下载');
       },
     });
-    render(<SidePanelApp engine={engine} />);
+    await renderAct(<SidePanelApp engine={engine} />);
     const input = screen.getByPlaceholderText(/粘贴|输入/) as HTMLTextAreaElement;
     fireEvent.change(input, { target: { value: 'hi' } });
     fireEvent.click(screen.getByRole('button', { name: /翻译/ }));
@@ -75,14 +76,14 @@ describe('SidePanel M2 翻译交互', () => {
     });
   });
 
-  it('空输入时按钮 disabled', () => {
-    render(<SidePanelApp engine={mockEngine()} />);
+  it('空输入时按钮 disabled', async () => {
+    await renderAct(<SidePanelApp engine={mockEngine()} />);
     const btn = screen.getByRole('button', { name: /翻译/ }) as HTMLButtonElement;
     expect(btn.disabled).toBe(true);
   });
 
   it('源语言 === 目标语言 时按钮 disabled + 结果区提示', async () => {
-    render(<SidePanelApp engine={mockEngine()} />);
+    await renderAct(<SidePanelApp engine={mockEngine()} />);
     const input = screen.getByPlaceholderText(/粘贴|输入/) as HTMLTextAreaElement;
     fireEvent.change(input, { target: { value: 'hi' } });
 
@@ -120,7 +121,7 @@ describe('SidePanel M2 翻译交互', () => {
     vi.resetModules();
     const mod = await import('../../../entrypoints/sidepanel/App');
     const FreshApp = mod.default;
-    render(<FreshApp />);
+    await renderAct(<FreshApp />);
 
     await waitFor(() => {
       // 关键契约：pickBest 被调用，pickById 不该被调用
@@ -145,7 +146,7 @@ describe('SidePanel M2 翻译交互', () => {
       },
     });
 
-    render(<SidePanelApp engine={freeEngine} />);
+    await renderAct(<SidePanelApp engine={freeEngine} />);
 
     // 输入后能翻译（意味着可用性判断没错杀）
     const input = screen.getByPlaceholderText(/粘贴|输入/) as HTMLTextAreaElement;
@@ -158,7 +159,7 @@ describe('SidePanel M2 翻译交互', () => {
   });
 
   it('UI 应显示当前使用的引擎名（让用户知道谁在干活）', async () => {
-    render(<SidePanelApp engine={mockEngine({ name: '免费翻译' })} />);
+    await renderAct(<SidePanelApp engine={mockEngine({ name: '免费翻译' })} />);
     // 挂载后至少一处提到"免费翻译"（引擎徽章 + label 都算）
     await waitFor(() => {
       const matches = screen.getAllByText(/免费翻译/);
@@ -167,8 +168,8 @@ describe('SidePanel M2 翻译交互', () => {
   });
 
   // P1-1 修复（v0.4.2 审计）：输入超过 MAX_CHARS 时按钮 disabled + 提示
-  it('输入超过 5000 字时按钮 disabled + 显示"输入超过 X 字"提示', () => {
-    render(<SidePanelApp engine={mockEngine()} />);
+  it('输入超过 5000 字时按钮 disabled + 显示"输入超过 X 字"提示', async () => {
+    await renderAct(<SidePanelApp engine={mockEngine()} />);
     const input = screen.getByPlaceholderText(/粘贴|输入/) as HTMLTextAreaElement;
     fireEvent.change(input, { target: { value: 'x'.repeat(5001) } });
 
@@ -177,8 +178,8 @@ describe('SidePanel M2 翻译交互', () => {
     expect(screen.getByText(/输入超过 5000 字/)).toBeDefined();
   });
 
-  it('输入正好 5000 字时按钮仍可点（等号边界）', () => {
-    render(<SidePanelApp engine={mockEngine()} />);
+  it('输入正好 5000 字时按钮仍可点（等号边界）', async () => {
+    await renderAct(<SidePanelApp engine={mockEngine()} />);
     const input = screen.getByPlaceholderText(/粘贴|输入/) as HTMLTextAreaElement;
     fireEvent.change(input, { target: { value: 'x'.repeat(5000) } });
 
@@ -188,7 +189,7 @@ describe('SidePanel M2 翻译交互', () => {
 
   it('全部引擎都不可用时才显示"没有可用引擎"横幅（不是特指 Chrome AI）', async () => {
     const engine = mockEngine({ isAvailable: async () => false });
-    render(<SidePanelApp engine={engine} />);
+    await renderAct(<SidePanelApp engine={engine} />);
 
     await waitFor(() => {
       const banner = screen.getByRole('alert');
@@ -197,8 +198,8 @@ describe('SidePanel M2 翻译交互', () => {
   });
 
   // v0.5.1 UX polish
-  it('空状态显示引导条目（3 条 hint：粘贴/快捷键/弹泡）', () => {
-    render(<SidePanelApp engine={mockEngine()} />);
+  it('空状态显示引导条目（3 条 hint：粘贴/快捷键/弹泡）', async () => {
+    await renderAct(<SidePanelApp engine={mockEngine()} />);
     expect(screen.getByText(/翻译结果会显示在这里/)).toBeDefined();
     expect(screen.getByText(/粘贴或输入文本到左侧/)).toBeDefined();
     expect(screen.getByText(/快速翻译/)).toBeDefined();
@@ -214,7 +215,7 @@ describe('SidePanel M2 翻译交互', () => {
         yield '恢复成功';
       },
     });
-    render(<SidePanelApp engine={flakyEngine} />);
+    await renderAct(<SidePanelApp engine={flakyEngine} />);
     const input = screen.getByPlaceholderText(/粘贴|输入/) as HTMLTextAreaElement;
     // 用独特文本避免 module-level cache 命中前测试残留
     fireEvent.change(input, { target: { value: 'retry-test-unique-abc' } });
@@ -238,7 +239,7 @@ describe('SidePanel M2 翻译交互', () => {
         yield '';
       },
     });
-    const { container } = render(<SidePanelApp engine={pendingEngine} />);
+    const { container } = await renderAct(<SidePanelApp engine={pendingEngine} />);
     const input = screen.getByPlaceholderText(/粘贴|输入/) as HTMLTextAreaElement;
     // 独特文本避 cache
     fireEvent.change(input, { target: { value: 'loading-test-unique-xyz' } });
