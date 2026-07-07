@@ -6,6 +6,8 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './tests/e2e',
+  /* 商店素材生成脚本不参与常规 E2E（v0.5.2 手动跑） */
+  testIgnore: ['**/cws-store-screenshots.spec.ts'],
   
   /* Run tests in files in parallel */
   fullyParallel: true,
