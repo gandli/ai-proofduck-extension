@@ -195,4 +195,61 @@ describe('SidePanel M2 翻译交互', () => {
       expect(banner.textContent).toMatch(/没有可用|所有引擎|去设置|配置/);
     });
   });
+
+  // v0.5.1 UX polish
+  it('空状态显示引导条目（3 条 hint：粘贴/快捷键/弹泡）', () => {
+    render(<SidePanelApp engine={mockEngine()} />);
+    expect(screen.getByText(/翻译结果会显示在这里/)).toBeDefined();
+    expect(screen.getByText(/粘贴或输入文本到左侧/)).toBeDefined();
+    expect(screen.getByText(/快速翻译/)).toBeDefined();
+    expect(screen.getByText(/弹泡也会自动翻译/)).toBeDefined();
+  });
+
+  it('错误态显示"重试"按钮，点击触发重新翻译', async () => {
+    let callCount = 0;
+    const flakyEngine = mockEngine({
+      async *runStreaming({ text: _t }: { text: string }) {
+        callCount++;
+        if (callCount === 1) throw new Error('网络断了');
+        yield '恢复成功';
+      },
+    });
+    render(<SidePanelApp engine={flakyEngine} />);
+    const input = screen.getByPlaceholderText(/粘贴|输入/) as HTMLTextAreaElement;
+    // 用独特文本避免 module-level cache 命中前测试残留
+    fireEvent.change(input, { target: { value: 'retry-test-unique-abc' } });
+    fireEvent.click(screen.getByRole('button', { name: /^翻译/ }));
+
+    // 等错误态出现
+    const retryBtn = await screen.findByRole('button', { name: /^重试/ });
+    expect(retryBtn).toBeDefined();
+
+    // 点重试
+    fireEvent.click(retryBtn);
+    await waitFor(() => {
+      expect(screen.getByText('恢复成功')).toBeDefined();
+    });
+  });
+
+  it('加载态渲染骨架块而非 ⏳ emoji（品牌禁用 emoji）', async () => {
+    const pendingEngine = mockEngine({
+      async *runStreaming({ text: _t }: { text: string }) {
+        await new Promise(() => {}); // 永挂
+        yield '';
+      },
+    });
+    const { container } = render(<SidePanelApp engine={pendingEngine} />);
+    const input = screen.getByPlaceholderText(/粘贴|输入/) as HTMLTextAreaElement;
+    // 独特文本避 cache
+    fireEvent.change(input, { target: { value: 'loading-test-unique-xyz' } });
+    fireEvent.click(screen.getByRole('button', { name: /^翻译/ }));
+
+    await waitFor(() => {
+      const skeleton = container.querySelectorAll('.pd-skeleton-line');
+      expect(skeleton.length).toBe(3);
+      const output = container.querySelector('[aria-label="翻译结果"]');
+      expect(output?.getAttribute('aria-busy')).toBe('true');
+      expect(output?.textContent).not.toContain('⏳');
+    });
+  });
 });
