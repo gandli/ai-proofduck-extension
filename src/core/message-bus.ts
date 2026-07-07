@@ -84,7 +84,9 @@ export function defineMessages<M extends MessageSchema>(): MessageBus<M> {
           result
             .then((res) => sendResponse?.(res))
             .catch((err: unknown) => {
-              console.error('[message-bus] handler failed:', err);
+              // 只打脱敏后的 message，不打 raw err —— err.stack 可能包含用户输入
+              // （e.g. translate:request 里 text 会被拼进 error stack）
+              console.error('[message-bus] handler failed:', formatErrorMessage(err));
               sendResponse?.({ error: formatErrorMessage(err) });
             });
           return true;

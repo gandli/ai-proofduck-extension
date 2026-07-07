@@ -14,15 +14,20 @@
  */
 import { describe, it, expect } from 'vitest';
 import { createEngineManager } from '@core/engine-manager';
-import type { Engine } from '@engines/types';
+import type { Engine, EngineMode } from '@engines/types';
 
 // 测试专用的 stub 引擎
-const stubEngine = (id: string, priority: number, available: boolean): Engine => ({
+const stubEngine = (
+  id: string,
+  priority: number,
+  available: boolean,
+  modes: EngineMode[] = ['translate', 'summarize', 'correct', 'polish', 'expand'],
+): Engine => ({
   id: id as Engine['id'],
   name: `Stub ${id}`,
   priority,
   isAvailable: async () => available,
-  supports: () => true,
+  supports: (mode: EngineMode) => modes.includes(mode),
   run: async () => 'stub-output',
 });
 
@@ -81,5 +86,32 @@ describe('engine-manager', () => {
     m.register(e2);
     expect(m.list()).toHaveLength(1);
     expect(m.list()[0]).toBe(e2);
+  });
+
+  // P1-2 修复：pickBest 支持按 mode 过滤
+  // 场景：M3 引入 Summarizer 引擎（priority 高但只支持 summarize），
+  // SidePanel 走 pickBest('translate') 时应跳过它选下一个
+  it('pickBest(mode) 跳过不支持该 mode 的高优引擎', async () => {
+    const m = createEngineManager();
+    // 假设 chrome-ai 未来只支持 summarize（priority 最高）
+    m.register(stubEngine('chrome-ai', 100, true, ['summarize']));
+    m.register(stubEngine('webllm', 80, true, ['translate', 'summarize']));
+
+    const picked = await m.pickBest('translate');
+    expect(picked?.id).toBe('webllm');
+  });
+
+  it('pickBest(mode) 无引擎支持时返回 null', async () => {
+    const m = createEngineManager();
+    m.register(stubEngine('chrome-ai', 100, true, ['summarize']));
+
+    expect(await m.pickBest('translate')).toBeNull();
+  });
+
+  it('pickBest() 不传 mode 时保持历史兼容（只看 isAvailable）', async () => {
+    const m = createEngineManager();
+    // 只支持 summarize 的引擎，但不传 mode 时不该被跳过
+    m.register(stubEngine('chrome-ai', 100, true, ['summarize']));
+    expect((await m.pickBest())?.id).toBe('chrome-ai');
   });
 });
