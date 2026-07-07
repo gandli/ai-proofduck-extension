@@ -145,8 +145,10 @@ body {
 }
 .pd-plush-chip:hover { transform: translateY(-1px); }
 
-/* 主 CTA：品牌黄渐变 + inset 高光（更立体） */
+/* 主 CTA 按钮变体 —— rounded 用 !important 覆盖基础 rounded-md，
+ * 避免 Tailwind class 顺序不稳定导致视觉不一致（Gemini review） */
 .pd-plush-cta {
+  border-radius: 24px !important;
   background: linear-gradient(135deg, var(--brand-300) 0%, var(--brand-500) 55%, #ff8b3d 100%);
   color: var(--ink-900);
   border: 1.5px solid rgba(213, 139, 0, 0.5);
@@ -174,7 +176,7 @@ body {
   box-shadow: none;
 }
 
-/* 译文卡片：毛绒软圆角 + 💛 标签 */
+/* 译文卡片：毛绒软圆角 —— 基础版（Popup preview 复用，无 💛 装饰） */
 .pd-plush-output {
   background: linear-gradient(135deg, #ffffff 0%, var(--brand-50) 100%);
   border: 1.5px solid var(--brand-200);
@@ -182,7 +184,9 @@ body {
   box-shadow: 0 4px 12px rgba(245, 159, 0, 0.10);
   position: relative;
 }
-.pd-plush-output::before {
+/* 💛 装饰标签 —— 只挂在 SidePanel 主输出上，通过额外类启用，
+ * 避免 Popup 里的选中预览卡也顶一个 💛 破坏语义（Gemini review） */
+.pd-plush-output-tagged::before {
   content: '💛';
   position: absolute;
   top: -12px;

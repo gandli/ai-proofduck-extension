@@ -319,7 +319,7 @@ export default function SidePanelApp({ engine }: Props = {}) {
             )}
           </div>
           <div
-            className="pd-plush-output min-h-[100px] p-3.5 text-[14px] leading-relaxed font-serif text-ink-900 whitespace-pre-wrap"
+            className="pd-plush-output pd-plush-output-tagged min-h-[100px] p-3.5 text-[14px] leading-relaxed font-serif text-ink-900 whitespace-pre-wrap"
             aria-label="翻译结果"
             aria-live="polite"
           >

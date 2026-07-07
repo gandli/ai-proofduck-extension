@@ -29,6 +29,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  * detect-object-injection 误报（variant 是 union，实际不可能注入）。
  */
 const VARIANT_CLASS: ReadonlyMap<ButtonVariant, string> = new Map([
+  // rounded-2xl 会被 .pd-plush-cta 的 border-radius:24px !important 覆盖成 24px；
+  // 保留 rounded-2xl 是为了在 Shadow DOM 里 .pd-plush-cta 失效时也有一个合理 fallback。
   ['primary', 'pd-btn pd-btn-primary pd-plush-cta rounded-2xl'],
   [
     'ghost',
