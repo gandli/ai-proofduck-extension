@@ -51,7 +51,7 @@ Currently at **v0.4.0** — brand-unified UI, engine health dashboard, dark sele
 - **🎯 Selection Bubble** (v0.3+): Select any text on any webpage → floating bubble translates instantly. Dark Shadow DOM, host-page style isolation guaranteed.
 - **🔒 Privacy First (Local Models)**: Run LLMs locally via WebGPU/WASM (e.g., Qwen2.5). Your data never leaves your browser.
 - **🌐 Online Model Support**: Compatible with OpenAI-format APIs for connecting to powerful cloud models. BYOK — API keys stay in `chrome.storage.local`, never sent anywhere except your chosen endpoint.
-- **🔐 Permission on Demand** (v0.4): Migrated from `<all_urls>` to `optional_host_permissions`. Grant only the origins you need, when you need them.
+- **🔐 Permission on Demand** (v0.4): Migrated from `<all_urls>` to `optional_host_permissions`. Grant origins via the **Authorize button on the Options page** — translation checks state only and prompts a CTA when missing.
 - **📊 Engine Health Dashboard** (v0.4): Real-time badges (chrome-ai / webllm / openai-compat / free-translate) show which engine is ready and which needs setup.
 - **📑 Smart Content Fetching**:
   - Process selected text instantly.
