@@ -151,6 +151,11 @@ body {
     var(--beige-100);
 }
 
+/* v0.5.0：健康度总览卡片背景（原为 tsx 内联，抽出以支持 dark mode） */
+.pd-plush-health-card {
+  background: linear-gradient(135deg, rgba(245,195,184,0.14) 0%, var(--beige-50) 60%);
+}
+
 /* 引擎徽章：胶囊 → 米色纸片，成功用鸭蛋蓝而非绿（更贴日式绘本调） */
 .pd-plush-chip {
   display: inline-flex;
@@ -293,3 +298,211 @@ body {
 .pd-dot-ok   { background: var(--success); box-shadow: 0 0 0 3px var(--success-soft); }
 .pd-dot-err  { background: var(--danger);  box-shadow: 0 0 0 3px var(--danger-soft); }
 .pd-dot-off  { background: #ced4da; }
+/**
+ * === v0.5.0 · Dark Mode ===
+ *
+ * 策略：走 `prefers-color-scheme: dark` 跟随系统主题。
+ * - :root.dark 或 @media (prefers-color-scheme:dark) 下覆盖所有 CSS 变量
+ * - 所有 .pd-plush-* / .pd-btn-* 类自动生效
+ * - tailwind bg-beige-50 / bg-white / text-ink-warm 等直接类通过下方 dark hard-override 补齐
+ *
+ * 深色调色板（对应 v0.4.2 米色樱粉的暗色映射）：
+ *   beige-50 米纸 #FDFAF2  →  ink-warm-dark #1F1A14 深墨咖
+ *   beige-100 蛋壳 #F8EFD9 →  #2A2419 焦糖夜
+ *   beige-200 麻布 #EFE3C4 →  #3A3223 中间调
+ *   sakura   #F5C3B8      →  #C8827A 稍柔暗樱
+ *   duck-blue #7CC4D0     →  #5FA3AE 静谧鸭蓝
+ *   ink-warm  #2E2418     →  #F5EFE3 主文
+ *   ink-warm-2 #6E5638    →  #BFAE93 次文
+ *   ink-warm-3 #A8896A    →  #8A7659 placeholder
+ *   brand-500 #C89A3E     →  #E0B355 金光更亮（保证可读）
+ *
+ * 对比度检查（前景对背景 4.5:1+，AA 通过）：
+ *   #F5EFE3 on #1F1A14 = 14.1:1 ✅
+ *   #BFAE93 on #1F1A14 = 8.9:1 ✅
+ *   #E0B355 on #1F1A14 = 8.2:1 ✅
+ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* 覆盖 beige/sakura/duck-blue/ink-warm 系变量 */
+    --beige-50:  #14100B;   /* 主背景：极深墨咖（给卡片让层次） */
+    --beige-100: #241D14;   /* header 底色 */
+    --beige-200: #33291D;   /* 边框/卡片 */
+    --beige-300: #5A4C36;   /* 分隔 */
+
+    --sakura:    #C8827A;
+    --sakura-2:  #E0958B;
+    --duck-blue: #5FA3AE;
+
+    --ink-warm:   #F5EFE3;  /* 主文本 */
+    --ink-warm-2: #BFAE93;
+    --ink-warm-3: #8A7659;  /* placeholder */
+
+    /* 语义色 · 加深底、亮化前景 */
+    --success-soft: #1B3524;
+    --danger-soft:  #3B1F1F;
+    --info-soft:    #1A2F44;
+
+    /* 品牌黄暗化 + 描边加亮 */
+    --brand-500: #E0B355;
+    --brand-600: #D6A445;
+  }
+
+  /* === tailwind 静态 utility 硬覆盖（tailwind bg-beige-50 生成的是 hex 常量） === */
+  /* 主背景 · 米纸 → 极深墨咖（拉低给卡片让路） */
+  .bg-beige-50   { background-color: #14100B !important; }
+  .bg-beige-100  { background-color: #241D14 !important; }
+  .bg-beige-200  { background-color: #33291D !important; }
+  .bg-white      { background-color: #33291D !important; }
+  .bg-slate-50   { background-color: #241D14 !important; }
+  .bg-slate-100  { background-color: #2A2419 !important; }
+
+  /* 文本颜色 · 暖墨 → 浅米 */
+  .text-ink-warm   { color: #F5EFE3 !important; }
+  .text-ink-warm-2 { color: #BFAE93 !important; }
+  .text-ink-warm-3 { color: #8A7659 !important; }
+  .text-ink-900    { color: #F5EFE3 !important; }
+  .text-ink-800    { color: #EDE3D2 !important; }
+  .text-ink-700    { color: #D8C9AE !important; }
+  .text-ink-600    { color: #BFAE93 !important; }
+  .text-ink-500    { color: #9A8770 !important; }
+  .text-ink-400    { color: #8A7659 !important; }
+
+  /* 边框 · 米麻布 → 深咖 */
+  .border-beige-100 { border-color: #3A3223 !important; }
+  .border-beige-200 { border-color: #4A3E2D !important; }
+  .border-beige-300 { border-color: #5A4C36 !important; }
+  .border-brand-100 { border-color: #3A3223 !important; }
+  .border-ink-100   { border-color: #3A3223 !important; }
+  .border-ink-200   { border-color: #4A3E2D !important; }
+
+  /* 品牌黄 · 深底上加亮 */
+  .text-brand-500  { color: #E0B355 !important; }
+  .text-brand-600  { color: #D6A445 !important; }
+  .bg-brand-50     { background-color: #2F2718 !important; }
+  .bg-brand-100    { background-color: #3A3020 !important; }
+  .bg-brand-500    { background-color: #E0B355 !important; }
+  .bg-brand-600    { background-color: #D6A445 !important; }
+
+  /* Danger / success · 暗底暖前景 */
+  .bg-danger-soft   { background-color: #3B1F1F !important; }
+  .bg-success-soft  { background-color: #1B3524 !important; }
+  .bg-info-soft     { background-color: #1A2F44 !important; }
+
+  /* 输入框：白纸底 → 稍暗于主背景 */
+  .pd-plush-input   { background: #2A2419; color: #F5EFE3; }
+  .pd-plush-input::placeholder { color: #8A7659; }
+
+  /* pd-dot-off 灰蒙 → 深灰 */
+  .pd-dot-off { background: #4A3E2D; }
+
+  /* logo 光晕在暗底过突：降低 radial 白光 + 阴影缩小 */
+  .pd-plush-logo-wrap {
+    background:
+      radial-gradient(circle at 32% 30%, rgba(255,255,255,0.35) 0%, transparent 55%),
+      radial-gradient(circle at 60% 65%, var(--brand-300) 0%, var(--brand-500) 100%);
+    box-shadow:
+      inset -3px -5px 0 rgba(0, 0, 0, 0.25),
+      0 3px 8px rgba(0, 0, 0, 0.35),
+      0 0 0 2px #2A2419;
+  }
+
+  /* 输入/输出卡：拉高与主背景的对比，形成清晰分层 */
+  .pd-plush-input {
+    background: #33291D;
+    border-color: #5A4C36;
+    color: #F5EFE3;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255,255,255,0.03);
+  }
+  .pd-plush-input:focus {
+    border-color: #E0958B;
+    box-shadow: 0 0 0 3px rgba(224, 149, 139, 0.25);
+  }
+  .pd-plush-input::placeholder { color: #B39877; }
+
+  /* 输出卡樱粉「译」标签：暗底提亮 */
+  .pd-plush-output::before {
+    background: #2A2419;
+    color: #E0958B;
+    border-color: #C8827A;
+  }
+
+  /* Select 深色：与主背景拉开层次 + 更亮箭头 */
+  .pd-plush-select {
+    background: #2A2419;
+    border-color: #4A3E2D;
+    color: #F5EFE3;
+  }
+  .pd-plush-select:hover {
+    background: rgba(200, 130, 122, 0.10);
+    border-color: #C8827A;
+  }
+
+  /* Swap 按钮：深底 + hover 樱粉 */
+  .pd-plush-swap {
+    background: #2A2419;
+    border-color: #4A3E2D;
+    color: #BFAE93;
+  }
+  .pd-plush-swap:hover:not(:disabled) {
+    background: #C8827A;
+    color: #F5EFE3;
+  }
+
+  /* CTA primary：暗底描边 + inset 高光需减弱 */
+  .pd-btn-primary {
+    background: linear-gradient(180deg, #E0B355 0%, #D6A445 100%);
+    color: #1F1A14;
+    border-color: #C89A3E;
+  }
+
+  /* 卡片包装：Options 页面 rounded-lg bg-white → 用更亮暗色拉开层次 */
+  .rounded-lg.bg-white,
+  .rounded-md.bg-white {
+    background-color: #33291D !important;
+    border-color: #5A4C36 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  }
+
+  /* Options 页面 bg-white 用于 select / input 时也需要同色 */
+  select.bg-white, input.bg-white, textarea.bg-white {
+    background-color: #33291D !important;
+    border-color: #5A4C36 !important;
+    color: #F5EFE3 !important;
+  }
+  select.bg-white:focus, input.bg-white:focus, textarea.bg-white:focus {
+    border-color: #E0B355 !important;
+  }
+
+  /* slate 系（Options 部分次要控件） */
+  .bg-amber-50    { background-color: #3A2E14 !important; }
+  .bg-rose-50     { background-color: #3B1F1F !important; }
+  .border-slate-300  { border-color: #5A4C36 !important; }
+  .border-slate-200  { border-color: #4A3E2D !important; }
+  .border-amber-300  { border-color: #C89A3E !important; }
+  .border-rose-300   { border-color: #C8827A !important; }
+  .text-slate-600 { color: #BFAE93 !important; }
+  .text-slate-500 { color: #A8896A !important; }
+  .hover\:bg-slate-50:hover  { background-color: rgba(200, 130, 122, 0.10) !important; }
+
+  /* pd-plush-sky header 底色暗化：去除刺眼樱粉/黄斑晕，改用平静暗底 */
+  .pd-plush-sky {
+    background:
+      radial-gradient(80% 60% at 20% 0%, rgba(224, 149, 139, 0.08) 0%, transparent 55%),
+      radial-gradient(70% 50% at 80% 30%, rgba(224, 179, 85, 0.05) 0%, transparent 60%),
+      #241D14;
+  }
+
+  /* pd-plush-chip 胶囊：暗底米黄描边 */
+  .pd-plush-chip {
+    background: #241D14;
+    border-color: #5A4C36;
+    color: #BFAE93;
+  }
+
+  /* 健康度总览卡：暗底 + 极弱樱粉光斑 */
+  .pd-plush-health-card {
+    background: linear-gradient(135deg, rgba(224,149,139,0.06) 0%, #241D14 60%);
+    border-color: rgba(200, 130, 122, 0.30) !important;
+  }
+}

@@ -138,8 +138,9 @@ test.describe('a11y · axe-core 全入口扫描', () => {
         if (info) reachable.add(info);
       }
       console.log('[SidePanel] 可 Tab 到:', [...reachable]);
-      // 至少 4 个焦点位（源语言、swap、目标语言、textarea 起步）
-      expect(reachable.size).toBeGreaterThanOrEqual(4);
+      // 至少 3 个焦点位（源语言、目标语言、textarea 起步）；
+      // swap 按钮当 source='auto' 时 disabled 不入 Tab 序（v0.4.2 后的正确行为）
+      expect(reachable.size).toBeGreaterThanOrEqual(3);
     } finally {
       await context.close();
       rmSync(userDataDir, { recursive: true, force: true });
