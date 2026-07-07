@@ -242,4 +242,128 @@ describe('useTranslate', () => {
       expect(result.current.output).toBe('[T] hi');
     });
   });
+
+  // v0.5.3 P0-1: fetch 超时 / AbortController 传播
+  describe('signal 传播 & abort 处理', () => {
+    it('translate 调用时会给 engine 传入 AbortSignal', async () => {
+      let receivedSignal: AbortSignal | undefined;
+      const engine = makeMockEngine({
+        runStreaming: undefined,
+        run: async (input) => {
+          receivedSignal = input.signal;
+          return `[T] ${input.text}`;
+        },
+      });
+      const { result } = renderHook(() => useTranslate({ engine, cache: null }));
+      await act(async () => {
+        await result.current.translate('hi', { source: 'en', target: 'zh' });
+      });
+      expect(receivedSignal).toBeInstanceOf(AbortSignal);
+      expect(receivedSignal?.aborted).toBe(false);
+    });
+
+    it('reset() 会 abort 正在跑的请求（底层 signal 变 aborted）', async () => {
+      let capturedSignal: AbortSignal | undefined;
+      // 用 pending 让 run 一直挂着，等 reset 打断
+      const engine = makeMockEngine({
+        runStreaming: undefined,
+        run: (input) => {
+          capturedSignal = input.signal;
+          return new Promise<string>((_, reject) => {
+            input.signal?.addEventListener('abort', () =>
+              reject(new DOMException('reset', 'AbortError')),
+            );
+          });
+        },
+      });
+      const { result } = renderHook(() => useTranslate({ engine, cache: null }));
+
+      let pending: Promise<void>;
+      act(() => {
+        pending = result.current.translate('hi', { source: 'en', target: 'zh' });
+      });
+      // 拿到 signal 后 reset
+      await new Promise((r) => setTimeout(r, 0));
+      expect(capturedSignal?.aborted).toBe(false);
+
+      act(() => {
+        result.current.reset();
+      });
+      expect(capturedSignal?.aborted).toBe(true);
+
+      // 等 pending 走完 finally，别让 vitest 报未处理 promise
+      await act(async () => {
+        await pending!;
+      });
+      expect(result.current.status).toBe('idle');
+    });
+
+    it('后一个 translate 会 abort 前一个的 signal（自动去重）', async () => {
+      const signals: AbortSignal[] = [];
+      const engine = makeMockEngine({
+        runStreaming: undefined,
+        run: (input) => {
+          signals.push(input.signal!);
+          return new Promise<string>((resolve, reject) => {
+            input.signal?.addEventListener('abort', () =>
+              reject(new DOMException('superseded', 'AbortError')),
+            );
+            // 第二个请求快速 resolve
+            if (signals.length === 2) setTimeout(() => resolve('[T] second'), 5);
+          });
+        },
+      });
+      const { result } = renderHook(() => useTranslate({ engine, cache: null }));
+
+      let p1: Promise<void>;
+      let p2: Promise<void>;
+      act(() => {
+        p1 = result.current.translate('first', { source: 'en', target: 'zh' });
+      });
+      await new Promise((r) => setTimeout(r, 0));
+      act(() => {
+        p2 = result.current.translate('second', { source: 'en', target: 'zh' });
+      });
+      await act(async () => {
+        await Promise.all([p1!, p2!]);
+      });
+
+      // 第一次 signal 应该被 abort，第二次仍然有效
+      expect(signals[0]!.aborted).toBe(true);
+      expect(signals[1]!.aborted).toBe(false);
+      expect(result.current.output).toBe('[T] second');
+      expect(result.current.status).toBe('done');
+    });
+
+    it('TimeoutError 显示专门的超时文案', async () => {
+      const engine = makeMockEngine({
+        runStreaming: undefined,
+        run: async () => {
+          throw new DOMException('fetch timeout 30000ms', 'TimeoutError');
+        },
+      });
+      const { result } = renderHook(() => useTranslate({ engine, cache: null }));
+      await act(async () => {
+        await result.current.translate('hi', { source: 'en', target: 'zh' });
+      });
+      expect(result.current.status).toBe('error');
+      expect(result.current.error).toMatch(/超时/);
+    });
+
+    it('AbortError（非超时）静默不设置 error 状态', async () => {
+      const engine = makeMockEngine({
+        runStreaming: undefined,
+        run: async () => {
+          throw new DOMException('user cancel', 'AbortError');
+        },
+      });
+      const { result } = renderHook(() => useTranslate({ engine, cache: null }));
+      await act(async () => {
+        await result.current.translate('hi', { source: 'en', target: 'zh' });
+      });
+      // 因为 abort 被认为是"上一个已被替代"的正常路径，UI 不切 error
+      // 但 requestId 判定通常已经把状态卡在 loading —— 这里我们只断言"error 不是被 catch 分支设置的"
+      expect(result.current.error).toBeNull();
+    });
+  });
 });
