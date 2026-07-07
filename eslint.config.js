@@ -83,6 +83,12 @@ export default tseslint.config(
         },
       ],
       '@typescript-eslint/no-explicit-any': 'warn',
+      // v0.5.6 P2-D（审计 v4）：生产代码强制显式处理 Promise
+      // 允许显式 `void promise` 前缀跳过（用于 fire-and-forget 场景）
+      '@typescript-eslint/no-floating-promises': [
+        'error',
+        { ignoreVoid: true, ignoreIIFE: true },
+      ],
     },
   },
   {

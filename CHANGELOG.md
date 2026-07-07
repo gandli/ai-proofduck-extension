@@ -2,6 +2,49 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased] - 全量审计 v4 · 7/7 findings（除 SRP 拆分留独立 PR）
+
+第四轮全量审计（`fuck-my-shit-mountain` skill），收敛 v3 之后的 UI 出口一致性 + 治理文件补齐。**无 P0**，风险面已从功能收敛到工程约束层。
+
+### 🔴 P1 · Critical 修复（1 项）
+
+- **P1-A**：`OpenAiCompatSection.handleTest` 未 sanitize resp.body → 走 `sanitizeSecrets` 出口
+  - 与 v3 P1-A 引擎侧修复语义连续；这里是 UI 侧同类模式（服务端 echo Authorization header 到 body）
+  - 修复前：`HTTP 401 Bearer sk-proj-abc...` 直接进 setTestState → 用户截图/日志上传时明文泄漏
+  - 修复后：`sanitizeSecrets(body).slice(0, 200)` —— 先脱敏后切片，与 openai-compat.ts / free-translate.ts 一致
+  - 回归测试：`OpenAiCompatSection.spec.tsx` 新增 body 内含 Bearer token 场景断言 DOM 不含明文
+
+### 🟠 P2 · High 修复（3 项，SRP 独立 PR）
+
+- **P2-A**：`OpenAiCompatSection.handleTest` 手写 `AbortController + setTimeout` → 复用 `createFetchAbortHandle`
+  - DRY 收口，未来加"用户取消"能力时直接接 userSignal
+  - 保留 15s 超时（比默认 30s 短，测试连接短超时更好 UX）
+- **P2-C**：新增 `.github/dependabot.yml`
+  - npm + github-actions 双生态每周一自动扫更新
+  - minor+patch group、React/wxt major ignore（需人肉审兼容性）
+  - 时间锁定 Asia/Shanghai 9AM
+- **P2-D**：`entrypoints/options/App.tsx:75` `e.isAvailable().then(...)` 裸 promise → 加 `void` 前缀
+  - eslint 生产代码开启 `@typescript-eslint/no-floating-promises: error`（`ignoreVoid: true`），防温水煮青蛙
+
+### 🟡 P3 · Governance / Documentation（3 项）
+
+- **P3-A**：新增 `SECURITY.md` — 私下漏洞报告渠道（GitHub Security Advisories）+ 48h/5d/7-14d 响应时间承诺 + 6 项已知安全边界声明
+- **P3-B**：新增 `CONTRIBUTING.md` — Bun 环境准备、Conventional Commits、branch 命名、PR 检查清单、code review 期待
+- **P3-C**：`lifecycle.ts:75` `console.warn(...err)` → `logSanitizedError(...)`（防未来 chrome.sidePanel API 变化把用户上下文塞进 err.message 时绕过 sanitize）
+
+### ⏭️ 后续独立 PR
+
+- **P2-B**：`OpenAiCompatSection.tsx` 单文件 364 loc + 18 hooks 违反 SRP → 拆成 4 subcomponents + constants.ts（同 v2 SidePanel 案例，大动作独立 PR + 覆盖率复检）
+
+### 📊 QA 结果
+
+- Unit tests: **370/370** ✅ (+1 P1-A 回归测试)
+- E2E: 43/43 ✅
+- 行覆盖: 96%+ (未跑最新 —— 加了 lifecycle sanitize 后应仍稳)
+- tsc / lint / audit / dependabot / secret-scan：全 0
+
+---
+
 ## [v0.5.5] - 2026-07-07 · 全量审计 v3 · 8/8 findings 全绿 + CI 硬化
 
 第三轮全量审计（`fuck-my-shit-mountain` skill v1.3），8 findings 一次 PR 打包全部结账，重心从「代码本身」转向「发布链路 & 供应链」。
