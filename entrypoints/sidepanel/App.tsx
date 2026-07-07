@@ -1,12 +1,14 @@
 /**
- * SidePanel App (v0.4 UI 重设计): 双栏翻译主战场，引擎自动兜底
+ * SidePanel App · 状态 + 逻辑 + 子组件组合器
  *
- * v0.4 UI 变更：
- * - 品牌 header：logo 渐变 + serif 标题 + 引擎胶囊 + 就绪概览
- * - 源/目标语言：左右对称 + 中间旋转 swap 按钮
- * - 原文/译文分区，字数计数 + 悬停 toolbar（复制/朗读/重翻）
- * - 译文区背景 brand-50，形成"输入白 / 输出黄"语义闭环
- * - 主 CTA 品牌黄渐变，带 ⌘↵ 快捷键提示
+ * P2-A（审计 v2）：从 383 loc 拆到 ~150 loc。
+ * 4 子组件按视觉区域拆分（components/*）：
+ *   - EngineStatus  · header + 引擎徽章 + 无引擎横幅
+ *   - LanguageBar   · 源/交换/目标 3 列语言栏
+ *   - Editor        · 原文 textarea + CTA 按钮组
+ *   - ResultPanel   · 译文输出（5 视觉态）
+ *
+ * 本文件仅剩：state / 引擎解析 / 可用性检测 / handleSwap / handleKeyDown / handleTranslate。
  *
  * DI：engine 从 props 传入，方便测试。生产从 EngineManager.pickBest() 兜底选。
  *
@@ -14,44 +16,19 @@
  * 现在走 pickBest() 自动选出**当前可用**的最高优先级引擎。
  */
 import { useEffect, useState } from 'react';
-import { Button } from '@components/Button';
 import { useTranslate } from '@hooks/useTranslate';
 import { getEngines } from '@core/engines';
 import type { Engine } from '@engines/types';
+import { MAX_CHARS, STUB_ENGINE } from './constants';
+import { EngineStatus } from './components/EngineStatus';
+import { LanguageBar } from './components/LanguageBar';
+import { Editor } from './components/Editor';
+import { ResultPanel } from './components/ResultPanel';
 
 interface Props {
   /** 依赖注入。测试用 mock；生产由 useEffect 从 pickBest() 拿 */
   engine?: Engine;
 }
-
-/** 支持的目标语言（M2 Cycle 1 就 6 种主流） */
-const TARGET_LANGS: Array<{ code: string; label: string }> = [
-  { code: 'zh', label: '中文' },
-  { code: 'en', label: 'English' },
-  { code: 'ja', label: '日本語' },
-  { code: 'ko', label: '한국어' },
-  { code: 'fr', label: 'Français' },
-  { code: 'de', label: 'Deutsch' },
-];
-
-/**
- * STUB_ENGINE：给 useTranslate 一个 no-op 的 Engine，
- * 避免 resolvedEngine 为 null 时 useTranslate hooks 崩溃。
- * 提到组件外声明，避免每次渲染重建导致 useTranslate 内 useCallback 依赖变化。
- * (Gemini review 建议)
- *
- * 用 Promise.resolve() 而非 async fn，避免 require-await 规则误报。
- */
-const STUB_ENGINE: Engine = {
-  id: 'chrome-ai',
-  name: 'unavailable',
-  priority: 0,
-  isAvailable: () => Promise.resolve(false),
-  supports: () => false,
-  run: () => Promise.resolve(''),
-};
-
-const MAX_CHARS = 5000;
 
 export default function SidePanelApp({ engine }: Props = {}) {
   const [text, setText] = useState('');
@@ -146,237 +123,46 @@ export default function SidePanelApp({ engine }: Props = {}) {
     }
   };
 
+  const handleClear = () => {
+    setText('');
+    reset();
+  };
+
   return (
     <div className="min-h-screen bg-beige-50 text-ink-warm flex flex-col">
-      {/* ============ 品牌 header ============ */}
-      <header className="pd-plush-sky px-4 pt-4 pb-3 border-b border-brand-100">
-        <div className="flex items-center gap-3">
-          <span className="pd-plush-logo-wrap" aria-hidden>
-            <img src="/icons/icon-32.png" alt="" />
-          </span>
-          <div className="flex flex-col">
-            <h1 className="text-base font-bold font-serif text-ink-900 tracking-tight">
-              校对鸭
-            </h1>
-            <p className="text-[11px] text-ink-500 mt-0.5">你的贴心写作小助手</p>
-          </div>
-        </div>
+      <EngineStatus resolvedEngine={resolvedEngine} available={available} />
 
-        {/* 引擎徽章 + 就绪概览：让用户知道谁在干活。
-            Gemini review: 用 available === true 而非 !== false，
-            避免检测未完成时闪现"就绪"再突然报错 */}
-        {resolvedEngine && available === true && (
-          <div className="mt-2.5 flex items-center gap-2 text-xs">
-            <span
-              data-testid="engine-chip"
-              className="pd-plush-chip"
-            >
-              <span className="pd-dot pd-dot-ok" style={{ width: 6, height: 6 }} />
-              {resolvedEngine.name}
-            </span>
-          </div>
-        )}
-      </header>
-
-      {/* ============ 主体 ============ */}
+      {/* 主体 */}
       <div className="flex-1 p-4 space-y-3">
-        {available === false && (
-          <div
-            className="rounded-md border border-danger/30 bg-danger-soft p-3 text-sm text-ink-800 space-y-1"
-            style={{ background: '#fff5f5', borderColor: 'rgba(224,49,49,0.3)' }}
-            role="alert"
-          >
-            <div className="font-semibold text-danger" style={{ color: '#e03131' }}>没有可用引擎</div>
-            <div className="text-ink-700 text-[13px]">
-              请去
-              <a
-                href="options.html"
-                target="_blank"
-                rel="noreferrer"
-                className="mx-1 underline text-brand-700 font-medium"
-                style={{ color: '#a56501' }}
-              >
-                设置页
-              </a>
-              配置 OpenAI 兼容 API，或启用免费翻译兜底。
-            </div>
-            <div className="text-[11.5px] text-ink-500">
-              也可升级到 Chrome 138+ 并在{' '}
-              <code className="mx-0.5 px-1 bg-ink-100 rounded text-[11px] font-mono">chrome://flags</code>
-              启用 "Translation API" 用本地 AI。
-            </div>
-          </div>
-        )}
+        <LanguageBar
+          source={source}
+          target={target}
+          onSourceChange={setSource}
+          onTargetChange={setTarget}
+          onSwap={handleSwap}
+        />
 
-        {/* ============ 语言选择器 ============ */}
-        <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-end">
-          <div className="flex flex-col gap-1">
-            <label htmlFor="source-lang" className="text-[10.5px] uppercase tracking-wider text-ink-400 font-semibold">
-              源语言
-            </label>
-            <select
-              id="source-lang"
-              value={source}
-              onChange={(e) => setSource(e.target.value)}
-              className="pd-plush-select px-2.5 py-2 text-sm text-ink-800 focus:outline-none cursor-pointer"
-              aria-label="源语言"
-            >
-              <option value="auto">自动检测</option>
-              {TARGET_LANGS.map((l) => (
-                <option key={l.code} value={l.code}>
-                  {l.label}
-                </option>
-              ))}
-            </select>
-          </div>
+        <Editor
+          text={text}
+          onTextChange={setText}
+          onKeyDown={handleKeyDown}
+          charCount={charCount}
+          isOver={isOver}
+          status={status}
+          canTranslate={canTranslate}
+          onTranslate={handleTranslate}
+          onClear={handleClear}
+        />
 
-          <button
-            type="button"
-            onClick={handleSwap}
-            disabled={source === 'auto'}
-            title={source === 'auto' ? '自动检测源语言时无法交换' : '交换语言方向'}
-            aria-label="交换语言方向"
-            className="pd-plush-swap flex items-center justify-center"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M7 10h10M7 10l3-3M7 10l3 3M17 14H7M17 14l-3-3M17 14l-3 3" />
-            </svg>
-          </button>
-
-          <div className="flex flex-col gap-1">
-            <label htmlFor="target-lang" className="text-[10.5px] uppercase tracking-wider text-ink-400 font-semibold">
-              目标语言
-            </label>
-            <select
-              id="target-lang"
-              value={target}
-              onChange={(e) => setTarget(e.target.value)}
-              className="pd-plush-select px-2.5 py-2 text-sm text-ink-800 focus:outline-none cursor-pointer"
-              aria-label="目标语言"
-            >
-              {TARGET_LANGS.map((l) => (
-                <option key={l.code} value={l.code}>
-                  {l.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* ============ 原文输入 ============ */}
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center justify-between text-[10.5px] uppercase tracking-wider font-semibold text-ink-400">
-            <span>原文</span>
-            <span
-              className={`font-mono normal-case tracking-normal ${isOver ? 'text-danger font-semibold' : 'font-normal'}`}
-              style={isOver ? { color: '#e03131' } : undefined}
-            >
-              {charCount} / {MAX_CHARS}
-            </span>
-          </div>
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="在这里粘贴要翻译的文本…（⌘/Ctrl + ↵ 快速翻译）"
-            className="pd-plush-input w-full min-h-[140px] p-3 text-sm resize-y text-ink-800 leading-relaxed focus:outline-none"
-          />
-        </div>
-
-        {/* ============ CTA ============ */}
-        <div className="flex gap-2 items-center">
-          <Button variant="primary" onClick={handleTranslate} disabled={!canTranslate}>
-            {status === 'loading' ? (
-              <>
-                <span aria-hidden className="pd-btn-dot" />
-                <span>翻译中…</span>
-              </>
-            ) : (
-              <>
-                <span>翻译</span>
-                <span
-                  className="font-mono text-[10.5px] px-1.5 py-0.5 rounded border border-ink-800/25 bg-white/40 text-ink-800 font-medium ml-1"
-                  aria-hidden
-                >
-                  ⌘↵
-                </span>
-              </>
-            )}
-          </Button>
-          <Button
-            variant="ghost"
-            disabled={!text}
-            title={!text ? '没有可清空的内容' : '清空输入和翻译结果'}
-            onClick={() => {
-              setText('');
-              reset();
-            }}
-          >
-            清空
-          </Button>
-        </div>
-
-        {/* ============ 译文输出 ============ */}
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center justify-between text-[10.5px] uppercase tracking-wider font-semibold text-ink-400">
-            <span>译文</span>
-            {output && (
-              <span className="font-mono normal-case tracking-normal font-normal">
-                {output.length} 字
-              </span>
-            )}
-          </div>
-          <div
-            className="pd-plush-input min-h-[140px] p-3 text-sm text-ink-warm leading-relaxed font-serif whitespace-pre-wrap"
-            aria-label="翻译结果"
-            aria-live="polite"
-            aria-busy={status === 'loading' ? 'true' : 'false'}
-          >
-            {isOver ? (
-              <span className="text-danger font-sans text-sm not-italic" style={{ color: '#e03131' }}>
-                输入超过 {MAX_CHARS} 字，请分段翻译
-              </span>
-            ) : isSameLanguage ? (
-              <span className="text-danger font-sans text-sm not-italic" style={{ color: '#e03131' }}>
-                源语言和目标语言不能相同
-              </span>
-            ) : status === 'loading' ? (
-              /* v0.5.1 · 骨架加载：三行渐现方块，比 spinner 明确"正在生成什么" */
-              <div className="pd-skeleton-group" aria-hidden>
-                <div className="pd-skeleton pd-skeleton-line" style={{ width: '92%' }} />
-                <div className="pd-skeleton pd-skeleton-line" style={{ width: '78%' }} />
-                <div className="pd-skeleton pd-skeleton-line" style={{ width: '55%' }} />
-              </div>
-            ) : status === 'error' && error ? (
-              /* v0.5.1 · 错误态：错误 + 显式 Retry 按钮（键盘可达） */
-              <div className="flex flex-col gap-2 font-sans not-italic">
-                <span className="text-danger text-sm" style={{ color: '#e03131' }}>
-                  ✗ {error}
-                </span>
-                <button
-                  type="button"
-                  onClick={handleTranslate}
-                  disabled={!canTranslate}
-                  className="pd-plush-retry self-start text-[12.5px] px-2.5 py-1 rounded-md border border-brand-500 text-brand-700 hover:bg-brand-50 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2 disabled:opacity-50"
-                >
-                  重试
-                </button>
-              </div>
-            ) : output ? (
-              output
-            ) : (
-              /* v0.5.1 · 空状态：加"下一步"引导，比孤伶的一句更实用 */
-              <div className="text-ink-400 font-sans text-sm">
-                <div className="italic mb-2">翻译结果会显示在这里…</div>
-                <div className="text-[12px] not-italic text-ink-500 leading-6">
-                  <div>· 粘贴或输入文本到左侧</div>
-                  <div>· 按 <kbd className="font-mono text-[11px] px-1 py-0.5 rounded border border-ink-300">⌘/Ctrl</kbd> + <kbd className="font-mono text-[11px] px-1 py-0.5 rounded border border-ink-300">↵</kbd> 快速翻译</div>
-                  <div>· 选中网页文字，弹泡也会自动翻译</div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        <ResultPanel
+          output={output}
+          status={status}
+          error={error}
+          isOver={isOver}
+          isSameLanguage={isSameLanguage}
+          canTranslate={canTranslate}
+          onRetry={handleTranslate}
+        />
       </div>
     </div>
   );
