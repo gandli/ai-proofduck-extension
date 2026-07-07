@@ -232,6 +232,43 @@ describe('OpenAiCompatSection', () => {
     expect(document.body.textContent).toContain('HTTP 401');
   });
 
+  it('测试连接：超大 body（10KB）先切 1000 char 缓冲区再脱敏（PR #514 Gemini 采纳）', async () => {
+    // 场景：Cloudflare 拦截页 / HTML 提示可能返回几百 KB body，
+    // 直接对完整 body 跑 sanitizeSecrets（多个全局正则）会阻塞主线程。
+    // 修复：先 slice(0, 1000) 再脱敏 —— 1000 » 200（最终展示切片）足以保完整性。
+    const user = userEvent.setup();
+    configMock.__mockState.value = {
+      baseUrl: 'https://x',
+      apiKey: 'test-key',
+      model: 'm',
+    };
+    // 10KB body：前 400 char 有 Bearer token，后面全是填充
+    const bigBody =
+      'invalid_auth: received Bearer sk-proj-oversizedbodyabc1234567890' +
+      '_'.repeat(10_000);
+    const fetchMock = vi.fn(async () => ({
+      ok: false,
+      status: 500,
+      text: async () => bigBody,
+    })) as unknown as typeof fetch;
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<OpenAiCompatSection />);
+    await waitFor(() => expect(screen.getByLabelText('API Base URL')).toHaveValue('https://x'));
+
+    const t0 = performance.now();
+    await user.click(screen.getByRole('button', { name: '测试连接' }));
+    await waitFor(() => {
+      expect(screen.getByText(/HTTP 500/)).toBeInTheDocument();
+    });
+    const elapsed = performance.now() - t0;
+
+    // Bearer token 仍被脱敏
+    expect(document.body.textContent).not.toContain('sk-proj-oversizedbody');
+    // 性能：处理 10KB body 应远快于 1s（1000 char 缓冲的效果）
+    expect(elapsed).toBeLessThan(1000);
+  });
+
   it('测试连接：网络错误 → 显示 error.message', async () => {
     const user = userEvent.setup();
     configMock.__mockState.value = { baseUrl: 'https://x', apiKey: 'k', model: 'm' };

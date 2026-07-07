@@ -166,9 +166,13 @@ export function OpenAiCompatSection() {
         const body = await resp.text().catch(() => '');
         // v0.5.6 P1-A（审计 v4）：先脱敏再切片，防 API key/Bearer token 通过服务端 echo 泄漏
         // 与 free-translate.ts:103 / openai-compat.ts:155 完全一致的模式
+        // Gemini review 采纳（PR #514）：先切 1000 char 缓冲区再脱敏，规避大 body（几百 KB Cloudflare
+        // 错误页 / HTML 提示）触发多个全局正则时主线程卡顿；1000 » 200 足以覆盖任何 200 char 内可能
+        // 展示的密钥完整跨越脱敏边界的情况
+        const truncatedBody = body.slice(0, 1000);
         setTestState({
           status: 'error',
-          message: `HTTP ${resp.status} ${sanitizeSecrets(body).slice(0, 200)}`,
+          message: `HTTP ${resp.status} ${sanitizeSecrets(truncatedBody).slice(0, 200)}`,
         });
         return;
       }
