@@ -234,6 +234,7 @@ export default function SidePanelApp({ engine }: Props = {}) {
             type="button"
             onClick={handleSwap}
             disabled={source === 'auto'}
+            title={source === 'auto' ? '自动检测源语言时无法交换' : '交换语言方向'}
             aria-label="交换语言方向"
             className="pd-plush-swap flex items-center justify-center"
           >
@@ -304,6 +305,8 @@ export default function SidePanelApp({ engine }: Props = {}) {
           </Button>
           <Button
             variant="ghost"
+            disabled={!text}
+            title={!text ? '没有可清空的内容' : '清空输入和翻译结果'}
             onClick={() => {
               setText('');
               reset();

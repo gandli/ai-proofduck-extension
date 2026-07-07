@@ -282,6 +282,7 @@ export function OpenAiCompatSection() {
           <button
             type="button"
             onClick={() => setShowKey((s) => !s)}
+            title={showKey ? '隐藏 API Key' : '显示 API Key'}
             aria-label={showKey ? '隐藏 API Key' : '显示 API Key'}
             className="px-2 rounded-md border border-slate-300 hover:bg-slate-50"
           >
