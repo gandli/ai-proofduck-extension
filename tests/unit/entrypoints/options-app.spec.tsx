@@ -8,7 +8,8 @@
  * - free-translate 健康度受 freeEnabled 控制
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { renderAct } from '@test-helpers/render';
 
 // mock stores
 const setThemeMock = vi.fn();
@@ -90,34 +91,34 @@ describe('OptionsApp 行为', () => {
     setDefaultEngineMock.mockReset();
   });
 
-  it('渲染标题 + 3 个 select（主题/语言/默认引擎）', () => {
-    render(<OptionsApp />);
+  it('渲染标题 + 3 个 select（主题/语言/默认引擎）', async () => {
+    await renderAct(<OptionsApp />);
     expect(screen.getByText('设置')).toBeDefined();
     expect(screen.getByLabelText('主题')).toBeDefined();
     expect(screen.getByLabelText('界面语言')).toBeDefined();
     expect(screen.getByLabelText('默认引擎')).toBeDefined();
   });
 
-  it('切换主题 → 调用 setTheme', () => {
-    render(<OptionsApp />);
+  it('切换主题 → 调用 setTheme', async () => {
+    await renderAct(<OptionsApp />);
     fireEvent.change(screen.getByLabelText('主题'), { target: { value: 'dark' } });
     expect(setThemeMock).toHaveBeenCalledWith('dark');
   });
 
-  it('切换语言 → 调用 setLocale', () => {
-    render(<OptionsApp />);
+  it('切换语言 → 调用 setLocale', async () => {
+    await renderAct(<OptionsApp />);
     fireEvent.change(screen.getByLabelText('界面语言'), { target: { value: 'en' } });
     expect(setLocaleMock).toHaveBeenCalledWith('en');
   });
 
-  it('切换默认引擎 → 调用 setDefaultEngine', () => {
-    render(<OptionsApp />);
+  it('切换默认引擎 → 调用 setDefaultEngine', async () => {
+    await renderAct(<OptionsApp />);
     fireEvent.change(screen.getByLabelText('默认引擎'), { target: { value: 'chrome-ai' } });
     expect(setDefaultEngineMock).toHaveBeenCalledWith('chrome-ai');
   });
 
   it('引擎健康度：chrome-ai=ok / webllm=err / openai=err（抛错） / free=ok（启用）', async () => {
-    render(<OptionsApp />);
+    await renderAct(<OptionsApp />);
 
     // 等 4 个 isAvailable 全部 resolve
     await waitFor(() => {
@@ -139,7 +140,7 @@ describe('OptionsApp 行为', () => {
   it('free-translate 健康度默认显示"已启用"（freeTranslate.enabled 默认 true）', async () => {
     // 该字段从 defineStorage('freeTranslate.enabled', true, {sync}) 读取，
     // 默认值就是 true，测试环境走默认 → hint="已启用"
-    render(<OptionsApp />);
+    await renderAct(<OptionsApp />);
 
     await waitFor(() => {
       expect(screen.getByText(/已启用/)).toBeDefined();

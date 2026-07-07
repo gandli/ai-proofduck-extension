@@ -13,7 +13,8 @@
       "@components/*": ["./src/components/*"],
       "@engines/*": ["./src/engines/*"],
       "@i18n/*": ["./src/i18n/*"],
-      "@utils/*": ["./src/utils/*"]
+      "@utils/*": ["./src/utils/*"],
+      "@test-helpers/*": ["./tests/helpers/*"]
     }
   },
   "exclude": ["dist", ".output", "node_modules"]
