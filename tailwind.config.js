@@ -4,6 +4,9 @@ export default {
     "./entrypoints/**/*.{html,ts,tsx}",
     "./src/**/*.{html,ts,tsx}",
   ],
+  // v0.5.0 dark mode: 跟随系统主题（`prefers-color-scheme: dark`）
+  // 后续 v0.5.1 若加手动切换，改成 'class' 并加 root toggle
+  darkMode: 'media',
   theme: {
     extend: {
       colors: {

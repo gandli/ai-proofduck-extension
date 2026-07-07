@@ -122,10 +122,7 @@ export default function OptionsApp() {
 
         {/* ============ 健康度总览卡 ============ */}
         <div
-          className="rounded-lg border border-sakura/50 p-4 mb-6"
-          style={{
-            background: 'linear-gradient(135deg, rgba(245,195,184,0.14) 0%, #FDFAF2 60%)',
-          }}
+          className="pd-plush-health-card rounded-lg border border-sakura/50 p-4 mb-6"
         >
           <div className="text-[11px] uppercase tracking-wider font-semibold text-ink-500 mb-2.5">
             引擎健康度
