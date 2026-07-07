@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.4.1] - 2026-07-07 · Plush Duckling UI + a11y
+
+### 🎨 Plush Duckling 可爱风视觉
+
+从 3 个可爱风方向（毛绒 / 像素 / 涂鸦贴纸）中选定「毛绒小鸭」方向落地：
+
+- 品牌 logo：7×7 img → 44×44 毛绒圆容器 + 呼吸动画 + 腮红伪元素
+- Header 底色：单色渐变 → 双云 radial + brand-100 天空
+- 引擎徽章：扁平胶囊 → 毛绒软卡片 + hover 抬升
+- Language select / textarea：直角灰边 → 圆角胶囊 + 黄色 focus 光晕
+- Swap 按钮：32×32 灰边 → 34×34 品牌黄圈 + 180° hover
+- 主 CTA：直角黄底 → 24px 大圆角 + 三色渐变 + inset 高光
+- 输出卡：直角 brand-50 → 20px 圆角 + 💛 tag（Sidepanel 独享）+ 更柔阴影
+
+### 🧹 品牌纯化 · 全站移除鸭子 emoji
+
+- slogan、README、注释、UI 图标位一律清除鸭子 emoji
+- 划词浮标翻译按钮的 emoji 装饰 → `<img src=icon-16.png>`（复用品牌图标）
+- 品牌视觉一律走 `public/icon.svg` 派生的 icon-*.png
+
+### ♿️ a11y · axe-core 全入口扫描
+
+- 新增 `tests/e2e/a11y.spec.ts`：SidePanel · Popup · Options 三大入口
+- 覆盖 wcag2a + wcag2aa 规则集（关闭 color-contrast 因 gradient 半透误报多）
+- 修复 `html-has-lang` serious 违规：三个 index.html 加 `lang="zh-CN"`
+- 键盘可达 Tab 序 smoke test
+
+### 🔧 采纳 review 建议
+
+- Gemini：`rounded-2xl` 用 `border-radius:24px !important` 显式覆盖
+- Gemini：`.pd-plush-output` 拆分基础 / 装饰（`.pd-plush-output-tagged`）
+- CodeRabbit：**首次单 PR APPROVED**
+
+### ✅ 验收基线
+
+- tsc 0 err · lint 0 err/0 warn · 单测 247/247 · E2E 30/30（+4 a11y）· build ok
+
 ## [v0.4.0] - 2026-07-07 · 品牌统一 + 引擎健康度 + 深色 Bubble
 
 ### 🎨 UI/UX 重设计

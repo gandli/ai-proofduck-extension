@@ -36,9 +36,15 @@
 
 ---
 
-**AI proofduck** is an intelligent writing assistant extension for your browser sidepanel. Powered by advanced AI models (supporting both local WebGPU/WASM and online APIs), it provides real-time summarization, pivoting, proofreading, translation, and expansion of text.
+**AI proofduck** is an intelligent writing assistant extension for your browser sidepanel. Powered by advanced AI models (supporting both local WebGPU/WASM and online APIs), it provides real-time summarization, polishing, error correction, translation, and expansion of text.
 
-Currently at **v0.4.0** — brand-unified UI, engine health dashboard, dark selection bubble, and permission-on-demand.
+Current version **v0.4.1** — Plush Duckling UI, engine health chips, dark selection bubble, on-demand permissions.
+
+## 📸 Screenshots
+
+| Popup | SidePanel | Options |
+|-------|-----------|---------|
+| ![Popup](docs/screenshots/popup-v0.4.1.png) | ![SidePanel](docs/screenshots/sidepanel-v0.4.1.png) | ![Options](docs/screenshots/options-v0.4.1.png) |
 
 ## ✨ Features
 
