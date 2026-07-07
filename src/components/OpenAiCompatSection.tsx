@@ -154,9 +154,21 @@ export function OpenAiCompatSection() {
       // baseUrl 末尾可能带 /，去掉再拼；跟 openai-compat 引擎 joinUrl 保持一致约定
       const stripped = baseUrl.replace(/\/+$/, '');
       const url = stripped.endsWith('/v1') ? `${stripped}/models` : `${stripped}/v1/models`;
-      const resp = await fetch(url, {
-        headers: { Authorization: `Bearer ${apiKey}` },
-      });
+      // v0.5.3 P0-1: 15s 超时，避免用户填错 baseUrl 时 UI 永久 loading
+      const controller = new AbortController();
+      const timer = setTimeout(
+        () => controller.abort(new DOMException('test connection timeout 15s', 'TimeoutError')),
+        15_000,
+      );
+      let resp: Response;
+      try {
+        resp = await fetch(url, {
+          signal: controller.signal,
+          headers: { Authorization: `Bearer ${apiKey}` },
+        });
+      } finally {
+        clearTimeout(timer);
+      }
       if (!resp.ok) {
         const body = await resp.text().catch(() => '');
         setTestState({ status: 'error', message: `HTTP ${resp.status} ${body}`.slice(0, 200) });

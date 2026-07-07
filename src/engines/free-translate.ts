@@ -23,6 +23,7 @@
  */
 import type { Engine, EngineMode } from './types';
 import { defineStorage } from '@core/storage';
+import { createFetchAbortHandle } from '@utils/fetch-abort';
 
 const enabledItem = defineStorage<boolean>('freeTranslate.enabled', true, { area: 'sync' });
 
@@ -94,14 +95,19 @@ export function createFreeTranslateEngine(): Engine {
         `${ENDPOINT}?client=gtx&sl=${sourceLang}&tl=${targetLang}` +
         `&dt=t&q=${encodeURIComponent(text)}`;
 
-      const resp = await fetch(url);
-      if (!resp.ok) {
-        const body = await resp.text().catch(() => '');
-        throw new Error(`free-translate: HTTP ${resp.status} ${body}`);
-      }
+      const abortH = createFetchAbortHandle(input.signal);
+      try {
+        const resp = await fetch(url, { signal: abortH.signal });
+        if (!resp.ok) {
+          const body = await resp.text().catch(() => '');
+          throw new Error(`free-translate HTTP ${resp.status}: ${body.slice(0, 200)}`);
+        }
 
-      const json: unknown = await resp.json();
-      return parseGoogleResponse(json);
+        const json: unknown = await resp.json();
+        return parseGoogleResponse(json);
+      } finally {
+        abortH.cleanup();
+      }
     },
 
     // 不实现 runStreaming——免费端点不支持流式

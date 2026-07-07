@@ -21,6 +21,14 @@ export interface EngineRunInput {
   /** 源语言（可选，未提供时由引擎自行检测） */
   sourceLang?: string;
   maxTokens?: number;
+  /**
+   * v0.5.3: 用户可控的中断信号。传入后：
+   *   - 网络类引擎（openai-compat / free-translate）会把它 forward 到 fetch(signal)
+   *   - 上层调 controller.abort() 后正在进行的 fetch 立即抛 AbortError，UI 停止等待
+   *   - engine 内部**仍会**叠加 30s 默认超时兜底，避免用户忘了传 signal 造成永久 loading
+   * 塞进 input 而非 run 参数：避免破坏所有 Engine mock 的 signature
+   */
+  signal?: AbortSignal;
 }
 
 export interface Engine {

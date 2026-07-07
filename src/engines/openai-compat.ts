@@ -24,6 +24,7 @@ import { openaiCompatConfig } from '@core/openai-compat-config';
 import { hasHostPermission } from '@core/host-permissions';
 import { extractOriginPattern } from '@core/origin-pattern';
 import { PermissionRequiredError } from '@utils/permission-error';
+import { createFetchAbortHandle } from '@utils/fetch-abort';
 
 function systemPromptFor(input: EngineRunInput): string {
   switch (input.mode) {
@@ -108,113 +109,126 @@ export function createOpenAiCompatEngine(): Engine {
 
     async run(input: EngineRunInput): Promise<string> {
       const cfg = await requireConfig();
-      const resp = await fetch(joinUrl(cfg.baseUrl, '/v1/chat/completions'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${cfg.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: cfg.model,
-          messages: buildMessages(input),
-          temperature: 0.3,
-        }),
-      });
-      if (!resp.ok) {
-        const text = await resp.text().catch(() => '');
-        throw new Error(`openai-compat HTTP ${resp.status}: ${text.slice(0, 200)}`);
+      const abortH = createFetchAbortHandle(input.signal);
+      try {
+        const resp = await fetch(joinUrl(cfg.baseUrl, '/v1/chat/completions'), {
+          method: 'POST',
+          signal: abortH.signal,
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${cfg.apiKey}`,
+          },
+          body: JSON.stringify({
+            model: cfg.model,
+            messages: buildMessages(input),
+            temperature: 0.3,
+          }),
+        });
+        if (!resp.ok) {
+          const text = await resp.text().catch(() => '');
+          throw new Error(`openai-compat HTTP ${resp.status}: ${text.slice(0, 200)}`);
+        }
+        const data = (await resp.json()) as { choices?: Array<{ message?: { content?: string } }> };
+        const content = data.choices?.[0]?.message?.content;
+        if (typeof content !== 'string') {
+          throw new Error('openai-compat 响应结构异常：未取到 choices[0].message.content');
+        }
+        return content;
+      } finally {
+        abortH.cleanup();
       }
-      const data = (await resp.json()) as { choices?: Array<{ message?: { content?: string } }> };
-      const content = data.choices?.[0]?.message?.content;
-      if (typeof content !== 'string') {
-        throw new Error('openai-compat 响应结构异常：未取到 choices[0].message.content');
-      }
-      return content;
     },
 
     async *runStreaming(input: EngineRunInput): AsyncIterable<string> {
       const cfg = await requireConfig();
-      const resp = await fetch(joinUrl(cfg.baseUrl, '/v1/chat/completions'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${cfg.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: cfg.model,
-          messages: buildMessages(input),
-          temperature: 0.3,
-          stream: true,
-        }),
-      });
-      if (!resp.ok) {
-        const text = await resp.text().catch(() => '');
-        throw new Error(`openai-compat HTTP ${resp.status}: ${text.slice(0, 200)}`);
-      }
-      if (!resp.body) {
-        throw new Error('openai-compat 响应缺少 body（SSE 不可读）');
-      }
-
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-
-      // SSE 格式：一条事件由若干 `field: value` 行组成，事件之间空行分隔。
-      // 网络层会随意切分字节 → 必须 buffer + 找事件边界。
-      //
-      // 分隔符必须同时支持 `\n\n` 和 `\r\n\r\n`（Gemini review 提出）：
-      // 主流 API 网关（Nginx / Cloudflare / 阿里云）返回 CRLF，
-      // 只识别 LF 会导致流永远拿不到完整事件、翻译挂起。
-      //
-      // 用 try/finally 保证 reader.cancel() 释放底层连接：
-      // 用户中途取消翻译或抛错时避免 socket 泄漏（Gemini review）。
+      const abortH = createFetchAbortHandle(input.signal);
       try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
+        const resp = await fetch(joinUrl(cfg.baseUrl, '/v1/chat/completions'), {
+          method: 'POST',
+          signal: abortH.signal,
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${cfg.apiKey}`,
+          },
+          body: JSON.stringify({
+            model: cfg.model,
+            messages: buildMessages(input),
+            temperature: 0.3,
+            stream: true,
+          }),
+        });
+        if (!resp.ok) {
+          const text = await resp.text().catch(() => '');
+          throw new Error(`openai-compat HTTP ${resp.status}: ${text.slice(0, 200)}`);
+        }
+        if (!resp.body) {
+          throw new Error('openai-compat 响应缺少 body（SSE 不可读）');
+        }
 
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        // SSE 格式：一条事件由若干 `field: value` 行组成，事件之间空行分隔。
+        // 网络层会随意切分字节 → 必须 buffer + 找事件边界。
+        //
+        // 分隔符必须同时支持 `\n\n` 和 `\r\n\r\n`（Gemini review 提出）：
+        // 主流 API 网关（Nginx / Cloudflare / 阿里云）返回 CRLF，
+        // 只识别 LF 会导致流永远拿不到完整事件、翻译挂起。
+        //
+        // 用 try/finally 保证 reader.cancel() 释放底层连接：
+        // 用户中途取消翻译或抛错时避免 socket 泄漏（Gemini review）。
+        try {
           while (true) {
-            const lfIdx = buffer.indexOf('\n\n');
-            const crlfIdx = buffer.indexOf('\r\n\r\n');
-            let idx = -1;
-            let boundaryLen = 0;
-            if (crlfIdx !== -1 && (lfIdx === -1 || crlfIdx < lfIdx)) {
-              idx = crlfIdx;
-              boundaryLen = 4;
-            } else if (lfIdx !== -1) {
-              idx = lfIdx;
-              boundaryLen = 2;
-            }
-            if (idx === -1) break;
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
 
-            const rawEvent = buffer.slice(0, idx);
-            buffer = buffer.slice(idx + boundaryLen);
+            while (true) {
+              const lfIdx = buffer.indexOf('\n\n');
+              const crlfIdx = buffer.indexOf('\r\n\r\n');
+              let idx = -1;
+              let boundaryLen = 0;
+              if (crlfIdx !== -1 && (lfIdx === -1 || crlfIdx < lfIdx)) {
+                idx = crlfIdx;
+                boundaryLen = 4;
+              } else if (lfIdx !== -1) {
+                idx = lfIdx;
+                boundaryLen = 2;
+              }
+              if (idx === -1) break;
 
-            // 用 /\r?\n/ 分行自动兼容并去除 \r（否则 `[DONE]\r` 匹不上）
-            const dataLines = rawEvent
-              .split(/\r?\n/)
-              .filter((l) => l.startsWith('data:'))
-              .map((l) => l.slice(5).trimStart());
-            if (dataLines.length === 0) continue;
+              const rawEvent = buffer.slice(0, idx);
+              buffer = buffer.slice(idx + boundaryLen);
 
-            const payload = dataLines.join('\n');
-            if (payload === '[DONE]') return;
+              // 用 /\r?\n/ 分行自动兼容并去除 \r（否则 `[DONE]\r` 匹不上）
+              const dataLines = rawEvent
+                .split(/\r?\n/)
+                .filter((l) => l.startsWith('data:'))
+                .map((l) => l.slice(5).trimStart());
+              if (dataLines.length === 0) continue;
 
-            try {
-              const parsed = JSON.parse(payload) as {
-                choices?: Array<{ delta?: { content?: string } }>;
-              };
-              const delta = parsed.choices?.[0]?.delta?.content;
-              if (delta) yield delta;
-            } catch {
-              // 解析失败就跳过这个事件，不让脏数据崩掉整个流
+              const payload = dataLines.join('\n');
+              if (payload === '[DONE]') return;
+
+              try {
+                const parsed = JSON.parse(payload) as {
+                  choices?: Array<{ delta?: { content?: string } }>;
+                };
+                const delta = parsed.choices?.[0]?.delta?.content;
+                if (delta) yield delta;
+              } catch {
+                // 解析失败就跳过这个事件，不让脏数据崩掉整个流
+              }
             }
           }
+        } finally {
+          // 无论正常结束、异常抛出还是调用方 break，都释放底层连接
+          await reader.cancel().catch(() => {});
         }
       } finally {
-        // 无论正常结束、异常抛出还是调用方 break，都释放底层连接
-        await reader.cancel().catch(() => {});
+        // v0.5.3 P0-1: 清 fetch 超时 timer（不管 SSE 是否读完）
+        abortH.cleanup();
       }
     },
   };
