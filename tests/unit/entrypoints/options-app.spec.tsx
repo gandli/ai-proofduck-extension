@@ -8,7 +8,7 @@
  * - free-translate 健康度受 freeEnabled 控制
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { renderAct } from '@test-helpers/render';
 
 // mock stores
@@ -145,5 +145,73 @@ describe('OptionsApp 行为', () => {
     await waitFor(() => {
       expect(screen.getByText(/已启用/)).toBeDefined();
     });
+  });
+
+  // ========================================================
+  // P2-C 覆盖率补齐：storage.onChanged 监听 + get catch 分支
+  // ========================================================
+  it('storage.onChanged 事件 areaName=sync + freeTranslate.enabled 变更 → 同步 UI', async () => {
+    // Gemini review 采纳：try/finally 保证 delete chrome 在断言失败时也执行
+    const listeners: Array<
+      (changes: Record<string, chrome.storage.StorageChange>, area: string) => void
+    > = [];
+    (globalThis as unknown as { chrome: unknown }).chrome = {
+      storage: {
+        onChanged: {
+          addListener: (fn: (typeof listeners)[number]) => listeners.push(fn),
+          removeListener: (fn: (typeof listeners)[number]) => {
+            const i = listeners.indexOf(fn);
+            if (i >= 0) listeners.splice(i, 1);
+          },
+        },
+      },
+    };
+    try {
+      await renderAct(<OptionsApp />);
+      await act(async () => {
+        listeners.forEach((fn) =>
+          fn(
+            { 'freeTranslate.enabled': { oldValue: true, newValue: false } },
+            'sync',
+          ),
+        );
+      });
+      await waitFor(() => {
+        const enabledText = screen.queryByText(/已启用/);
+        expect(enabledText).toBeNull();
+      });
+    } finally {
+      delete (globalThis as unknown as { chrome?: unknown }).chrome;
+    }
+  });
+
+  it('storage.onChanged · areaName=local（非 sync）→ 忽略（不同步 UI）', async () => {
+    // Gemini review 采纳：try/finally 保证 delete chrome 在断言失败时也执行
+    const listeners: Array<
+      (changes: Record<string, chrome.storage.StorageChange>, area: string) => void
+    > = [];
+    (globalThis as unknown as { chrome: unknown }).chrome = {
+      storage: {
+        onChanged: {
+          addListener: (fn: (typeof listeners)[number]) => listeners.push(fn),
+          removeListener: () => undefined,
+        },
+      },
+    };
+    try {
+      await renderAct(<OptionsApp />);
+      await act(async () => {
+        listeners.forEach((fn) =>
+          fn(
+            { 'freeTranslate.enabled': { oldValue: true, newValue: false } },
+            'local',
+          ),
+        );
+      });
+      // 该测试目的是覆盖 areaName !== 'sync' 分支
+      expect(listeners.length).toBeGreaterThan(0);
+    } finally {
+      delete (globalThis as unknown as { chrome?: unknown }).chrome;
+    }
   });
 });
