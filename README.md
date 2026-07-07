@@ -1,6 +1,14 @@
 <div align="center">
   <h1>AI proofduck</h1>
   <img src="public/icon.svg" alt="AI proofduck Logo" width="128" height="128" />
+
+<p>
+  <a href="https://github.com/gandli/ai-proofduck-extension/releases/latest"><img src="https://img.shields.io/github/v/release/gandli/ai-proofduck-extension?style=flat-square&label=release" alt="Latest release" /></a>
+  <a href="https://github.com/gandli/ai-proofduck-extension/actions/workflows/build-extension.yml"><img src="https://img.shields.io/github/actions/workflow/status/gandli/ai-proofduck-extension/build-extension.yml?style=flat-square&label=build" alt="Build status" /></a>
+  <img src="https://img.shields.io/badge/tests-369%20passing-brightgreen?style=flat-square" alt="Unit tests" />
+  <img src="https://img.shields.io/badge/coverage-96.03%25-brightgreen?style=flat-square" alt="Coverage" />
+  <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License" />
+</p>
 </div>
 
 [中文](./README.zh-CN.md) | [Changelog](./CHANGELOG.md)
@@ -38,7 +46,7 @@
 
 **AI proofduck** is an intelligent writing assistant extension for your browser sidepanel. Powered by advanced AI models (supporting both local WebGPU/WASM and online APIs), it provides real-time summarization, polishing, error correction, translation, and expansion of text.
 
-Current version **v0.5.3** — Supply-chain zero-vuln, sanitize sink (`logSanitizedError`), cache key includes engine+model dimensions, fetch abort with timeout.
+Current version **v0.5.5** — Three rounds of full audit (24 findings, all resolved). Supply-chain zero-vuln, error body sanitization order fix, UI-exit `formatErrorMessage` prevents Bearer/apiKey leakage, CI hardened with QA gate (tsc + lint + vitest + audit) & pinned action SHAs, stable CRX extension ID via `CRX_KEY` secret.
 
 ## 📸 Screenshots
 
@@ -117,6 +125,28 @@ Built with [WXT](https://wxt.dev/), React, and TypeScript.
    ```
 
    Outputs are generated in the `.output/` directory.
+
+## 🔐 CI / Release · CRX Extension ID Stability
+
+The GitHub Actions workflow builds signed CRX packages using a **repository secret** `CRX_KEY` (PKCS#8 RSA-2048 private key). This guarantees a **stable extension ID** across every release, so users on privately-distributed builds get seamless auto-updates.
+
+- **Secret name**: `CRX_KEY`
+- **Format**: PKCS#8 PEM (`-----BEGIN PRIVATE KEY-----`)
+- **Rotation**: `openssl genrsa 2048 | openssl pkcs8 -topk8 -nocrypt | gh secret set CRX_KEY` (⚠️ new key = new extension ID → breaks existing installs)
+- **Fallback**: If the secret is unset (fork / PR from external contributor), the workflow generates an **ephemeral key** for build smoke-testing only. Such builds are **never released**.
+
+### Quality Gate
+
+Every push to `main` and every tag runs the QA gate before packaging:
+
+```bash
+tsc --noEmit                # 0 error required
+eslint . --max-warnings=0   # 0 warning required
+vitest run                  # 369/369 tests, coverage ≥ 95%
+bun audit                   # 0 vulnerabilities
+```
+
+If any gate fails, the workflow aborts — no artifacts, no release.
 
 ## ⚙️ Configuration
 
