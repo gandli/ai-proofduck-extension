@@ -60,5 +60,17 @@ export default defineConfig({
         '128': 'icons/icon-128.png',
       },
     },
+    // v0.5.2 · 键盘快捷键：Alt+Shift+P 打开侧边栏
+    // Chrome commands 官方约束：suggested_key 每平台最多 4 个 modifier
+    // 用 Alt+Shift+P 避开 Chrome/OS 系统级冲突（Cmd/Ctrl+Shift+P = Chrome 内置命令面板）
+    commands: {
+      'open-side-panel': {
+        suggested_key: {
+          default: 'Alt+Shift+P',
+          mac: 'Alt+Shift+P',
+        },
+        description: '打开校对鸭侧边栏',
+      },
+    },
   },
 });

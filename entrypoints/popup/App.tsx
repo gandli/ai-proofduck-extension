@@ -50,7 +50,7 @@ export default function PopupApp() {
   };
 
   return (
-    <div className="w-72 bg-beige-50 text-ink-warm">
+    <div className="w-80 bg-beige-50 text-ink-warm">
       {/* 品牌 header：毛绒鸭 + 天空底 + 呼吸动画 */}
       <header className="pd-plush-sky flex items-center gap-3 px-4 py-3.5 border-b border-brand-100">
         <span className="pd-plush-logo-wrap" aria-hidden>
