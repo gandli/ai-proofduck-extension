@@ -92,35 +92,35 @@ const base = import.meta.env.BASE_URL;
         <div class="hidden animate-[fade-in_0.5s] relative slide">
           <img
             src={base + "/images/screenshots/screenshot-en-summarize.png"}
-            alt="Summarize feature"
+            alt="Popup 入口 · 快速进入 Options 与 SidePanel"
             class="w-full block"
           />
         </div>
         <div class="hidden animate-[fade-in_0.5s] relative slide">
           <img
             src={base + "/images/screenshots/screenshot-en-translate.png"}
-            alt="Translate feature"
+            alt="SidePanel · 翻译结果视图与引擎徽章"
             class="w-full block"
           />
         </div>
         <div class="hidden animate-[fade-in_0.5s] relative slide">
           <img
             src={base + "/images/screenshots/screenshot-zh-proofread.png"}
-            alt="Proofread feature"
+            alt="SidePanel · 空态与毛绒鸭 header"
             class="w-full block"
           />
         </div>
         <div class="hidden animate-[fade-in_0.5s] relative slide">
           <img
             src={base + "/images/screenshots/screenshot-zh-settings.png"}
-            alt="Settings"
+            alt="Options · 引擎健康度看板与 BYOK 设置"
             class="w-full block"
           />
         </div>
         <div class="hidden animate-[fade-in_0.5s] relative slide">
           <img
             src={base + "/images/screenshots/screenshot-zh-translate.png"}
-            alt="Translate feature"
+            alt="划词浮标 · 深色 UI 内联翻译"
             class="w-full block"
           />
         </div>
@@ -451,6 +451,91 @@ const base = import.meta.env.BASE_URL;
       </div>
 
       <div id="changelog-content" class="max-w-[800px] mx-auto py-5">
+        <div
+          class="bg-bg2 border border-b1 rounded-[20px] p-8 mb-8 shadow-premium animate-fade-up"
+        >
+          <div class="flex items-center gap-3 mb-6 border-b border-b1 pb-4">
+            <span
+              class="bg-ac text-white px-3 py-1 rounded-full font-bold text-[0.9rem]"
+              >v0.4.1</span
+            >
+            <span class="text-t2 text-[0.9rem] font-medium">2026-07-07</span>
+          </div>
+
+          <div class="space-y-6">
+            <div>
+              <h4
+                class="text-base mb-3 pl-3 border-l-4 border-ac font-bold"
+                data-i18n="cl_added"
+              >
+                新增
+              </h4>
+              <ul class="space-y-2.5">
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                >
+                  <strong>Plush Duckling 可爱风视觉</strong>：毛绒 logo 呼吸动画、天空渐变
+                  header、圆胶囊选择器、大圆角 CTA、温暖输出卡片。
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                >
+                  <strong>引擎健康度徽章</strong>：chrome-ai / webllm / openai-compat /
+                  free-translate 实时状态一目了然。
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                >
+                  <strong>按需授权</strong>：从 <code>&lt;all_urls&gt;</code>
+                  迁移到 <code>optional_host_permissions</code>，用户在 Options 页点
+                  「授权」按钮才请求域权限。
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                >
+                  <strong>深色划词浮标</strong>：Shadow DOM 隔离、引擎徽章、复制/重试
+                  操作，划词翻译体验大幅升级。
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                >
+                  <strong>无障碍（a11y）</strong>：axe-core E2E 全入口扫描
+                  SidePanel · Popup · Options 均 0 严重违规，HTML 页面统一声明
+                  <code>lang="zh-CN"</code>。
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4
+                class="text-base mb-3 pl-3 border-l-4 border-ac font-bold"
+              >
+                变更
+              </h4>
+              <ul class="space-y-2.5">
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                >
+                  <strong>品牌色</strong>：淘汰旧橙 <code>#FF5A11</code>，
+                  统一为暖黄三色 <code>#f59f00</code> / <code>#fff9db</code> /
+                  <code>#495057</code>。
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                >
+                  <strong>品牌纯化</strong>：全站移除装饰性鸭子 emoji，鸭子形象
+                  一律走 <code>public/icon.svg</code> 派生。
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                >
+                  <strong>测试基线</strong>：tsc 0 · lint 0/0 · 单测 247/247
+                  · E2E 42/42 · build ok。
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
         <div
           class="bg-bg2 border border-b1 rounded-[20px] p-8 mb-8 shadow-premium animate-fade-up"
         >
