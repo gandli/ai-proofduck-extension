@@ -34,7 +34,9 @@ export function ResultPanel({
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between text-[10.5px] uppercase tracking-wider font-semibold text-ink-400">
         <span>译文</span>
-        {output && (
+        {/* Gemini review #508 采纳：只在实际展示译文时显示字数，
+            避免 loading/error/isOver/isSameLanguage 态下泄漏上一次翻译的历史字数 */}
+        {output && !isOver && !isSameLanguage && status !== 'loading' && status !== 'error' && (
           <span className="font-mono normal-case tracking-normal font-normal">
             {output.length} 字
           </span>
@@ -83,7 +85,7 @@ export function ResultPanel({
           <div className="text-ink-400 font-sans text-sm">
             <div className="italic mb-2">翻译结果会显示在这里…</div>
             <div className="text-[12px] not-italic text-ink-500 leading-6">
-              <div>· 粘贴或输入文本到左侧</div>
+              <div>· 粘贴或输入文本到上方</div>
               <div>
                 · 按{' '}
                 <kbd className="font-mono text-[11px] px-1 py-0.5 rounded border border-ink-300">

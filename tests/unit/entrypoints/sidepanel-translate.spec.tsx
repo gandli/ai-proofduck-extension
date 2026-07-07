@@ -201,7 +201,7 @@ describe('SidePanel M2 翻译交互', () => {
   it('空状态显示引导条目（3 条 hint：粘贴/快捷键/弹泡）', async () => {
     await renderAct(<SidePanelApp engine={mockEngine()} />);
     expect(screen.getByText(/翻译结果会显示在这里/)).toBeDefined();
-    expect(screen.getByText(/粘贴或输入文本到左侧/)).toBeDefined();
+    expect(screen.getByText(/粘贴或输入文本到上方/)).toBeDefined();
     expect(screen.getByText(/快速翻译/)).toBeDefined();
     expect(screen.getByText(/弹泡也会自动翻译/)).toBeDefined();
   });
