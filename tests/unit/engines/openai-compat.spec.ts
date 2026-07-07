@@ -535,5 +535,45 @@ describe('createOpenAiCompatEngine', () => {
       };
       await expect(iterate()).rejects.toThrow(/SSE 不可读/);
     });
+
+    // v0.5.5 P1-A（审计 v3）：error body sanitize 顺序回归
+    // 原实现 sanitizeErrorBody(text.slice(0, 200)) 会先切再脱敏，
+    // 若 secret 恰好跨 200 字节边界 → 前部被切成 < 20 char，
+    // 逃过 SECRET_PATTERNS 的 {20,} 长度约束 → 明文进 Error.message
+    it('run(): body 含 sk-*** 跨 200 字节边界应仍被脱敏（先脱敏再切）', async () => {
+      mocks.config.value = {
+        baseUrl: 'https://api.deepseek.com',
+        apiKey: 'sk-live-test-key-abcdef',
+        model: 'deepseek-chat',
+      };
+
+      // 前 190 字节填充 + 后接完整 sk-***REDACTED*** 敏感串
+      // 若实现是 slice(0, 200) 后 sanitize → 前 190+10 = 只保留 10 char sk 前缀，正则不匹配
+      // 正确实现先 sanitize 整段 → sk-*** 被完整替换为 ***REDACTED***
+      const padding = 'x'.repeat(190);
+      const secret = 'sk-verylongsecretkeydata1234567890abcdefghij';
+      const body = padding + secret + ' rest';
+
+      const fetchMock = vi.fn(async () => ({
+        ok: false,
+        status: 401,
+        text: () => Promise.resolve(body),
+      })) as unknown as typeof fetch;
+      vi.stubGlobal('fetch', fetchMock);
+
+      const engine = createOpenAiCompatEngine();
+      let caught: unknown;
+      try {
+        await engine.run({ mode: 'translate', text: 'hi', sourceLang: 'en', targetLang: 'zh' });
+      } catch (e) {
+        caught = e;
+      }
+      expect(caught).toBeInstanceOf(Error);
+      const msg = (caught as Error).message;
+      // 断言：任何情况下最终消息里都不能出现 sk- 明文前缀
+      expect(msg).not.toMatch(/sk-[A-Za-z0-9]{5,}/);
+      // 应含 REDACTED 或完全没 sk- 痕迹
+      expect(msg).toMatch(/HTTP 401/);
+    });
   });
 });

@@ -152,7 +152,7 @@ export function createOpenAiCompatEngine(): Engine {
         });
         if (!resp.ok) {
           const text = await resp.text().catch(() => '');
-          throw new Error(`openai-compat HTTP ${resp.status}: ${sanitizeErrorBody(text.slice(0, 200))}`);
+          throw new Error(`openai-compat HTTP ${resp.status}: ${sanitizeErrorBody(text).slice(0, 200)}`);
         }
         const data = (await resp.json()) as { choices?: Array<{ message?: { content?: string } }> };
         const content = data.choices?.[0]?.message?.content;
@@ -185,7 +185,7 @@ export function createOpenAiCompatEngine(): Engine {
         });
         if (!resp.ok) {
           const text = await resp.text().catch(() => '');
-          throw new Error(`openai-compat HTTP ${resp.status}: ${sanitizeErrorBody(text.slice(0, 200))}`);
+          throw new Error(`openai-compat HTTP ${resp.status}: ${sanitizeErrorBody(text).slice(0, 200)}`);
         }
         if (!resp.body) {
           throw new Error('openai-compat 响应缺少 body（SSE 不可读）');

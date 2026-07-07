@@ -201,6 +201,36 @@ describe('useTranslate', () => {
       expect(runSpy).toHaveBeenCalledTimes(2);
     });
 
+    // v0.5.5 P3-B（审计 v3）：useTranslate.ts L86 · 缓存命中时的竞态早退
+    // 场景：第一次翻译已写缓存 → reset() 递增 requestId → 立即再发起同 text 翻译
+    // 期望：新请求命中缓存后 status 正确切到 done（不被 reset 期间残留状态干扰）
+    it('reset 后立即命中缓存翻译 → status 正确切到 done（cache 分支竞态保护）', async () => {
+      const runSpy = vi.fn(async ({ text }: { text: string }) => `[cached] ${text}`);
+      const engine = makeMockEngine({ run: runSpy, runStreaming: undefined });
+      const cache = new TranslationCache();
+      const { result } = renderHook(() => useTranslate({ engine, cache }));
+
+      // 首次翻译 → 写缓存
+      await act(async () => {
+        await result.current.translate('race', { source: 'en', target: 'zh' });
+      });
+      expect(runSpy).toHaveBeenCalledTimes(1);
+
+      // reset 递增 requestId
+      act(() => {
+        result.current.reset();
+      });
+      expect(result.current.status).toBe('idle');
+
+      // 立即再发同请求 → 应命中缓存（不调 engine）+ status → done
+      await act(async () => {
+        await result.current.translate('race', { source: 'en', target: 'zh' });
+      });
+      expect(runSpy).toHaveBeenCalledTimes(1); // 缓存命中，未再调
+      expect(result.current.output).toBe('[cached] race');
+      expect(result.current.status).toBe('done');
+    });
+
     it('cache=null → 完全不用缓存（相同请求也重跑）', async () => {
       const runSpy = vi.fn(async ({ text }: { text: string }) => `[T] ${text}`);
       const engine = makeMockEngine({ run: runSpy, runStreaming: undefined });

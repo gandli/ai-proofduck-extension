@@ -289,6 +289,19 @@ describe('SidePanel · 覆盖率补齐（P1-A · 审计 v2）', () => {
     expect(targetSel.value).toBe('en');
   });
 
+  // v0.5.5 P3-A（审计 v3）：目标语言 select 独立 change 事件覆盖
+  // LanguageBar.tsx L78（target onChange）之前分支覆盖 80%，用户直接改
+  // target（而非 swap）的路径没测过。
+  it('直接改目标语言 select → state 更新（LanguageBar target onChange）', async () => {
+    await renderAct(<SidePanelApp engine={mockEngine()} />);
+    const targetSel = screen.getByLabelText('目标语言') as HTMLSelectElement;
+    expect(targetSel.value).toBe('zh');
+    fireEvent.change(targetSel, { target: { value: 'ja' } });
+    expect(targetSel.value).toBe('ja');
+    fireEvent.change(targetSel, { target: { value: 'ko' } });
+    expect(targetSel.value).toBe('ko');
+  });
+
   it('Ctrl+Enter 快捷键触发翻译', async () => {
     const engine = mockEngine();
     await renderAct(<SidePanelApp engine={engine} />);

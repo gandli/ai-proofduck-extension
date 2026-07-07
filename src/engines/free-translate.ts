@@ -24,6 +24,7 @@
 import type { Engine, EngineMode } from './types';
 import { defineStorage } from '@core/storage';
 import { createFetchAbortHandle } from '@utils/fetch-abort';
+import { sanitizeSecrets } from '@utils/error';
 
 const enabledItem = defineStorage<boolean>('freeTranslate.enabled', true, { area: 'sync' });
 
@@ -100,9 +101,13 @@ export function createFreeTranslateEngine(): Engine {
         const resp = await fetch(url, { signal: abortH.signal });
         if (!resp.ok) {
           const body = await resp.text().catch(() => '');
-          // free-translate 是无鉴权公开端点，body 里不会有 apiKey，
-          // 但 200 字符截断+统一格式保持一致
-          throw new Error(`free-translate HTTP ${resp.status}: ${body.slice(0, 200)}`);
+          // free-translate 是无鉴权公开端点，body 里理论上不会有 apiKey；
+          // v0.5.5 P1-A（审计 v3）：即便如此也走 sanitizeSecrets（防御性一致），
+          // 且必须先脱敏再切片——否则 secret 若恰好跨 200 字节边界会被切成
+          // < 20 char 前缀，绕过 SECRET_PATTERNS 的 {20,} 长度约束导致明文泄漏。
+          throw new Error(
+            `free-translate HTTP ${resp.status}: ${sanitizeSecrets(body).slice(0, 200)}`,
+          );
         }
 
         const json: unknown = await resp.json();

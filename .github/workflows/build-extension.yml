@@ -15,45 +15,58 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      # v0.5.5 P2-B（审计 v3）：全部 action pin 到 40 位 SHA，防 tag 被移动到恶意 commit
+      # 若上游发新版：手动查最新 SHA 后按注释里的 tag 版本更新
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.2.2
         with:
           fetch-depth: 0
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.0.2
         with:
           bun-version: latest
 
       - name: Install dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
+
+      # v0.5.5 P1-C（审计 v3）：CI 质量门槛
+      # 原实现只跑 build → 破损代码可 push tag 打 release。
+      # tsc / lint / vitest / audit 必须先绿，才允许构建产物。
+      - name: QA gate · tsc + lint + vitest + audit
+        run: |
+          bun run compile
+          bun run lint
+          bunx vitest run
+          bun audit
 
       - name: Build and Zip Extension
         run: |
           bun run zip
           bun run zip:firefox
 
+      # v0.5.5 P2-A（审计 v3）：CRX 私钥改从 GH secret 读，避免每次 CI 新生成
+      # 导致扩展 ID 漂移（老用户装的 CRX 无法通过 ID 升级）。
+      # 首次配置：本地 `openssl genrsa 2048` → `gh secret set CRX_KEY < key.pem`
+      # 若未配置 CRX_KEY（PR 场景无 secret 权限）→ 走临时 key，仅供打包冒烟，
+      # 产物 ID 与生产不一致，不用于发布（下方 Release 步骤仅在 tag 触发）。
       - name: Build CRX
+        env:
+          CRX_KEY: ${{ secrets.CRX_KEY }}
         run: |
-          # Generate a private key for signing if not provided
-          openssl genrsa -out key.pem 2048
-
-          # Install crx3 tool
+          if [ -n "$CRX_KEY" ]; then
+            printf '%s' "$CRX_KEY" > key.pem
+          else
+            echo "::warning::CRX_KEY secret 未配置，使用临时 key（仅 PR 冒烟，扩展 ID 与生产不一致）"
+            openssl genrsa -out key.pem 2048
+          fi
           bun add -g crx3
-
-          # Pack the extension (dist folder) into a CRX
-          # The dist folder is created by 'bun run build', which is run implicitly by 'bun run zip' 
-          # but let's be explicit and ensure we have the unpacked build first.
           bun wxt build
-
-          # Use crx3 to pack the output directory
-          # wxt outputs to 'dist' (unpacked) based on our config.
-          # We need to find the manifest.json directory.
-          # WXT builds to dist/chrome-mv3 (or similar depending on target).
-          # Let's target the chrome build.
           crx3 dist/chrome-mv3 -p key.pem -o dist/ai-proofduck.crx
+          # 立即清理私钥文件，防 artifact upload 误带出去
+          shred -u key.pem 2>/dev/null || rm -f key.pem
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.4.3
         with:
           name: extension-builds
           path: |
@@ -63,7 +76,7 @@ jobs:
       - name: Build Changelog
         if: startsWith(github.ref, 'refs/tags/')
         id: build_changelog
-        uses: mikepenz/release-changelog-builder-action@v4
+        uses: mikepenz/release-changelog-builder-action@32e3c96f29a6532607f638797455e9e98cfc703d # v4.3.1
         with:
           configuration: '.github/changelog_config.json'
           commitMode: true
@@ -72,7 +85,7 @@ jobs:
 
       - name: Release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v2.0.9
         with:
           body: ${{steps.build_changelog.outputs.changelog}}
           files: |

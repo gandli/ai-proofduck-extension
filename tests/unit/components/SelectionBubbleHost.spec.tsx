@@ -102,6 +102,68 @@ describe('SelectionBubbleHost', () => {
     document.body.removeChild(p);
   });
 
+  // v0.5.5 P1-B（审计 v3）：Error.message 含 apiKey/Bearer 时应脱敏后进 UI
+  it('engine.run 抛错 · Error.message 含 sk-*** → 气泡不能明文显示 apiKey', async () => {
+    const p = document.createElement('p');
+    p.textContent = 'hi';
+    document.body.appendChild(p);
+
+    const engine = makeMockEngine({
+      run: (async () => {
+        throw new Error(
+          'openai-compat HTTP 401: {"error":"invalid Bearer sk-abcdef1234567890xyzuvw"}',
+        );
+      }) as never,
+    });
+
+    render(<SelectionBubbleHost engine={engine} />);
+    act(() => selectText(p));
+    await waitFor(() => screen.getByRole('button', { name: /翻译/ }));
+    fireEvent.click(screen.getByRole('button', { name: /翻译/ }));
+
+    // 等状态切到 error
+    await waitFor(() => {
+      expect(screen.getByText(/HTTP 401/)).toBeInTheDocument();
+    });
+    // 关键断言：UI 上不允许出现 sk- 明文
+    // shadow root 里查所有文本：不能有 sk-abcdef 之类连续 5+ 字母数字组合
+    const bubbleText =
+      screen.getByText(/HTTP 401/).textContent ?? '';
+    expect(bubbleText).not.toMatch(/sk-[A-Za-z0-9]{5,}/);
+
+    document.body.removeChild(p);
+  });
+
+  // v0.5.5 P1-B + Gemini review 采纳：跨进程 sendMessage 反序列化后的 Error
+  // 会丢失 Error 原型 → 普通对象 {message:'...'}。formatErrorMessage 通过
+  // extractRawMessage 兜底提取，UI 应显示 message 而非 "[object Object]"
+  it('engine.run 抛「plain object 形态错误」（丢失 Error 原型）→ 气泡仍能取到 message', async () => {
+    const p = document.createElement('p');
+    p.textContent = 'hi';
+    document.body.appendChild(p);
+
+    const engine = makeMockEngine({
+      run: (async () => {
+        // 模拟跨进程反序列化：无 Error 原型，只有 message 属性
+        throw { message: '跨进程失败：background 无响应' } as unknown as Error;
+      }) as never,
+    });
+
+    render(<SelectionBubbleHost engine={engine} />);
+    act(() => selectText(p));
+    await waitFor(() => screen.getByRole('button', { name: /翻译/ }));
+    fireEvent.click(screen.getByRole('button', { name: /翻译/ }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/跨进程失败/)).toBeInTheDocument();
+    });
+    // 反证：不应出现 [object Object]（说明 formatErrorMessage 正确提取了 message）
+    const container = document.body;
+    expect(container.textContent).not.toContain('[object Object]');
+
+    document.body.removeChild(p);
+  });
+
   // ========================
   // Gemini review #2: 异步竞态——翻译返回时用户已换选区
   // ========================
