@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.4.2] - 2026-07-07 · 米色樱粉色板 + 审计修复
+
+### 🎨 色彩重构
+
+- 主色板从「毛绒黄 #f59f00」→ 「米金 #C89A3E」（<10% 面积主 CTA）
+- bg 从 brand-50 → beige-50 `#FDFAF2`（`bg-paper`）
+- 樱粉点缀 `#F5C3B8` + 鸭蛋蓝 `#7CC4D0`
+
+### 🔧 v0.4.1 全量审计后的修复（fuck-my-shit-mountain skill）
+
+- **P1-1**：`canTranslate` 未拦超长输入 — 用户点【翻译】能把 20k 字发出去
+  烧 openai key / 卡 webllm UI。修：`canTranslate += !isOver` + 超长提示 + 单测
+- **P1-2**：`pickBest()` 不看 `supports(mode)` — 未来加 Summarizer 引擎会崩
+  修：`pickBest(mode?: EngineMode)` + 3 调用点 + 3 条单测
+- **P1-3**：vitest coverage 漏 entrypoints/（718 loc 3 App 组件）
+  修：`include: ['src/**', 'entrypoints/**']` + PopupApp / OptionsApp 单测
+- **P2-3**：CHANGELOG 残留 💛 → 「译」中文纸片
+- **P2-4**：message-bus `console.error(err)` 直接打 raw err（err.stack 含用户输入）
+  修：改用 `formatErrorMessage(err)` 脱敏
+- **P2-2** 部分：Options 引擎健康度标题 🩺 → 纯文字
+
+### ✨ 视觉细节
+
+- 译文框改用 `.pd-plush-input` 白纸底 `#FFFEFB` + 米边 · 与输入框视觉孪生
+- 去浮空「译」标签 · 去左粉线 · min-h 140px · focus 樱粉光晕
+- Options 引擎健康度卡片：樱粉→米色渐变
+
+### ✅ 验收基线
+
+- tsc / lint 0 warn / build ok
+- 单测 **265 tests / 26 files** 全绿（v0.4.1 是 247/24）
+- coverage：`{statements:92 branches:85 functions:87 lines:94}`（含 entrypoints/）
+- E2E **42 tests** 全绿（含 demo 录屏）
+
+---
+
 ## [v0.4.1] - 2026-07-07 · Plush Duckling UI + a11y
 
 ### 🎨 Plush Duckling 可爱风视觉
@@ -14,7 +50,7 @@ All notable changes to this project will be documented in this file.
 - Language select / textarea：直角灰边 → 圆角胶囊 + 黄色 focus 光晕
 - Swap 按钮：32×32 灰边 → 34×34 品牌黄圈 + 180° hover
 - 主 CTA：直角黄底 → 24px 大圆角 + 三色渐变 + inset 高光
-- 输出卡：直角 brand-50 → 20px 圆角 + 💛 tag（Sidepanel 独享）+ 更柔阴影
+- 输出卡：直角 brand-50 → 20px 圆角 + 「译」中文纸片标签（Sidepanel 独享，v0.4.2 已改与输入框视觉对齐）+ 更柔阴影
 
 ### 🧹 品牌纯化 · 全站移除鸭子 emoji
 

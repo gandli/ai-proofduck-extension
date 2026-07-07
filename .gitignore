@@ -49,3 +49,8 @@ yarn-error.log*
 .wxt
 web-ext.config.ts
 stats.html
+
+# 审计报告 / 本地 sketch 不进仓
+.audit-reports/
+sketches/
+

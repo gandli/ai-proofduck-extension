@@ -23,6 +23,23 @@
   --ink-800:   #212529;
   --ink-900:   #1a1d20;
 
+  /* v0.4.2 米色樱粉方案（Beige + Sakura）
+   * 主色黄退居 CTA/logo，米色成主底色，引入樱粉+鸭蛋蓝点缀。
+   * 目标：日式绘本气质，褪掉"Tailwind 数字黄"的塑料感。 */
+  --beige-50:  #FDFAF2;   /* 奶油纸 · 主背景 */
+  --beige-100: #F8EFD9;   /* 蛋壳 · header 底色 */
+  --beige-200: #EFE3C4;   /* 麻布 · 边框 */
+  --beige-300: #E2D0A5;   /* 淡姜 · 分隔 */
+
+  --sakura:    #F5C3B8;   /* 樱粉 · 腮红 & 次强调 */
+  --sakura-2:  #EBA095;   /* 深樱粉 · hover */
+  --duck-blue: #7CC4D0;   /* 鸭蛋蓝 · info/link */
+
+  /* v0.4.2 深文本色（带暖调，替代冷黑） */
+  --ink-warm:   #2E2418;  /* 墨黑（暖） */
+  --ink-warm-2: #6E5638;  /* 中调棕 */
+  --ink-warm-3: #A8896A;  /* 米棕 · placeholder */
+
   /* 语义色（黄仅品牌，不作警告） */
   --success:      #2f9e44;
   --success-soft: #ebfbee;
@@ -73,7 +90,9 @@ body {
  * 与既有 pd-btn-primary / pd-dot-* 平行，避免命名冲突。
  * =============================================================== */
 
-/* 品牌 logo 毛绒容器：把 /icons/icon-32.png 包一层呼吸感 */
+/* 品牌 logo 毛绒容器：把 /icons/icon-32.png 包一层呼吸感
+ * v0.4.2 · 米色樱粉：主色黄面积极小（仅 logo 圆底），
+ * 樱粉腮红更明显，产生日式绘本人偶感 */
 .pd-plush-logo-wrap {
   position: relative;
   display: inline-flex;
@@ -83,36 +102,38 @@ body {
   height: 44px;
   border-radius: 50%;
   background:
-    radial-gradient(circle at 32% 30%, rgba(255,255,255,0.85) 0%, transparent 55%),
-    radial-gradient(circle at 70% 75%, var(--brand-500) 0%, var(--brand-600) 100%);
+    radial-gradient(circle at 32% 30%, rgba(255,255,255,0.75) 0%, transparent 55%),
+    radial-gradient(circle at 60% 65%, var(--brand-300) 0%, var(--brand-500) 100%);
   box-shadow:
-    inset -3px -5px 0 rgba(73, 80, 87, 0.08),
-    0 4px 14px rgba(245, 159, 0, 0.35);
-  animation: pd-plush-bob 3.2s ease-in-out infinite;
+    inset -3px -5px 0 rgba(46, 36, 24, 0.10),
+    0 3px 10px rgba(158, 118, 40, 0.28),
+    0 0 0 3px var(--beige-50);
+  animation: pd-plush-bob 3.5s ease-in-out infinite;
 }
 .pd-plush-logo-wrap > img,
 .pd-plush-logo-wrap > svg {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  filter: drop-shadow(0 2px 3px rgba(73, 80, 87, 0.15));
+  filter: drop-shadow(0 2px 3px rgba(46, 36, 24, 0.20));
   position: relative;
   z-index: 1;
 }
-/* 两颗腮红：伪元素挂在容器上，不动 DOM */
+/* 两颗腮红：樱粉更饱满，emoji 感的关键 */
 .pd-plush-logo-wrap::before,
 .pd-plush-logo-wrap::after {
   content: '';
   position: absolute;
   width: 9px;
-  height: 5px;
+  height: 6px;
   border-radius: 50%;
-  background: #ffb3ba;
-  opacity: 0.65;
-  top: 60%;
+  background: var(--sakura);
+  opacity: 0.9;
+  top: 62%;
+  z-index: 0;
 }
-.pd-plush-logo-wrap::before { left: 4px; }
-.pd-plush-logo-wrap::after  { right: 4px; }
+.pd-plush-logo-wrap::before { left: 5px; }
+.pd-plush-logo-wrap::after  { right: 5px; }
 @keyframes pd-plush-bob {
   0%, 100% { transform: translateY(0) rotate(-2deg); }
   50%      { transform: translateY(-3px) rotate(2deg); }
@@ -121,54 +142,56 @@ body {
   .pd-plush-logo-wrap { animation: none; }
 }
 
-/* Header 底色氛围：暖黄天空 + 淡云 */
+/* Header 底色：米色天空 + 樱花斑点（替代刺眼的暖黄天空）
+ * 关键：从 brand-100 米黄 → beige-100 蛋壳，去掉"发光屏幕"感 */
 .pd-plush-sky {
   background:
-    radial-gradient(ellipse 200px 60px at 80% 20%, rgba(255,255,255,0.9) 0%, transparent 60%),
-    radial-gradient(ellipse 160px 50px at 15% 70%, rgba(255,255,255,0.75) 0%, transparent 60%),
-    linear-gradient(180deg, var(--brand-100) 0%, #fffdf3 100%);
+    radial-gradient(80% 60% at 20% 0%, rgba(245,195,184,0.28) 0%, transparent 55%),
+    radial-gradient(70% 50% at 80% 30%, rgba(226,208,165,0.35) 0%, transparent 60%),
+    var(--beige-100);
 }
 
-/* 引擎徽章：胶囊 → 毛绒软卡片 */
+/* 引擎徽章：胶囊 → 米色纸片，成功用鸭蛋蓝而非绿（更贴日式绘本调） */
 .pd-plush-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #ffffff 0%, #ebfbee 100%);
-  border: 1.5px solid rgba(47, 158, 68, 0.35);
-  color: #2f9e44;
+  background: var(--beige-50);
+  border: 1px solid var(--beige-200);
+  color: var(--ink-warm-2);
   font-weight: 600;
-  box-shadow: 0 2px 6px rgba(47, 158, 68, 0.12);
+  box-shadow: 0 1px 3px rgba(158, 118, 40, 0.10);
   transition: transform 0.15s;
 }
 .pd-plush-chip:hover { transform: translateY(-1px); }
 
-/* 主 CTA 按钮变体 —— rounded 用 !important 覆盖基础 rounded-md，
- * 避免 Tailwind class 顺序不稳定导致视觉不一致（Gemini review） */
+/* 主 CTA 按钮变体 —— v0.4.2 焦糖单色 + 中圆角
+ * 从 v0.4.1 三色渐变 24px 大圆角 → 焦糖单色 14px 中圆角，
+ * 消除"塑料糖果"感；文字色改深可可（不用白），呼应旧棉布气质 */
 .pd-plush-cta {
-  border-radius: 24px !important;
-  background: linear-gradient(135deg, var(--brand-300) 0%, var(--brand-500) 55%, #ff8b3d 100%);
-  color: var(--ink-900);
-  border: 1.5px solid rgba(213, 139, 0, 0.5);
+  border-radius: 14px !important;
+  background: var(--brand-500);
+  color: var(--ink-warm);
+  border: 1.5px solid var(--brand-600);
   box-shadow:
-    0 6px 14px rgba(255, 139, 61, 0.32),
-    inset 0 -3px 0 rgba(73, 80, 87, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    0 2px 6px rgba(158, 118, 40, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
   font-weight: 700;
+  letter-spacing: 1.5px;
   transition: all 0.15s ease-out;
 }
 .pd-plush-cta:hover:not(:disabled) {
   transform: translateY(-1px);
+  background: var(--brand-600);
   box-shadow:
-    0 8px 18px rgba(255, 139, 61, 0.42),
-    inset 0 -3px 0 rgba(73, 80, 87, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    0 4px 12px rgba(158, 118, 40, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 .pd-plush-cta:active:not(:disabled) {
   transform: translateY(1px);
-  box-shadow: 0 2px 6px rgba(255, 139, 61, 0.3);
+  box-shadow: 0 1px 3px rgba(158, 118, 40, 0.28);
 }
 .pd-plush-cta:disabled {
   opacity: 0.5;
@@ -176,70 +199,83 @@ body {
   box-shadow: none;
 }
 
-/* 译文卡片：毛绒软圆角 —— 基础版（Popup preview 复用，无 💛 装饰） */
+/* 译文卡片：米色底 + 樱粉左边强调线
+ * 从 v0.4.1 的暖黄渐变 → 单色米底 + 左侧樱粉细线，
+ * 让"引用感"更绘本、更书页 */
 .pd-plush-output {
-  background: linear-gradient(135deg, #ffffff 0%, var(--brand-50) 100%);
-  border: 1.5px solid var(--brand-200);
-  border-radius: 20px;
-  box-shadow: 0 4px 12px rgba(245, 159, 0, 0.10);
+  background: var(--beige-50);
+  border: 1px solid var(--beige-200);
+  border-left: 3px solid var(--sakura);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(158, 118, 40, 0.08);
   position: relative;
 }
-/* 💛 装饰标签 —— 只挂在 SidePanel 主输出上，通过额外类启用，
- * 避免 Popup 里的选中预览卡也顶一个 💛 破坏语义（Gemini review） */
+/* 装饰标签：从 💛 emoji → 中文「译」字纸片
+ * 用户品牌规则：禁用装饰性 emoji，用文字/图标替代 */
 .pd-plush-output-tagged::before {
-  content: '💛';
+  content: '译';
   position: absolute;
-  top: -12px;
-  left: 16px;
-  background: white;
-  padding: 2px 8px;
-  border-radius: 999px;
+  top: -11px;
+  left: 14px;
+  background: var(--beige-50);
+  color: var(--sakura-2);
+  font-family: 'Noto Serif SC', 'PingFang SC', serif;
   font-size: 12px;
-  box-shadow: 0 2px 4px rgba(73, 80, 87, 0.08);
-  border: 1px solid var(--brand-100);
+  font-weight: 700;
+  padding: 2px 10px;
+  border: 1px solid var(--sakura);
+  border-radius: 4px;
+  letter-spacing: 2px;
+  box-shadow: 0 1px 2px rgba(158, 118, 40, 0.10);
 }
 
-/* 输入卡：软圆角 + focus 时黄色光晕 */
+/* 输入卡 / 输出卡孪生样式：白纸浮在米色页面上
+ * 原文（textarea）和译文（div）共用此类 —— 视觉完全对齐 */
 .pd-plush-input {
-  border: 1.5px solid var(--brand-100);
-  border-radius: 18px;
-  background: #fffdf7;
-  transition: all 0.2s;
+  border: 1px solid var(--beige-200);
+  border-radius: 12px;
+  background: #FFFEFB;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 .pd-plush-input:focus {
-  border-color: var(--brand-500);
-  box-shadow: 0 0 0 4px rgba(245, 159, 0, 0.15);
-  background: white;
+  outline: none;
+  border-color: var(--sakura-2);
+  box-shadow: 0 0 0 3px rgba(245, 195, 184, 0.35);
 }
 
-/* 语言选择器：胶囊感 */
+/* 语言选择器：中圆角 + 樱粉 focus */
 .pd-plush-select {
-  border-radius: 14px;
-  border: 1.5px solid var(--brand-100);
-  background: #fffdf7;
+  border-radius: 12px;
+  border: 1px solid var(--beige-200);
+  background: var(--beige-50);
   transition: all 0.15s;
 }
+.pd-plush-select:hover {
+  border-color: var(--sakura);
+  background: rgba(245, 195, 184, 0.08);
+}
 .pd-plush-select:focus {
-  border-color: var(--brand-500);
-  box-shadow: 0 0 0 3px rgba(245, 159, 0, 0.18);
+  border-color: var(--sakura-2);
+  box-shadow: 0 0 0 3px rgba(245, 195, 184, 0.30);
 }
 
-/* Swap 按钮：圆形 + hover 旋转 */
+/* Swap 按钮：米色底 + hover 变樱粉（低调却明显） */
 .pd-plush-swap {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: 1.5px solid var(--brand-200);
-  background: linear-gradient(135deg, #ffffff 0%, var(--brand-50) 100%);
-  color: var(--ink-600);
+  border: 1.5px solid var(--beige-200);
+  background: var(--beige-50);
+  color: var(--ink-warm-2);
   transition: all 0.25s;
-  box-shadow: 0 2px 4px rgba(73, 80, 87, 0.06);
+  box-shadow: 0 1px 3px rgba(158, 118, 40, 0.15);
 }
 .pd-plush-swap:hover:not(:disabled) {
-  border-color: var(--brand-500);
-  color: var(--brand-600);
+  border-color: var(--sakura-2);
+  background: var(--sakura);
+  color: var(--ink-warm);
   transform: rotate(180deg);
-  box-shadow: 0 3px 8px rgba(245, 159, 0, 0.25);
+  box-shadow: 0 3px 8px rgba(235, 160, 149, 0.35);
 }
 .pd-plush-swap:disabled {
   opacity: 0.4;

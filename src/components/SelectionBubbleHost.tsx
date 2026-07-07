@@ -67,7 +67,7 @@ export function SelectionBubbleHost(props: SelectionBubbleHostProps) {
     setOutput('');
     try {
       // 生产走 pickBest；测试用注入
-      const resolved = engine ?? (await getEngines().pickBest());
+      const resolved = engine ?? (await getEngines().pickBest('translate'));
       if (myRequestId !== requestIdRef.current) return; // 已过期
       if (!resolved) {
         setStatus('error');

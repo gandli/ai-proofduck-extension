@@ -166,14 +166,32 @@ describe('SidePanel M2 翻译交互', () => {
     });
   });
 
+  // P1-1 修复（v0.4.2 审计）：输入超过 MAX_CHARS 时按钮 disabled + 提示
+  it('输入超过 5000 字时按钮 disabled + 显示"输入超过 X 字"提示', () => {
+    render(<SidePanelApp engine={mockEngine()} />);
+    const input = screen.getByPlaceholderText(/粘贴|输入/) as HTMLTextAreaElement;
+    fireEvent.change(input, { target: { value: 'x'.repeat(5001) } });
+
+    const btn = screen.getByRole('button', { name: /翻译/ }) as HTMLButtonElement;
+    expect(btn.disabled).toBe(true);
+    expect(screen.getByText(/输入超过 5000 字/)).toBeDefined();
+  });
+
+  it('输入正好 5000 字时按钮仍可点（等号边界）', () => {
+    render(<SidePanelApp engine={mockEngine()} />);
+    const input = screen.getByPlaceholderText(/粘贴|输入/) as HTMLTextAreaElement;
+    fireEvent.change(input, { target: { value: 'x'.repeat(5000) } });
+
+    const btn = screen.getByRole('button', { name: /翻译/ }) as HTMLButtonElement;
+    expect(btn.disabled).toBe(false);
+  });
+
   it('全部引擎都不可用时才显示"没有可用引擎"横幅（不是特指 Chrome AI）', async () => {
     const engine = mockEngine({ isAvailable: async () => false });
     render(<SidePanelApp engine={engine} />);
 
     await waitFor(() => {
-      // 应该是通用文案，而不是硬编码 Chrome AI 独占
       const banner = screen.getByRole('alert');
-      // 允许提到 Chrome AI 作为一个选项，但也要提到其他兜底
       expect(banner.textContent).toMatch(/没有可用|所有引擎|去设置|配置/);
     });
   });

@@ -101,7 +101,7 @@ export default function OptionsApp() {
   ];
 
   return (
-    <div className="min-h-screen bg-ink-50 text-ink-800">
+    <div className="min-h-screen bg-beige-50 text-ink-warm">
       <div className="max-w-2xl mx-auto p-6">
         {/* ============ 品牌 header ============ */}
         <header className="flex items-center gap-3 mb-6 pb-5 border-b border-ink-200">
@@ -122,14 +122,13 @@ export default function OptionsApp() {
 
         {/* ============ 健康度总览卡 ============ */}
         <div
-          className="rounded-lg border border-brand-200 p-4 mb-6"
+          className="rounded-lg border border-sakura/50 p-4 mb-6"
           style={{
-            background: 'linear-gradient(135deg, #fffbea 0%, #ffffff 60%)',
+            background: 'linear-gradient(135deg, rgba(245,195,184,0.14) 0%, #FDFAF2 60%)',
           }}
         >
-          <div className="text-[11px] uppercase tracking-wider font-semibold text-ink-500 mb-2.5 flex items-center gap-1.5">
-            <span aria-hidden>🩺</span>
-            <span>引擎健康度</span>
+          <div className="text-[11px] uppercase tracking-wider font-semibold text-ink-500 mb-2.5">
+            引擎健康度
           </div>
           <div className="grid grid-cols-2 gap-x-4 gap-y-2">
             {engineMeta.map((meta) => {

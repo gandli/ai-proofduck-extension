@@ -74,7 +74,7 @@ export default function SidePanelApp({ engine }: Props = {}) {
     // 生产路径：走 pickBest() 兜底（初始 isResolving = !engine 已经是 true，无需再设）
     let cancelled = false;
     void getEngines()
-      .pickBest()
+      .pickBest('translate')
       .then((e: Engine | null) => {
         if (!cancelled) {
           setResolvedEngine(e);
@@ -112,10 +112,18 @@ export default function SidePanelApp({ engine }: Props = {}) {
       });
   }, [resolvedEngine, isResolving]);
 
+  // 字数计数在同语言校验之前算完，供 canTranslate 一并判定
+  const charCount = text.length;
+  const isOver = charCount > MAX_CHARS;
+
   // 同语言校验：手动选定的源和目标一样时无意义（'auto' 例外，由引擎自行推断）
   const isSameLanguage = source !== 'auto' && source === target;
   const canTranslate =
-    text.trim().length > 0 && status !== 'loading' && available !== false && !isSameLanguage;
+    text.trim().length > 0 &&
+    !isOver &&
+    status !== 'loading' &&
+    available !== false &&
+    !isSameLanguage;
 
   const handleTranslate = () => {
     // 'auto' → 让引擎自己推断；chrome-ai 目前需要显式 source，暂用启发式：中→英，其他→中
@@ -138,11 +146,8 @@ export default function SidePanelApp({ engine }: Props = {}) {
     }
   };
 
-  const charCount = text.length;
-  const isOver = charCount > MAX_CHARS;
-
   return (
-    <div className="min-h-screen bg-white text-ink-800 flex flex-col">
+    <div className="min-h-screen bg-beige-50 text-ink-warm flex flex-col">
       {/* ============ 品牌 header ============ */}
       <header className="pd-plush-sky px-4 pt-4 pb-3 border-b border-brand-100">
         <div className="flex items-center gap-3">
@@ -319,11 +324,15 @@ export default function SidePanelApp({ engine }: Props = {}) {
             )}
           </div>
           <div
-            className="pd-plush-output pd-plush-output-tagged min-h-[100px] p-3.5 text-[14px] leading-relaxed font-serif text-ink-900 whitespace-pre-wrap"
+            className="pd-plush-input min-h-[140px] p-3 text-sm text-ink-warm leading-relaxed font-serif whitespace-pre-wrap"
             aria-label="翻译结果"
             aria-live="polite"
           >
-            {isSameLanguage ? (
+            {isOver ? (
+              <span className="text-danger font-sans text-sm not-italic" style={{ color: '#e03131' }}>
+                输入超过 {MAX_CHARS} 字，请分段翻译
+              </span>
+            ) : isSameLanguage ? (
               <span className="text-danger font-sans text-sm not-italic" style={{ color: '#e03131' }}>
                 源语言和目标语言不能相同
               </span>

@@ -43,6 +43,24 @@ export default {
           800: '#212529',
           900: '#1a1d20',
         },
+        /**
+         * v0.4.2 米色樱粉方案 —— 与 style.css 的 --beige-* / --sakura-* / --duck-blue 一一对应
+         */
+        beige: {
+          50:  '#FDFAF2',
+          100: '#F8EFD9',
+          200: '#EFE3C4',
+          300: '#E2D0A5',
+        },
+        sakura: {
+          DEFAULT: '#F5C3B8',
+          soft:    '#F5C3B8',
+          strong:  '#EBA095',
+        },
+        'duck-blue': '#7CC4D0',
+        'ink-warm':   '#2E2418',
+        'ink-warm-2': '#6E5638',
+        'ink-warm-3': '#A8896A',
       },
       fontFamily: {
         sans: ['Inter', 'PingFang SC', 'Microsoft YaHei', 'system-ui', '-apple-system', 'sans-serif'],
