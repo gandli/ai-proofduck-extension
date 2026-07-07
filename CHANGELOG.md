@@ -2,6 +2,94 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.5.2] - 2026-07-07 · UX 系列收尾 · shortcuts + badge + popup
+
+### ⌨️ 键盘快捷键
+
+- `chrome.commands` 声明 `open-side-panel` → `Alt+Shift+P`（跨平台，避开 Chrome 内置 Cmd/Ctrl+Shift+P）
+- background 桥接快捷键 → `sidePanel.open`
+- 用户可在 `chrome://extensions/shortcuts` 自定义
+
+### 🎖️ 图标 Badge
+
+- `openai-compat` 配置健康度提示
+- 全空/齐全 → 无 badge；缺 key/model → 橙 `!`
+- background 从 `chrome.storage` 首读 + watch 变化
+
+### 📐 Popup 加宽
+
+- w-72 (288px) → w-80 (320px)，避免长引擎名截断
+
+### 🏗️ 架构
+
+- background 抽出 3 可测模块 `src/background/{lifecycle,badge,badge-state}.ts`
+- entrypoints/background.ts 只做 wxt defineBackground 壳
+
+### 🩹 关键修复
+
+- **CodeRabbit 硬伤**：`sidePanel.open` 用户手势保护（await getCurrent 会消耗 gesture context）
+- 改用 `commands.onCommand` 回调第二参 `tab.windowId` 同步取
+- 新增回归单测 `expect(getCurrent).not.toHaveBeenCalled()`
+
+### ✅ 验收
+
+- tsc 0 err · lint 0 warn · 单测 290/290 · E2E 43/43
+
+---
+
+## [v0.5.1] - 2026-07-07 · UX polish · 三态 + focus-visible
+
+### 🎬 sidepanel 输出区三态改造
+
+- **空状态** → 补 3 条 hint 引导（粘贴/⌘+↵ 快捷键/弹泡）
+- **加载态** → 从 ⏳ emoji → 骨架块（shimmer + `aria-busy` + `prefers-reduced-motion`）+ 按钮内 `pd-btn-dot` 脉动圆点
+- **错误态** → 独立"重试"按钮，键盘可达 + focus-visible
+
+### ⌨️ focus-visible 全站补齐
+
+- `.pd-plush-input` / `.pd-plush-select` / `.pd-plush-swap` 加 `outline: 2px solid brand-500`
+
+### 🧪 TDD
+
+- 3 UX 单测（空态引导 / 错误重试 / 加载骨架）
+- 修 vitest module-level cache 污染陷阱（用独特文本隔离）
+
+### ✅ 验收
+
+- 单测 268/268 · E2E 43/43 · Vision AI 空态打分 8/10
+
+---
+
+## [v0.5.0] - 2026-07-07 · Dark Mode 跟随系统
+
+### 🌙 Dark Mode
+
+- Tailwind `darkMode: 'media'` · `@media (prefers-color-scheme: dark)`
+- 主背景 `#14100B` · 卡片 `#33291D` · border `#5A4C36`
+- brand-300 dark override `#C89A3E`（避免 logo 光晕泛浅金）
+- 全站 CSS 变量覆盖（`--brand-*` / `--ink-*` / `--beige-*`）
+
+### 🎨 Options 页
+
+- 引擎健康度卡重构 `.pd-plush-health-card`（原内联 style 有斜光问题）
+- Vision AI 打分：6.5 → **8.5**
+
+### 🧪 TDD
+
+- 新增 E2E `tests/e2e/dark-mode.spec.ts`（emulateMedia + 截图对比）
+- 6 张亮/暗对照截图（sidepanel / popup / options × light/dark）
+
+### 🩹 关键修复
+
+- CodeRabbit 硬伤：`.pd-plush-input` @media dark 重复定义（死代码删除）
+- CodeRabbit 硬伤：dark `--brand-300` 变量未覆盖（补 `#C89A3E`）
+
+### ✅ 验收
+
+- 单测 265/265 · E2E 42/42 · a11y `>=3` focusable elements
+
+---
+
 ## [v0.4.2] - 2026-07-07 · 米色樱粉色板 + 审计修复
 
 ### 🎨 色彩重构
