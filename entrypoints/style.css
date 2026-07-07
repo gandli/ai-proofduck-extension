@@ -247,6 +247,11 @@ body {
   border-color: var(--sakura-2);
   box-shadow: 0 0 0 3px rgba(245, 195, 184, 0.35);
 }
+/* v0.5.1 · keyboard-only focus ring：Tab 到时叠加更明显的轮廓 */
+.pd-plush-input:focus-visible {
+  outline: 2px solid var(--brand-500);
+  outline-offset: 2px;
+}
 
 /* 语言选择器：中圆角 + 樱粉 focus */
 .pd-plush-select {
@@ -262,6 +267,10 @@ body {
 .pd-plush-select:focus {
   border-color: var(--sakura-2);
   box-shadow: 0 0 0 3px rgba(245, 195, 184, 0.30);
+}
+.pd-plush-select:focus-visible {
+  outline: 2px solid var(--brand-500);
+  outline-offset: 2px;
 }
 
 /* Swap 按钮：米色底 + hover 变樱粉（低调却明显） */
@@ -281,6 +290,56 @@ body {
   color: var(--ink-warm);
   transform: rotate(180deg);
   box-shadow: 0 3px 8px rgba(235, 160, 149, 0.35);
+}
+.pd-plush-swap:focus-visible {
+  outline: 2px solid var(--brand-500);
+  outline-offset: 2px;
+}
+
+/* v0.5.1 · 按钮内加载指示点：3 圆脉动，替代 ⏳ emoji */
+.pd-btn-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pd-btn-dot-pulse 0.9s ease-in-out infinite;
+  margin-right: 2px;
+}
+@keyframes pd-btn-dot-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.8); }
+  50%      { opacity: 1;    transform: scale(1.15); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pd-btn-dot { animation: none; opacity: 0.7; }
+}
+
+/* v0.5.1 · 骨架加载：暖米底 + 浅金脉动，比 spinner 更明确"内容形状" */
+.pd-skeleton-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 2px;
+}
+.pd-skeleton {
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    rgba(200, 154, 62, 0.10) 0%,
+    rgba(200, 154, 62, 0.22) 50%,
+    rgba(200, 154, 62, 0.10) 100%
+  );
+  background-size: 200% 100%;
+  animation: pd-skeleton-shimmer 1.6s ease-in-out infinite;
+}
+.pd-skeleton-line {
+  height: 14px;
+}
+@keyframes pd-skeleton-shimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pd-skeleton { animation: none; opacity: 0.6; }
 }
 .pd-plush-swap:disabled {
   opacity: 0.4;
