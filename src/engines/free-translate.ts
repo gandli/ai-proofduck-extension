@@ -105,8 +105,10 @@ export function createFreeTranslateEngine(): Engine {
           // v0.5.5 P1-A（审计 v3）：即便如此也走 sanitizeSecrets（防御性一致），
           // 且必须先脱敏再切片——否则 secret 若恰好跨 200 字节边界会被切成
           // < 20 char 前缀，绕过 SECRET_PATTERNS 的 {20,} 长度约束导致明文泄漏。
+          // v0.5.6 P1-B（审计 v5）：先切 1000 char 缓冲区再脱敏，避免大 body
+          // （Google 翻译异常时可能返回长 HTML）阻塞主线程。1000 » 200 保证边界安全。
           throw new Error(
-            `free-translate HTTP ${resp.status}: ${sanitizeSecrets(body).slice(0, 200)}`,
+            `free-translate HTTP ${resp.status}: ${sanitizeSecrets(body.slice(0, 1000)).slice(0, 200)}`,
           );
         }
 

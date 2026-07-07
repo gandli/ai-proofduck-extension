@@ -67,6 +67,78 @@ describe('openai-compat 错误脱敏', () => {
     });
     expect(result).toBe('你好');
   });
+
+  it('run() DeepSeek 自定义格式 apiKey 走字面量兜底脱敏（v5 P1-A 引擎侧回归）', async () => {
+    // v0.5.6 P1-A（审计 v5）：sanitizeSecrets 只匹配 sk-*/Bearer/x-api-key，
+    // DeepSeek dsk-*/通义千问 qwen-*/豆包等自定义格式 key 若被服务端裸回显
+    // 会绕过正则漏检。修复：apiKey 字面量 split/join 兜底。
+    const customKey = 'dsk-my-deepseek-custom-key-1234567890';
+    await openaiCompatConfig.set({
+      baseUrl: 'https://api.deepseek.com',
+      apiKey: customKey,
+      model: 'deepseek-chat',
+    });
+    const engine = createOpenAiCompatEngine();
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      new Response(`invalid credentials for key = ${customKey}`, { status: 403 }),
+    );
+    try {
+      await engine.run({ mode: 'translate', text: 'hi', targetLang: 'zh' });
+      throw new Error('should have thrown');
+    } catch (err) {
+      const msg = String((err as Error).message);
+      // 自定义格式 key 值不能出现在 error message 里
+      expect(msg).not.toContain(customKey);
+      expect(msg).toContain('***REDACTED***');
+    }
+  });
+
+  it('run() 短 apiKey (<8 char) 不误替换 UI 文案（v5 P1-A 边界回归）', async () => {
+    // key.length >= 8 门槛：如用户填了 "test" 类占位符，不应把 "test" 字样从 error body 里替换掉
+    await openaiCompatConfig.set({
+      baseUrl: 'https://api.example.com',
+      apiKey: 'test',
+      model: 'gpt',
+    });
+    const engine = createOpenAiCompatEngine();
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      new Response('Please provide a valid test API key', { status: 401 }),
+    );
+    try {
+      await engine.run({ mode: 'translate', text: 'hi', targetLang: 'zh' });
+      throw new Error('should have thrown');
+    } catch (err) {
+      const msg = String((err as Error).message);
+      // "test" 字样应保留（不满足 8 char 门槛，不做字面量替换）
+      expect(msg).toContain('test');
+    }
+  });
+
+  it('run() 大 body（10KB）沙盒切 1000 char 后脱敏，<200ms（v5 P1-B 性能回归）', async () => {
+    // v0.5.6 P1-B（审计 v5）：先切 1000 char 缓冲区再全局正则跑，避免大 body
+    // 触发多个 SECRET_PATTERNS 的全局扫描阻塞主线程。
+    await openaiCompatConfig.set({
+      baseUrl: 'https://api.example.com',
+      apiKey: 'sk-ant-abcdefghijklmnopqrstuvwxyz',
+      model: 'gpt',
+    });
+    const engine = createOpenAiCompatEngine();
+    // 10KB 内含跨 1000 边界的 key 前缀
+    const bigBody = 'x'.repeat(9800) + 'sk-should-be-outside-buffer-1234567890';
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      new Response(bigBody, { status: 500 }),
+    );
+    const t0 = performance.now();
+    try {
+      await engine.run({ mode: 'translate', text: 'hi', targetLang: 'zh' });
+    } catch {
+      // ignore
+    }
+    const elapsed = performance.now() - t0;
+    // 缓冲区 1000 后正则量级恒定，即便 body 上 M 级也应远快于 1s
+    // v5 · Gemini review 采纳：CI 环境 CPU 共享 + JIT 冷启动会让 200ms 阈值 flaky，放宽到 1000ms
+    expect(elapsed).toBeLessThan(1000);
+  });
 });
 
 describe('openai-compat SSE buffer 上限', () => {

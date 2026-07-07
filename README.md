@@ -5,8 +5,8 @@
 <p>
   <a href="https://github.com/gandli/ai-proofduck-extension/releases/latest"><img src="https://img.shields.io/github/v/release/gandli/ai-proofduck-extension?style=flat-square&label=release" alt="Latest release" /></a>
   <a href="https://github.com/gandli/ai-proofduck-extension/actions/workflows/build-extension.yml"><img src="https://img.shields.io/github/actions/workflow/status/gandli/ai-proofduck-extension/build-extension.yml?style=flat-square&label=build" alt="Build status" /></a>
-  <img src="https://img.shields.io/badge/tests-369%20passing-brightgreen?style=flat-square" alt="Unit tests" />
-  <img src="https://img.shields.io/badge/coverage-96.03%25-brightgreen?style=flat-square" alt="Coverage" />
+  <img src="https://img.shields.io/badge/tests-372%20passing-brightgreen?style=flat-square" alt="Unit tests" />
+  <img src="https://img.shields.io/badge/coverage-96.14%25-brightgreen?style=flat-square" alt="Coverage" />
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License" />
 </p>
 </div>
