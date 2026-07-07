@@ -344,6 +344,7 @@ body {
     --info-soft:    #1A2F44;
 
     /* 品牌黄暗化 + 描边加亮 */
+    --brand-300: #C89A3E;   /* 原浅金 #F0D580 → 米金，避免 logo 暗底继续泛浅黄 */
     --brand-500: #E0B355;
     --brand-600: #D6A445;
   }
@@ -389,9 +390,7 @@ body {
   .bg-success-soft  { background-color: #1B3524 !important; }
   .bg-info-soft     { background-color: #1A2F44 !important; }
 
-  /* 输入框：白纸底 → 稍暗于主背景 */
-  .pd-plush-input   { background: #2A2419; color: #F5EFE3; }
-  .pd-plush-input::placeholder { color: #8A7659; }
+  /* 输入框：白纸底 → 稍暗于主背景（下方 .pd-plush-input 块统一定义） */
 
   /* pd-dot-off 灰蒙 → 深灰 */
   .pd-dot-off { background: #4A3E2D; }
@@ -406,6 +405,8 @@ body {
       0 3px 8px rgba(0, 0, 0, 0.35),
       0 0 0 2px #2A2419;
   }
+
+  /* CodeRabbit-fixed: 移除重复的 .pd-plush-input 定义（已在下方 411 行合并） */
 
   /* 输入/输出卡：拉高与主背景的对比，形成清晰分层 */
   .pd-plush-input {
