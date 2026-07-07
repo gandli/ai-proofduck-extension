@@ -19,7 +19,6 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EXT_PATH = path.resolve(__dirname, '..', '..', 'dist', 'chrome-mv3');
 const OUT = path.resolve(__dirname, '..', '..', 'store-assets', 'v0.5.2');
-fs.mkdirSync(OUT, { recursive: true });
 
 test.describe.configure({ mode: 'serial' });
 
@@ -43,35 +42,51 @@ const SCENES: Scene[] = [
 
 test.describe('CWS store screenshots · 1280×800 · v0.5.2', () => {
   test.setTimeout(120_000);
+
+  test.beforeAll(() => {
+    // 顶层 mkdirSync 会在 test discovery 时污染磁盘 —— 移到 hook 内
+    fs.mkdirSync(OUT, { recursive: true });
+  });
+
   for (const scene of SCENES) {
     test(`${scene.slug}`, async () => {
       const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pd-cws-'));
-      const context = await chromium.launchPersistentContext(userDataDir, {
-        headless: false,
-        args: [
-          `--disable-extensions-except=${EXT_PATH}`,
-          `--load-extension=${EXT_PATH}`,
-          '--no-first-run',
-        ],
-        viewport: { width: 1280, height: 800 },
-        colorScheme: scene.color,
-      });
-
+      // 关键：先 try/finally 包 context，避免 launchPersistentContext 失败泄漏 userDataDir
+      let context: import('@playwright/test').BrowserContext | undefined;
       try {
-        // 找到扩展 ID
-        let sw = context.serviceWorkers()[0];
-        if (!sw) sw = await context.waitForEvent('serviceworker', { timeout: 8000 });
+        context = await chromium.launchPersistentContext(userDataDir, {
+          headless: false,
+          args: [
+            `--disable-extensions-except=${EXT_PATH}`,
+            `--load-extension=${EXT_PATH}`,
+            '--no-first-run',
+          ],
+          viewport: { width: 1280, height: 800 },
+          colorScheme: scene.color,
+        });
+
+        // Service Worker 可能已启动或即将启动 —— 先监听 promise 再检查，避免竞态
+        const ctx = context; // 局部 non-null 引用，TS 内 narrow
+        const swPromise = ctx.serviceWorkers()[0]
+          ? Promise.resolve(ctx.serviceWorkers()[0])
+          : ctx.waitForEvent('serviceworker', { timeout: 8000 });
+        const sw = await swPromise;
         const extId = sw.url().match(/chrome-extension:\/\/([a-z]+)/i)![1];
 
         // 打开对应面板 · popup 用真实小尺寸避免空白
         const panelUrl = `chrome-extension://${extId}/${scene.panel}.html`;
-        const panelPage = await context.newPage();
+        const panelPage = await ctx.newPage();
         await panelPage.setViewportSize({
           width: scene.panel === 'options' ? 960 : scene.panel === 'popup' ? 320 : 420,
           height: scene.panel === 'options' ? 760 : scene.panel === 'popup' ? 340 : 720,
         });
         await panelPage.goto(panelUrl);
-        await panelPage.waitForTimeout(700);
+        // 等待 root 组件挂载完成，比硬编码等待更稳
+        await panelPage.waitForFunction(
+          () => document.querySelector('#root, body > *') !== null && document.body.innerText.length > 0,
+          { timeout: 5000 }
+        ).catch(() => { /* 弱降级：即使没渲染完也继续截图，好过 flaky fail */ });
+        await panelPage.waitForTimeout(200);
 
         // 拿到 panel 截图
         const panelBuf = await panelPage.screenshot({ type: 'png' });
@@ -79,7 +94,7 @@ test.describe('CWS store screenshots · 1280×800 · v0.5.2', () => {
         await panelPage.close();
 
         // 合成页面：1280×800 canvas · 左文案 + 右扩展面板
-        const composer = await context.newPage();
+        const composer = await ctx.newPage();
         const bg = scene.color === 'dark' ? '#14100B' : '#FDFAF2';
         const fg = scene.color === 'dark' ? '#FDFAF2' : '#33291D';
         const accent = '#C89A3E';
@@ -139,7 +154,10 @@ test.describe('CWS store screenshots · 1280×800 · v0.5.2', () => {
         await composer.screenshot({ path: outPath, fullPage: false, clip: { x: 0, y: 0, width: 1280, height: 800 } });
         console.log(`[cws] ${outPath}`);
       } finally {
-        await context.close();
+        // context 可能因 launchPersistentContext 失败未初始化，需 null-check
+        if (context) {
+          await context.close();
+        }
         fs.rmSync(userDataDir, { recursive: true, force: true });
       }
     });
