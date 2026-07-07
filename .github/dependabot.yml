@@ -1,0 +1,56 @@
+version: 2
+# Dependabot 配置 · v0.5.6 P2-C（审计 v4 · 2026-07-07）
+# 目标：CVE 出现在 dev/prod deps 时 24-48 小时内收到自动 PR，
+# 而不是等下次 `bun outdated` 人工巡检。
+
+updates:
+  # ---- npm 生态（Bun 用同一份 package.json） ----
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - automated
+    commit-message:
+      prefix: chore
+      include: scope
+    # minor + patch 打包一起，减少 review 疲劳
+    # major 单独走，需要人肉审查兼容性
+    groups:
+      minor-and-patch:
+        applies-to: version-updates
+        update-types:
+          - minor
+          - patch
+    # 关键框架 major 不自动开 PR —— 需要 pin 到 tested version
+    ignore:
+      - dependency-name: react
+        update-types: ['version-update:semver-major']
+      - dependency-name: react-dom
+        update-types: ['version-update:semver-major']
+      - dependency-name: wxt
+        update-types: ['version-update:semver-major']
+
+  # ---- GitHub Actions ----
+  # 校对鸭所有 action 都 SHA pin（不用 tag 引用），
+  # dependabot 会把 SHA 也更新，但保留 comment 里的 tag 版本号。
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 3
+    labels:
+      - ci
+      - dependencies
+      - automated
+    commit-message:
+      prefix: ci
+      include: scope

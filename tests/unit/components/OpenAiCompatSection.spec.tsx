@@ -178,7 +178,7 @@ describe('OpenAiCompatSection', () => {
     const user = userEvent.setup();
     configMock.__mockState.value = {
       baseUrl: 'https://x',
-      apiKey: 'wrong',
+      apiKey: 'k',
       model: 'm',
     };
     const fetchMock = vi.fn(async () => ({
@@ -195,6 +195,41 @@ describe('OpenAiCompatSection', () => {
     await waitFor(() => {
       expect(screen.getByText(/401.*Invalid key/)).toBeInTheDocument();
     });
+  });
+
+  it('测试连接：非 2xx body 里的 Bearer token 被脱敏后再入 UI（P1-A 回归·审计 v4）', async () => {
+    // v0.5.6 P1-A：模拟服务端 echo Authorization header 到 4xx body。
+    // 修复前：`HTTP 401 Bearer sk-proj-abc...` 直接进 setTestState → 用户截图/日志泄漏。
+    // 修复后：sanitizeSecrets 会把 Bearer 令牌替换成 <redacted>。
+    const user = userEvent.setup();
+    configMock.__mockState.value = {
+      baseUrl: 'https://x',
+      apiKey: 'sk-proj-abcdefghijklmnopqrstuvwxyz1234567890',
+      model: 'm',
+    };
+    const leaky =
+      'invalid_auth: received Bearer sk-proj-abcdefghijklmnopqrstuvwxyz1234567890';
+    const fetchMock = vi.fn(async () => ({
+      ok: false,
+      status: 401,
+      text: async () => leaky,
+    })) as unknown as typeof fetch;
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<OpenAiCompatSection />);
+    await waitFor(() => expect(screen.getByLabelText('API Base URL')).toHaveValue('https://x'));
+
+    await user.click(screen.getByRole('button', { name: '测试连接' }));
+    // 等状态变化：先看到 "HTTP 401" 出现
+    await waitFor(() => {
+      expect(screen.getByText(/HTTP 401/)).toBeInTheDocument();
+    });
+    // 关键断言：Bearer 密钥体不能出现在 DOM 里
+    expect(document.body.textContent).not.toContain(
+      'sk-proj-abcdefghijklmnopqrstuvwxyz',
+    );
+    // 但 status 400s 数字要保留
+    expect(document.body.textContent).toContain('HTTP 401');
   });
 
   it('测试连接：网络错误 → 显示 error.message', async () => {

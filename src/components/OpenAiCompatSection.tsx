@@ -13,7 +13,8 @@
  */
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { openaiCompatConfig } from '@core/openai-compat-config';
-import { formatErrorMessage } from '@utils/error';
+import { formatErrorMessage, sanitizeSecrets } from '@utils/error';
+import { createFetchAbortHandle } from '@utils/fetch-abort';
 import {
   hasHostPermission,
   requestHostPermission,
@@ -150,39 +151,34 @@ export function OpenAiCompatSection() {
 
   const handleTest = useCallback(async () => {
     setTestState({ status: 'testing' });
+    // v0.5.6 P2-A（审计 v4）：复用 createFetchAbortHandle，与引擎侧 fetch-abort 收口一致
+    // 15s（比默认 30s 短）—— 测试连接是同步 UI 操作，短超时更好用户体验
+    const abort = createFetchAbortHandle(undefined, 15_000);
     try {
       // baseUrl 末尾可能带 /，去掉再拼；跟 openai-compat 引擎 joinUrl 保持一致约定
       const stripped = baseUrl.replace(/\/+$/, '');
       const url = stripped.endsWith('/v1') ? `${stripped}/models` : `${stripped}/v1/models`;
-      // v0.5.3 P0-1: 15s 超时，避免用户填错 baseUrl 时 UI 永久 loading
-      // Gemini review：timeout 必须覆盖 body 读取（json/text 也是网络阻塞），
-      // 所以 clearTimeout 放最外层 finally 而不是 fetch 的 finally
-      const controller = new AbortController();
-      const timer = setTimeout(
-        () => controller.abort(new DOMException('test connection timeout 15s', 'TimeoutError')),
-        15_000,
-      );
-      try {
-        const resp = await fetch(url, {
-          signal: controller.signal,
-          headers: { Authorization: `Bearer ${apiKey}` },
+      const resp = await fetch(url, {
+        signal: abort.signal,
+        headers: { Authorization: `Bearer ${apiKey}` },
+      });
+      if (!resp.ok) {
+        const body = await resp.text().catch(() => '');
+        // v0.5.6 P1-A（审计 v4）：先脱敏再切片，防 API key/Bearer token 通过服务端 echo 泄漏
+        // 与 free-translate.ts:103 / openai-compat.ts:155 完全一致的模式
+        setTestState({
+          status: 'error',
+          message: `HTTP ${resp.status} ${sanitizeSecrets(body).slice(0, 200)}`,
         });
-        if (!resp.ok) {
-          const body = await resp.text().catch(() => '');
-          setTestState({
-            status: 'error',
-            message: `HTTP ${resp.status} ${body}`.slice(0, 200),
-          });
-          return;
-        }
-        const data = (await resp.json()) as { data?: unknown[] };
-        const count = Array.isArray(data?.data) ? data.data.length : 0;
-        setTestState({ status: 'success', modelCount: count });
-      } finally {
-        clearTimeout(timer);
+        return;
       }
+      const data = (await resp.json()) as { data?: unknown[] };
+      const count = Array.isArray(data?.data) ? data.data.length : 0;
+      setTestState({ status: 'success', modelCount: count });
     } catch (err) {
       setTestState({ status: 'error', message: formatErrorMessage(err) });
+    } finally {
+      abort.cleanup();
     }
   }, [baseUrl, apiKey]);
 

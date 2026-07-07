@@ -72,7 +72,8 @@ export default function OptionsApp() {
     let cancelled = false;
     const engines = getEngines().list();
     engines.forEach((e: Engine) => {
-      e.isAvailable()
+      void e
+        .isAvailable()
         .then((ok: boolean) => {
           if (!cancelled) {
             setHealth((h) => ({ ...h, [e.id]: ok ? 'ok' : 'err' }));

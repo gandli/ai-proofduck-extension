@@ -7,6 +7,7 @@
 
 import { applyBadge, type BadgeAction, type BadgeState } from './badge';
 import { deriveBadgeState, type CompatCfgLike } from './badge-state';
+import { logSanitizedError } from '@utils/error';
 
 export type ChromeLike = {
   sidePanel?: {
@@ -72,7 +73,11 @@ export function registerBackground(c: ChromeLike | undefined) {
   // 点击工具栏图标打开 Side Panel
   c.sidePanel
     ?.setPanelBehavior?.({ openPanelOnActionClick: true })
-    ?.catch((err: unknown) => console.warn('[proofduck] sidePanel setPanelBehavior failed', err));
+    ?.catch((err: unknown) =>
+      // v0.5.6 P3-C（审计 v4）：收口到 logSanitizedError，防未来 chrome.sidePanel API
+      // 变化把用户上下文塞进 err.message 时绕过 sanitize
+      logSanitizedError('[proofduck] sidePanel setPanelBehavior failed', err),
+    );
 
   // v0.5.2: 快捷键（Alt+Shift+P）打开 sidePanel
   // 关键：onCommand 回调直接透传 tab 参数，避免 await 消耗用户手势
