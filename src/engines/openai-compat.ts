@@ -26,20 +26,14 @@ import { hasHostPermission } from '@core/host-permissions';
 import { extractOriginPattern } from '@core/origin-pattern';
 import { PermissionRequiredError } from '@utils/permission-error';
 import { createFetchAbortHandle } from '@utils/fetch-abort';
+import { sanitizeSecrets } from '@utils/error';
 
 /**
  * 脱敏错误响应体，避免网关 echo 的 API key / Bearer token 泄露到日志或 UI。
- * 覆盖：OpenAI sk-*、Anthropic sk-ant-*、通用 Bearer 头。
+ * v0.5.3 P1-2：pattern 提升到 @utils/error 复用（sanitizeSecrets），
+ * 此处保留同名函数只为最小化调用点改动。
  */
-const SANITIZE_PATTERNS: Array<[RegExp, string]> = [
-  [/sk-[A-Za-z0-9_-]{20,}/g, 'sk-***REDACTED***'],
-  [/sk-ant-[A-Za-z0-9_-]{20,}/g, 'sk-ant-***REDACTED***'],
-  [/Bearer\s+[A-Za-z0-9._-]{16,}/gi, 'Bearer ***REDACTED***'],
-];
-
-function sanitizeErrorBody(text: string): string {
-  return SANITIZE_PATTERNS.reduce((acc, [re, repl]) => acc.replace(re, repl), text);
-}
+const sanitizeErrorBody = sanitizeSecrets;
 
 /** SSE 单个事件之间的 buffer 最大长度（防恶意/异常上游无边界推送 → OOM） */
 const MAX_SSE_BUFFER = 1_048_576; // 1 MiB
