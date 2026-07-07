@@ -30,10 +30,31 @@ import { sanitizeSecrets } from '@utils/error';
 
 /**
  * 脱敏错误响应体，避免网关 echo 的 API key / Bearer token 泄露到日志或 UI。
- * v0.5.3 P1-2：pattern 提升到 @utils/error 复用（sanitizeSecrets），
- * 此处保留同名函数只为最小化调用点改动。
+ *
+ * v0.5.3 P1-2：正则 pattern 提升到 @utils/error 复用（sanitizeSecrets）
+ * v0.5.6 P1-A（审计 v5）：引擎侧对齐 v4 UI 侧字面量兜底 —— sanitizeSecrets 只覆盖
+ *   已知格式（sk- prefix / Bearer / x-api-key），OpenAI 兼容支持自定义 apiKey 格式
+ *   （DeepSeek dsk- / 通义千问 qwen- / 豆包等）→ 服务端裸回显时正则漏检。
+ *   修复：正则脱敏后用 apiKey 值做字面量 split/join 兜底，双保险。
+ *   门槛：`trimmed.length >= 8` 防 test-key 之类短值误替换正常错误文案。
+ * v0.5.6 P1-B（审计 v5）：先切 1000 char 缓冲区再全局正则跑，避免大 body
+ *   （几百 KB Cloudflare 错误页）阻塞主线程；1000 » 200 保证任何 200 char
+ *   内可能展示的密钥完整跨越脱敏边界。与 v4 OpenAiCompatSection 逻辑对齐。
  */
-const sanitizeErrorBody = sanitizeSecrets;
+function sanitizeErrorBody(body: string, apiKey?: string): string {
+  // step 1: 缓冲区限流（安全 + 性能双赢）
+  const buffered = body.slice(0, 1000);
+  // step 2: 正则脱敏
+  const patternSanitized = sanitizeSecrets(buffered);
+  // step 3: 字面量 apiKey 兜底（自定义格式）
+  if (typeof apiKey === 'string') {
+    const trimmed = apiKey.trim();
+    if (trimmed.length >= 8) {
+      return patternSanitized.split(trimmed).join('***REDACTED***');
+    }
+  }
+  return patternSanitized;
+}
 
 /** SSE 单个事件之间的 buffer 最大长度（防恶意/异常上游无边界推送 → OOM） */
 const MAX_SSE_BUFFER = 1_048_576; // 1 MiB
@@ -152,7 +173,10 @@ export function createOpenAiCompatEngine(): Engine {
         });
         if (!resp.ok) {
           const text = await resp.text().catch(() => '');
-          throw new Error(`openai-compat HTTP ${resp.status}: ${sanitizeErrorBody(text).slice(0, 200)}`);
+          // v0.5.6 P1-A（审计 v5）：sanitizeErrorBody 已内置 apiKey 字面量兜底 + 1000 char 缓冲
+          throw new Error(
+            `openai-compat HTTP ${resp.status}: ${sanitizeErrorBody(text, cfg.apiKey).slice(0, 200)}`,
+          );
         }
         const data = (await resp.json()) as { choices?: Array<{ message?: { content?: string } }> };
         const content = data.choices?.[0]?.message?.content;
@@ -185,7 +209,10 @@ export function createOpenAiCompatEngine(): Engine {
         });
         if (!resp.ok) {
           const text = await resp.text().catch(() => '');
-          throw new Error(`openai-compat HTTP ${resp.status}: ${sanitizeErrorBody(text).slice(0, 200)}`);
+          // v0.5.6 P1-A（审计 v5）：sanitizeErrorBody 已内置 apiKey 字面量兜底 + 1000 char 缓冲
+          throw new Error(
+            `openai-compat HTTP ${resp.status}: ${sanitizeErrorBody(text, cfg.apiKey).slice(0, 200)}`,
+          );
         }
         if (!resp.body) {
           throw new Error('openai-compat 响应缺少 body（SSE 不可读）');

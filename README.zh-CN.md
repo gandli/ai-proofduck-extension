@@ -134,7 +134,7 @@ GitHub Actions 工作流使用 **仓库 Secret** `CRX_KEY`（PKCS#8 RSA-2048 私
 ```bash
 tsc --noEmit                # 0 error 才通过
 eslint . --max-warnings=0   # 0 warning 才通过
-vitest run                  # 369/369 tests · 阈值：stmts≥90 / branches≥85 / funcs≥85 / lines≥92（实际 96.03%）
+vitest run                  # 372/372 tests · 阈值：stmts≥90 / branches≥85 / funcs≥85 / lines≥92（实际 96.14%）
 bun audit                   # 0 漏洞
 ```
 

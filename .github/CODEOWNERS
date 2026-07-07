@@ -1,0 +1,13 @@
+# v0.5.6 P3-B（审计 v5）：CODEOWNERS 单人分派
+# 参考：https://docs.github.com/en/repositories/managing-your-repositories-settings-and-security/customizing-your-repository/about-code-owners
+#
+# 语法：pattern 空格 用户名/团队名
+# 越靠下的规则越优先。* 匹配全部，等于兜底 owner。
+#
+# 当前项目由 @gandli 单人维护，所有变更都需要走 PR review。
+# 未来加入协作者时，可以按目录粒度指派：
+#   src/engines/**              @gandli @engine-team
+#   .github/workflows/**        @gandli @ci-team
+#   src/utils/error.ts          @gandli   # 安全敏感文件锁 owner
+
+*                               @gandli

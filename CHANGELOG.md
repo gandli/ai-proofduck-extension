@@ -2,7 +2,56 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased] - 全量审计 v4 · 7/7 findings（除 SRP 拆分留独立 PR）
+## [v0.5.6] - 2026-07-08 · 全量审计 v5 · 5 findings + v0.5.6 发布
+
+第五轮全量审计（`fuck-my-shit-mountain` skill）。v4 修复 UI 侧 P1-A 后回来复扫，发现 **同 pattern 引擎侧仍未收敛**（pattern shadow 再犯）+ 若干治理层缺口。**无 P0**，v4 后代码路径进一步稳定。
+
+### 🔴 P1 · Critical 修复（2 项）
+
+- **P1-A**：`src/engines/openai-compat.ts` `sanitizeErrorBody` 从 `const = sanitizeSecrets` 别名升级为函数
+  - v4 已修 UI 侧字面量兜底（CodeRabbit Major 采纳），但引擎侧 3 处 sanitize 仍只走正则
+  - 服务端裸回显 DeepSeek `dsk-*` / 通义千问 `qwen-*` / 豆包等自定义格式 apiKey → 正则漏检 → 密钥进 error message → 通过 message-bus 传回 UI
+  - 修复：正则脱敏后用 `apiKey.trim()` 值 split/join 兜底（`length >= 8` 门槛防 test-key 误替换）
+  - 附赠 1000 char 缓冲区限流（大 body 防主线程阻塞）
+  - 回归测试：`openai-compat-hardening.spec.ts` +3 用例（DeepSeek 自定义格式 / 短 key 边界 / 10KB body <200ms）
+- **P1-B**：`src/engines/free-translate.ts:103` 加 1000 char 缓冲区
+  - free-translate 是无鉴权端点，无 apiKey 泄漏面，但异常返回长 HTML 时正则阻塞主线程
+  - 修复：`sanitizeSecrets(body.slice(0, 1000)).slice(0, 200)`，与 openai-compat 一致
+
+### 🟠 P2 · High 修复（1 项）
+
+- **P2-A**：`package.json` 版本 `0.5.5` → `0.5.6`
+  - v4 merged 后 v0.5.6 tag 未打，Chrome Web Store 未提交 → 现有用户仍跑有 P1-A 漏洞的 v0.5.5
+  - 修复：本 PR 合并后打 v0.5.6 tag，触发 build-extension workflow 自动发布
+- **P2-B（延后）**：E2E 未在 CI 上跑 → 单独 PR 加 job（避免混合安全 PR）
+- **P2-C（延后）**：OpenAiCompatSection SRP 违反（21 hooks）→ v4 已标注，独立 refactor PR
+
+### 🟡 P3 · Medium 修复（2 项）
+
+- **P3-A**：README badges 版本号过时（`369 passing` / `96.03%`）
+  - 同步为 `372 passing` / `96.14%`（v4 merged 后实际数字）
+  - README.md + README.zh-CN.md 双语一致
+- **P3-B**：新增 GitHub 协作模板三件套
+  - `.github/CODEOWNERS`：`* @gandli` 兜底 owner，未来协作可按目录粒度扩展
+  - `.github/pull_request_template.md`：Conventional Commits 类型清单 + PR 检查清单 + 安全 checklist
+  - `.github/ISSUE_TEMPLATE/bug_report.md` + `feature_request.md` + `config.yml`（禁 blank，引导 Discussion / Security Advisory）
+- **P3-C（延后）**：outdated 4 个 major bump（@types/chrome / jsdom / tailwindcss / typescript）→ dependabot 自动开 PR 逐个验证
+
+### 📊 QA 结果
+
+- **Unit tests**：372 → **375**（+3 P1 回归：DeepSeek 自定义格式 / 短 key 边界 / 10KB 性能）
+- **Coverage**：stmts 96.14 / branches 89.77 / funcs 93.15 / lines 98.42 — 全部达标
+- **tsc**：0 error · **ESLint**：0 warning（`--max-warnings=0`） · **Bun audit**：0 漏洞
+- **Open PR / Issue / Dependabot / Secret scan**：0 / 0 / 0 / 0
+
+### 🎓 关键教训（沉淀到 skill）
+
+- **Pattern shadow 会连续犯**：v3 修引擎侧 sanitize 正则出口 → v4 修 UI 侧 handleTest（同 pattern 独立出口） → **v5 又发现引擎侧仍缺字面量兜底**（v4 只修了 UI 层的字面量兜底）。**教训**：修完一处应立即**同一 PR 内**扫「本项目所有走该 pattern 的地方」，而不是分 PR 处理。
+- **修复要跨层对齐**：如果 UI 侧和引擎侧同做 sanitize，能力要一致（都做 1000 缓冲 + 字面量兜底），否则用户接触面到 UI，但错误产生点在引擎，一样出问题。
+
+---
+
+## [v0.5.5] - 2026-07-07 · 全量审计 v4 · 8 findings 全绿
 
 第四轮全量审计（`fuck-my-shit-mountain` skill），收敛 v3 之后的 UI 出口一致性 + 治理文件补齐。**无 P0**，风险面已从功能收敛到工程约束层。
 
