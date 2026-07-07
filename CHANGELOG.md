@@ -2,6 +2,58 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.5.5] - 2026-07-07 · 全量审计 v3 · 8/8 findings 全绿 + CI 硬化
+
+第三轮全量审计（`fuck-my-shit-mountain` skill v1.3），8 findings 一次 PR 打包全部结账，重心从「代码本身」转向「发布链路 & 供应链」。
+
+### 🔴 P1 · Critical 修复（3 项）
+
+- **P1-A（#510）**：`sanitizeErrorBody(text.slice(0, 200))` **顺序 bug** → 改为 `sanitizeErrorBody(text).slice(0, 200)`
+  - 若 secret 恰好跨 200 字节边界，先切再脱敏会把前部 secret 切成 <20 char，绕过 `SECRET_PATTERNS` 的 `{20,}` 长度约束泄漏明文
+  - 同步补 `free-translate.ts` 走 `sanitizeSecrets`（防御性一致）
+  - 回归测试：body 190 byte 填充 + `sk-***` → 断言 `Error.message` 无 `/sk-[A-Za-z0-9]{5,}/`
+- **P1-B（#510）**：`SelectionBubbleHost` catch 分支直接 `setError(e.message)` → 走 `formatErrorMessage(e, ...)` 全站脱敏出口
+  - Gemini review 采纳：直接传 `e`（不预处理 `.message`），内部 `extractRawMessage` 覆盖 Chrome 扩展跨进程 `sendMessage` 反序列化后的 plain object 场景
+  - 回归测试：mock engine 抛 `sk-***` + plain object 双场景
+- **P1-C（#510）**：CI `build-extension.yml` **无 QA gate** → 加 `tsc + lint + vitest + audit` 步骤
+  - 破损代码不再能通过 tag 直接打 release
+
+### 🟠 P2 · High 修复（3 项）
+
+- **P2-A（#510）**：CRX 私钥从 `secrets.CRX_KEY` 读，未配置降级临时 key（仅 PR 冒烟）
+  - 修复扩展 ID 每次 CI 漂移导致老用户无法升级问题
+  - 用 `shred` 立即清理 key 文件，防 artifact 泄漏
+- **P2-B（#510）**：5 个 GH action 全 pin 到 40 位 SHA
+  - `actions/checkout` · `oven-sh/setup-bun` · `actions/upload-artifact` · `mikepenz/release-changelog-builder-action` · `softprops/action-gh-release`
+  - 防 tag 被移动到恶意 commit 的供应链攻击
+- **P2-D**：v0.5.3 tag 回补（v0.5.2 → v0.5.4 之间跳号 → 回补到 commit `53b34da`）
+
+### 🟢 P3 · Medium 修复（2 项）
+
+- **P3-A（#510）**：LanguageBar target `onChange` 分支覆盖 80% → +1 单测直接改目标语言（zh→ja→ko）
+- **P3-B（#510）**：`useTranslate.ts:86` 缓存命中竞态早退未测 → +1 reset 后立即命中缓存测试
+
+### 📊 指标演进
+
+| 维度 | v0.5.4 | v0.5.5 | Δ |
+|---|---:|---:|---|
+| Unit tests | 360 | **365** | +5 |
+| E2E tests | 43/43 | 43/43 | ✅ |
+| 全站行覆盖 | 94.93% | **95.04%** ✨ | +0.11（越过 95% 门槛） |
+| tsc | 0 | 0 | ✅ |
+| eslint warnings | 0 | 0 | ✅ |
+| bun audit | 0 vulns | 0 vulns | ✅ |
+
+### 🔐 CI 硬化 · 3 大变化
+
+1. **QA gate**：tag 触发发布前先绿 `tsc / lint / vitest / audit`
+2. **CRX key secret 化**：生产 CRX 扩展 ID 稳定，用户可正常升级（需运维 `gh secret set CRX_KEY`）
+3. **actions SHA pin**：5 个第三方 action 全 pin，供应链攻击面清零
+
+### 交付 PR
+
+- **#510**：`chore(audit-v3): 8/8 findings 全绿 · 3P1 + 3P2 + 2P3 一次性打包`
+
 ## [v0.5.4] - 2026-07-07 · 全量审计 v2 · 12/12 findings 全绿
 
 跟进 v0.5.3 后由深度审计 skill（`fuck-my-shit-mountain`）触发的第二轮全量审计，12 findings 全部结账。
