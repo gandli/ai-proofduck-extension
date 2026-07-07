@@ -44,6 +44,29 @@ export function formatErrorMessage(err: unknown, fallback = '未知错误'): str
   return sanitizeSecrets(raw);
 }
 
+/**
+ * 统一的"打日志前脱敏"入口。
+ *
+ * v0.5.3 P2-B（审计 v2）：popup/options/sidepanel 的 main.tsx 里裸写 console.error(err) 会
+ * 直接把 err.message/err.stack 打到 devtools，绕过 formatErrorMessage 建立的脱敏出口。
+ * 全站换用 logSanitizedError 后，任何 apiKey/Bearer/x-api-key 在日志侧都不会明文出现。
+ *
+ * v0.5.3 P2-B Gemini review（high）：只打 message 会丢 stack，生产 debug 困难。
+ * 修复：Error 实例时同时打脱敏后的 stack；非 Error 或无 stack 时退化为只打 message。
+ *
+ * @param prefix - 场景标记（用于日志分区，如 '[popup]'）
+ * @param err    - 未知错误对象
+ */
+export function logSanitizedError(prefix: string, err: unknown): void {
+  const msg = formatErrorMessage(err);
+  if (err instanceof Error && typeof err.stack === 'string') {
+    // 允许直接 console.error：这就是全站"打日志前脱敏"的收口
+    console.error(`${prefix} ${msg}\n${sanitizeSecrets(err.stack)}`);
+    return;
+  }
+  console.error(`${prefix} ${msg}`);
+}
+
 function extractRawMessage(err: unknown, fallback: string): string {
   if (err === null || err === undefined) return fallback;
   if (typeof err === 'string') return err;

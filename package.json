@@ -2,7 +2,7 @@
   "name": "ai-proofduck-extension",
   "description": "AI proofduck Extension - Intelligent writing assistant for browser",
   "private": true,
-  "version": "0.5.2",
+  "version": "0.5.3",
   "type": "module",
   "scripts": {
     "dev": "wxt",
@@ -22,34 +22,48 @@
     "postinstall": "wxt prepare"
   },
   "dependencies": {
-    "@mlc-ai/web-llm": "^0.2.74",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
+    "@mlc-ai/web-llm": "^0.2.84",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
     "@eslint/js": "^10.0.1",
-    "@playwright/test": "^1.48.0",
+    "@playwright/test": "^1.61.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
-    "@types/chrome": "^0.1.36",
-    "@types/react": "^19.2.13",
+    "@types/chrome": "^0.1.43",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitest/coverage-v8": "^4.1.10",
-    "@wxt-dev/module-react": "^1.1.5",
-    "autoprefixer": "^10.4.17",
+    "@wxt-dev/module-react": "^1.2.2",
+    "autoprefixer": "^10.5.2",
     "eslint": "^10.6.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.3",
     "happy-dom": "^20.10.6",
     "jsdom": "^28.1.0",
     "postcss": "^8.5.16",
-    "tailwindcss": "^3.4.1",
+    "tailwindcss": "^3.4.19",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.62.1",
-    "vitest": "^4.1.0",
+    "typescript-eslint": "^8.63.0",
+    "vitest": "^4.1.10",
     "wxt": "^0.20.27"
+  },
+  "overrides": {
+    "picomatch": "^4.0.4",
+    "shell-quote": "^1.8.4",
+    "tmp": "^0.2.6",
+    "uuid": "^11.1.1",
+    "esbuild": "^0.28.1"
+  },
+  "resolutions": {
+    "picomatch": "^4.0.4",
+    "shell-quote": "^1.8.4",
+    "tmp": "^0.2.6",
+    "uuid": "^11.1.1",
+    "esbuild": "^0.28.1"
   }
 }
