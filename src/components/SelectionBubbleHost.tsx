@@ -96,11 +96,13 @@ export function SelectionBubbleHost(props: SelectionBubbleHostProps) {
         setError(`扩展缺少访问 ${origin} 的权限。请到「扩展设置」页点【授权】按钮授权后重试。`);
         return;
       }
-      const msg = e instanceof Error ? e.message : String(e);
-      // v0.5.5 P1-B（审计 v3）：SelectionBubble 是 UI 出口，Error.message 可能含
-      // API 网关 echo 的 Authorization: Bearer sk-*** 明文。走 formatErrorMessage
-      // 复用全站脱敏出口，防止 apiKey/Bearer/x-api-key 泄漏到用户可见气泡。
-      setError(formatErrorMessage(msg, '翻译失败'));
+      // v0.5.5 P1-B（审计 v3）+ Gemini review 采纳：
+      // SelectionBubble 是 UI 出口，Error.message 可能含 API 网关 echo 的
+      // Authorization: Bearer sk-*** 明文。直接把 e 交给 formatErrorMessage，
+      // 内部已覆盖 Error/plain object/string 三种形态——尤其重要的是跨进程
+      // sendMessage 反序列化后的 Error 会丢失原型变成 {message:'...'} 普通对象，
+      // 手动 e.message 会拿不到；formatErrorMessage 通过 extractRawMessage 兜底。
+      setError(formatErrorMessage(e, '翻译失败'));
     }
   }
 
