@@ -92,35 +92,35 @@ const base = import.meta.env.BASE_URL;
         <div class="hidden animate-[fade-in_0.5s] relative slide">
           <img
             src={base + "/images/screenshots/screenshot-en-summarize.png"}
-            alt="Summarize feature"
+            alt="Popup entrypoint · quick access to Options and SidePanel"
             class="w-full block"
           />
         </div>
         <div class="hidden animate-[fade-in_0.5s] relative slide">
           <img
             src={base + "/images/screenshots/screenshot-en-translate.png"}
-            alt="Translate feature"
+            alt="SidePanel · translation result view with engine chips"
             class="w-full block"
           />
         </div>
         <div class="hidden animate-[fade-in_0.5s] relative slide">
           <img
             src={base + "/images/screenshots/screenshot-zh-proofread.png"}
-            alt="Proofread feature"
+            alt="SidePanel · idle state with Plush Duckling header"
             class="w-full block"
           />
         </div>
         <div class="hidden animate-[fade-in_0.5s] relative slide">
           <img
             src={base + "/images/screenshots/screenshot-zh-settings.png"}
-            alt="Settings"
+            alt="Options · engine health dashboard and BYOK settings"
             class="w-full block"
           />
         </div>
         <div class="hidden animate-[fade-in_0.5s] relative slide">
           <img
             src={base + "/images/screenshots/screenshot-zh-translate.png"}
-            alt="Translate feature"
+            alt="Selection Bubble · dark UI in-page translation"
             class="w-full block"
           />
         </div>
@@ -451,6 +451,97 @@ const base = import.meta.env.BASE_URL;
       </div>
 
       <div id="changelog-content" class="max-w-[800px] mx-auto py-5">
+        <div
+          class="bg-bg2 border border-b1 rounded-[20px] p-8 mb-8 shadow-premium animate-fade-up"
+        >
+          <div class="flex items-center gap-3 mb-6 border-b border-b1 pb-4">
+            <span
+              class="bg-ac text-white px-3 py-1 rounded-full font-bold text-[0.9rem]"
+              >v0.4.1</span
+            >
+            <span class="text-t2 text-[0.9rem] font-medium">2026-07-07</span>
+          </div>
+
+          <div class="space-y-6">
+            <div>
+              <h4
+                class="text-base mb-3 pl-3 border-l-4 border-ac font-bold"
+                data-i18n="cl_added"
+              >
+                Added
+              </h4>
+              <ul class="space-y-2.5">
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                >
+                  <strong>Plush Duckling UI</strong>: Cute yet accessible visual
+                  refresh — plush logo with breathing animation, sky-gradient
+                  header, rounded-pill selectors, chunky CTA, warm output card.
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                >
+                  <strong>Engine Health Chips</strong>: Real-time badges for
+                  chrome-ai / webllm / openai-compat / free-translate showing
+                  which engines are ready.
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                >
+                  <strong>Permission on Demand</strong>: Migrated from
+                  <code>&lt;all_urls&gt;</code> to
+                  <code>optional_host_permissions</code>. Grant origins via the
+                  Authorize button on the Options page.
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                >
+                  <strong>Dark Selection Bubble</strong>: Reworked selection
+                  bubble with dark UI, engine chips, and copy/retry actions
+                  isolated inside Shadow DOM.
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                >
+                  <strong>Accessibility (a11y)</strong>: axe-core E2E across
+                  SidePanel · Popup · Options — 0 serious violations, all HTML
+                  entrypoints declare <code>lang="zh-CN"</code>.
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4
+                class="text-base mb-3 pl-3 border-l-4 border-ac font-bold"
+              >
+                Changed
+              </h4>
+              <ul class="space-y-2.5">
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                >
+                  <strong>Brand Colors</strong>: Deprecated
+                  <code>#FF5A11</code> in favor of the warm-yellow triad
+                  <code>#f59f00</code> / <code>#fff9db</code> /
+                  <code>#495057</code>.
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                >
+                  <strong>Brand Purification</strong>: Removed all decorative
+                  duck emojis from source, README, and UI. All duck imagery now
+                  derives from the single <code>public/icon.svg</code> source.
+                </li>
+                <li
+                  class="text-t1 text-[0.95rem] leading-relaxed pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-t3 before:font-bold"
+                >
+                  <strong>Test Baseline</strong>: tsc 0 · lint 0/0 · unit 247/247
+                  · E2E 42/42 · build ok.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
         <div
           class="bg-bg2 border border-b1 rounded-[20px] p-8 mb-8 shadow-premium animate-fade-up"
         >
