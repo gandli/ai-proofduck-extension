@@ -153,7 +153,7 @@ export default function SidePanelApp({ engine }: Props = {}) {
             <h1 className="text-base font-bold font-serif text-ink-900 tracking-tight">
               校对鸭
             </h1>
-            <p className="text-[11px] text-ink-500 mt-0.5">你的贴心写作小助手 🦆</p>
+            <p className="text-[11px] text-ink-500 mt-0.5">你的贴心写作小助手</p>
           </div>
         </div>
 

@@ -11,7 +11,7 @@
  * 用户在网页里选中文本后，浮标会出现在选区右下角。
  *
  * 状态机：
- *   idle    → 显示 [🦆 翻译] 按钮，等用户点击
+ *   idle    → 显示 [icon 翻译] 按钮，等用户点击
  *   loading → 显示"翻译中…"
  *   success → 深色气泡展示译文 + 引擎徽章 + 操作栏
  *   error   → 显示错误信息
@@ -119,7 +119,12 @@ export function SelectionBubble(props: SelectionBubbleProps) {
             boxShadow: '0 2px 8px rgba(245,159,0,0.35), inset 0 1px 0 rgba(255,255,255,0.4)',
           }}
         >
-          <span aria-hidden>🦆</span>
+          <img
+            src={chrome?.runtime?.getURL?.('/icons/icon-16.png') ?? '/icons/icon-16.png'}
+            alt=""
+            aria-hidden
+            style={{ width: 14, height: 14, borderRadius: 4, display: 'inline-block' }}
+          />
           <span>翻译</span>
         </button>
       )}

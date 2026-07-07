@@ -9,7 +9,7 @@
  *
  * 布局：
  *   ┌─── 品牌 header ────────────┐
- *   │  🦆  校对鸭                 │
+ *   │  [logo]  校对鸭            │
  *   │      v0.4 · 隐私优先翻译    │
  *   ├─── (若有选中) 预览 ─────────┤
  *   ├─── 主 CTA ─────────────────┤
@@ -58,7 +58,7 @@ export default function PopupApp() {
         </span>
         <div>
           <h1 className="text-base font-bold font-serif text-ink-900 leading-none">校对鸭</h1>
-          <p className="text-[11px] text-ink-500 mt-1.5">你的贴心写作小助手 🦆</p>
+          <p className="text-[11px] text-ink-500 mt-1.5">你的贴心写作小助手</p>
         </div>
       </header>
 
