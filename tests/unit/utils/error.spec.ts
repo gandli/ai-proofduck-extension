@@ -7,8 +7,8 @@
  * 3. 其他（对象/null/undefined/number）→ 返回 String(err)
  * 4. 保留 fallback 参数：当 String(err) === '[object Object]' 之类无信息值时使用 fallback
  */
-import { describe, it, expect } from 'vitest';
-import { formatErrorMessage, sanitizeSecrets } from '@utils/error';
+import { describe, it, expect, vi } from 'vitest';
+import { formatErrorMessage, sanitizeSecrets, logSanitizedError } from '@utils/error';
 
 describe('formatErrorMessage', () => {
   it('Error 实例 → 返回 message', () => {
@@ -159,6 +159,65 @@ describe('formatErrorMessage', () => {
       const msg = formatErrorMessage(new Error(`x-api-key: ${key}`));
       expect(msg).not.toContain(key);
       expect(msg).toContain('x-api-key: ***REDACTED***');
+    });
+  });
+
+  // v0.5.3 P2-B（审计 v2）：logSanitizedError 单点收口
+  describe('logSanitizedError', () => {
+    it('sk-* apiKey 打日志前被脱敏', () => {
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      const key = ['s', 'k', '-'].join('') + 'proj-A'.padEnd(35, 'x');
+      logSanitizedError('[popup]', new Error(`hydrate failed: ${key}`));
+      expect(spy).toHaveBeenCalledTimes(1);
+      const logged = spy.mock.calls[0][0] as string;
+      expect(logged).toContain('[popup]');
+      expect(logged).toContain('***REDACTED***');
+      expect(logged).not.toContain(key);
+      spy.mockRestore();
+    });
+
+    it('Bearer token 打日志前被脱敏', () => {
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      const token = 'abcdefghijklmnop123456';
+      logSanitizedError('[sidepanel]', new Error(`req failed: ${'Bea' + 'rer'} ${token}`));
+      const logged = spy.mock.calls[0][0] as string;
+      expect(logged).not.toContain(token);
+      expect(logged).toContain('***');
+      spy.mockRestore();
+    });
+
+    it('未知错误 fallback + prefix 组合正确', () => {
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      logSanitizedError('[options]', undefined);
+      const logged = spy.mock.calls[0][0] as string;
+      expect(logged).toBe('[options] 未知错误');
+      spy.mockRestore();
+    });
+
+    // Gemini review（high）：stack 也要打 + 脱敏
+    it('Error 实例时同时打脱敏后的 stack（保留调试信息）', () => {
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      const err = new Error('boom');
+      const secret = ['s', 'k', '-'].join('') + 'proj-XYZ'.padEnd(35, 'x');
+      // 手动塞一个含 secret 的 stack 便于断言脱敏
+      err.stack = `Error: boom\n    at foo (${secret}:1:1)`;
+      logSanitizedError('[sidepanel]', err);
+      const logged = spy.mock.calls[0][0] as string;
+      expect(logged).toContain('boom'); // message 保留
+      expect(logged).toContain('at foo'); // stack 保留
+      expect(logged).not.toContain(secret); // secret 被脱敏
+      expect(logged).toContain('***REDACTED***');
+      spy.mockRestore();
+    });
+
+    it('非 Error（string）不产生假 stack', () => {
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      logSanitizedError('[popup]', 'raw string error');
+      const logged = spy.mock.calls[0][0] as string;
+      expect(logged).toBe('[popup] raw string error');
+      // 只有一行，无 stack 拼接
+      expect(logged.split('\n')).toHaveLength(1);
+      spy.mockRestore();
     });
   });
 });

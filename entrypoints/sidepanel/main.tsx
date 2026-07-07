@@ -2,11 +2,10 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import { hydrateSettings } from '@stores/settings';
 import { getEngines } from '@core/engines';
+import { logSanitizedError } from '@utils/error';
 import '../style.css';
 
-void hydrateSettings().catch((err: unknown) => {
-  console.error(err);
-});
+void hydrateSettings().catch((err: unknown) => logSanitizedError('[sidepanel]', err));
 const rootEl = document.getElementById('root');
 if (rootEl) createRoot(rootEl).render(<App />);
 

@@ -1,7 +1,8 @@
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import { hydrateSettings } from '@stores/settings';
+import { logSanitizedError } from '@utils/error';
 import '../style.css';
 
-hydrateSettings().catch(console.error);
+hydrateSettings().catch((err: unknown) => logSanitizedError('[options]', err));
 createRoot(document.getElementById('root')!).render(<App />);

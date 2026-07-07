@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.5.3] - 2026-07-07 · 全量审计闭环 · 安全强化
+
+### 🛡️ 安全 & 稳定性收尾（4 个 PR）
+
+- **P0-1（#501）**：`fetch` 无超时 → 引入 `createFetchAbortHandle`，所有引擎 AbortController 全链路串联；避免用户断网时永久 hang
+- **P1-1（#502）**：`SelectionBubble` 组件覆盖率 67.74% → **100%**（+27 单测）
+- **P1-2（#503）**：`sanitizeSecrets` 提到 `@utils/error` 单点收口，`formatErrorMessage` 出口内嵌脱敏；Gemini review 抓到 Bearer 字符集需覆盖 Base64 全字符（`+/=~`）
+- **P1-3（#504）**：`makeCacheKey` 加 `engineId` + `model` 维度，防跨引擎/跨模型缓存污染；`openai-compat` engine 用 storage watch 维护 model 快照
+
+### 🔒 供应链归零
+
+- `bun audit` 从 36 vulnerabilities（1 crit / 19 high）→ **0 vulnerabilities**
+- 通过 `package.json` overrides + resolutions 强制升级 picomatch/shell-quote/tmp/uuid/esbuild 到 fixed 版
+
+### 🧪 测试基线
+
+- 单测 314 → **333** (+19，全绿)
+- E2E **43/43** 全绿
+- 覆盖率 lines **93.04%**（error.ts 100% · SelectionBubble 100%）
+
+### 📝 文档
+
+- `entrypoints/background.ts` 明确壳文件规约（禁在此写业务逻辑）
+
 ## [v0.5.2] - 2026-07-07 · UX 系列收尾 · shortcuts + badge + popup
 
 ### ⌨️ 键盘快捷键
