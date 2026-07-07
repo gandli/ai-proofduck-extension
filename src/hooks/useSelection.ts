@@ -81,7 +81,20 @@ export function useSelection(options: UseSelectionOptions = {}): UseSelectionRes
     const apply = () => {
       if (!mounted) return;
       const next = readSelection(minLength);
-      setState(next);
+      // ⚡ Bolt: Prevent unnecessary re-renders when selection visually hasn't changed.
+      // Impact: Avoids expensive React layout thrashing on redundant selection updates.
+      setState((prev) => {
+        const isSame =
+          prev.selectedText === next.selectedText &&
+          (prev.rect === next.rect ||
+            (prev.rect != null &&
+              next.rect != null &&
+              prev.rect.top === next.rect.top &&
+              prev.rect.left === next.rect.left &&
+              prev.rect.width === next.rect.width &&
+              prev.rect.height === next.rect.height));
+        return isSame ? prev : next;
+      });
     };
 
     const onChange = () => {
