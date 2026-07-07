@@ -170,9 +170,19 @@ export function OpenAiCompatSection() {
         // 错误页 / HTML 提示）触发多个全局正则时主线程卡顿；1000 » 200 足以覆盖任何 200 char 内可能
         // 展示的密钥完整跨越脱敏边界的情况
         const truncatedBody = body.slice(0, 1000);
+        // CodeRabbit review 采纳（PR #514 Major）：sanitizeSecrets 仅覆盖已知格式（sk-/Bearer/x-api-key）,
+        // 但本组件支持任意 OpenAI 兼容端点（DeepSeek dsk-.../通义千问 qwen-... 等自定义格式），
+        // 服务端若裸回显 apiKey 值无前缀 → 正则漏检。用当前 apiKey 值做字面量兜底替换，双保险。
+        // trim 首尾空白避免用户手动多敲空格导致兜底失效
+        const patternSanitized = sanitizeSecrets(truncatedBody);
+        const trimmedKey = apiKey.trim();
+        const finalBody =
+          trimmedKey.length >= 8 // 太短的 key（如 test-key）不做兜底，避免误替换 UI 文案
+            ? patternSanitized.split(trimmedKey).join('***REDACTED***')
+            : patternSanitized;
         setTestState({
           status: 'error',
-          message: `HTTP ${resp.status} ${sanitizeSecrets(truncatedBody).slice(0, 200)}`,
+          message: `HTTP ${resp.status} ${finalBody.slice(0, 200)}`,
         });
         return;
       }

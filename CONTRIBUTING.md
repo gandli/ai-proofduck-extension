@@ -60,7 +60,7 @@ bun run lint
 
 **示例**：
 
-```
+```text
 feat(engines): add moonshot v1-32k model preset
 fix(sanitize): strip x-api-key header from error body (P1-A)
 chore(deps): bump vitest 4.1.10 → 4.2.0
@@ -113,7 +113,7 @@ chore(deps): bump vitest 4.1.10 → 4.2.0
 
 ### 测试目录结构
 
-```
+```text
 tests/
 ├── unit/                    # vitest 单元测试
 │   ├── components/          # React 组件测试
@@ -127,7 +127,7 @@ tests/
 
 ## 项目架构简介
 
-```
+```text
 src/
 ├── background/       Service Worker · 生命周期 / badge / message router
 ├── core/             跨组件基础设施 · message-bus / engine manager / storage

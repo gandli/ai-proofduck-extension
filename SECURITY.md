@@ -10,7 +10,7 @@
 | 0.4.x | ❌ (请升级到 0.5.x) |
 | < 0.4 | ❌ |
 
-发布节奏：修复关键漏洞时立即出 patch release；一般漏洞随下一个 minor release 一起发。
+发布节奏：修复关键漏洞时立即出 patch release；一般漏洞随下一个 minor release 一起发。CVE (Common Vulnerabilities and Exposures) 编号将在补丁发布后通过 GitHub Security Advisory 公示。
 
 ## 私下报告漏洞（推荐）
 
@@ -37,8 +37,8 @@
 2. **Host permissions 用户主动授权**：每个 API 端点需要用户在 Options 页点击"授权"才能访问。扩展启动时不预取任何 host permission。
 3. **错误信息脱敏**：所有从上游 API 返回的错误 body 在展示到 UI/日志前会走 `sanitizeSecrets`，剥离 `Bearer <token>`、`sk-...`、`x-api-key` 等模式。
 4. **无遥测**：扩展不会收集使用统计、不发送 crash report、不 phone home。
-5. **CSP 严格**：manifest 使用 MV3 默认 CSP，禁止 `eval` / `unsafe-eval`；所有代码都是构建期打包的。
-6. **CRX 签名稳定**：Release 走 GitHub Actions CI，使用固定 `CRX_KEY` secret 签名 —— 保证扩展 ID 不会因发布过程变化而漂移，老用户升级链路完好。
+5. **CSP (Content Security Policy) 严格**：manifest 使用 MV3 (Manifest V3) 默认 CSP，禁止 `eval` / `unsafe-eval`；所有代码都是构建期打包的。
+6. **CRX (Chrome Extension Package) 签名稳定**：Release 走 GitHub Actions CI，使用固定 `CRX_KEY` secret 签名 —— 保证扩展 ID 不会因发布过程变化而漂移，老用户升级链路完好。
 
 ## 报告漏洞时请附
 

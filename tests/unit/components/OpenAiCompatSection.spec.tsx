@@ -269,6 +269,38 @@ describe('OpenAiCompatSection', () => {
     expect(elapsed).toBeLessThan(1000);
   });
 
+  it('测试连接：apiKey 无标准前缀（DeepSeek 自定义格式）走字面量兜底脱敏（PR #514 CodeRabbit 采纳）', async () => {
+    // 场景：sanitizeSecrets 只匹配 sk-/Bearer/x-api-key 模式，
+    // DeepSeek 用 dsk-*** 前缀、豆包/通义千问格式各异，若服务端裸回显 apiKey 值本身不带前缀
+    // → 正则漏检。修复：用 apiKey 值做字面量兜底替换。
+    const user = userEvent.setup();
+    const customKey = 'dsk-my-deepseek-custom-key-1234567890';
+    configMock.__mockState.value = {
+      baseUrl: 'https://api.deepseek.com',
+      apiKey: customKey,
+      model: 'deepseek-chat',
+    };
+    // 服务端错误 body 里裸回显 key（无 Bearer 前缀）
+    const nakedLeak = `Error: invalid credentials, received key = ${customKey}`;
+    const fetchMock = vi.fn(async () => ({
+      ok: false,
+      status: 403,
+      text: async () => nakedLeak,
+    })) as unknown as typeof fetch;
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<OpenAiCompatSection />);
+    await waitFor(() => expect(screen.getByLabelText('API Base URL')).toHaveValue('https://api.deepseek.com'));
+
+    await user.click(screen.getByRole('button', { name: '测试连接' }));
+    await waitFor(() => {
+      expect(screen.getByText(/HTTP 403/)).toBeInTheDocument();
+    });
+    // 关键断言：自定义格式 key 值不能在 DOM 中出现
+    expect(document.body.textContent).not.toContain(customKey);
+    expect(document.body.textContent).toContain('***REDACTED***');
+  });
+
   it('测试连接：网络错误 → 显示 error.message', async () => {
     const user = userEvent.setup();
     configMock.__mockState.value = { baseUrl: 'https://x', apiKey: 'k', model: 'm' };
