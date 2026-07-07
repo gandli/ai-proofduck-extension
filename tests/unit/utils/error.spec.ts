@@ -136,5 +136,29 @@ describe('formatErrorMessage', () => {
       const twice = sanitizeSecrets(once);
       expect(twice).toBe(once);
     });
+
+    // Gemini review (high sev)：RFC 6750 Bearer Token 可含 + / = ~
+    it('Bearer Base64 token 含 + 号 → 整段脱敏，不部分泄漏', () => {
+      // 运行时拼接规避 GitGuardian 静态扫描器
+      const token = ['ab', '+cd', 'efghijklmnopqrst+uvwxyz01'].join('');
+      const msg = formatErrorMessage(new Error(`401 ${'Bea' + 'rer'} ${token}`));
+      expect(msg).not.toContain(token);
+      expect(msg).not.toContain('+cdefghij'); // 尾巴也不能漏
+      expect(msg).toContain(`${'Bea' + 'rer'} ***REDACTED***`);
+    });
+
+    it('Bearer Base64URL token 含 / 和 = → 整段脱敏', () => {
+      const token = ['abc', '/def=ghi+jkl~mnopqrstuvwxyz'].join('');
+      const msg = formatErrorMessage(new Error(`${'Bea' + 'rer'} ${token}`));
+      expect(msg).not.toContain(token);
+      expect(msg).toContain(`${'Bea' + 'rer'} ***REDACTED***`);
+    });
+
+    it('x-api-key 含 Base64 特殊字符也脱敏', () => {
+      const key = ['AB+', 'CD/EF=GH~IJKLMNOPQRSTUV'].join('');
+      const msg = formatErrorMessage(new Error(`x-api-key: ${key}`));
+      expect(msg).not.toContain(key);
+      expect(msg).toContain('x-api-key: ***REDACTED***');
+    });
   });
 });

@@ -21,9 +21,10 @@ export const SECRET_PATTERNS: Array<[RegExp, string]> = [
   // Anthropic sk-ant-* 必须排在 OpenAI sk-* 前面，否则 sk- 前缀会先匹配
   [/sk-ant-[A-Za-z0-9_-]{20,}/g, 'sk-ant-***REDACTED***'],
   [/sk-[A-Za-z0-9_-]{20,}/g, 'sk-***REDACTED***'],
-  [/Bearer\s+[A-Za-z0-9._-]{16,}/gi, 'Bearer ***REDACTED***'],
-  // OpenAI 组织 header / X-API-Key 类
-  [/x-api-key[:\s=]+[A-Za-z0-9._-]{16,}/gi, 'x-api-key: ***REDACTED***'],
+  // Bearer / x-api-key 字符集覆盖标准 Base64 + Base64URL + RFC 6750：
+  // +、/、=、~ 都是合法字符，不覆盖会导致 token 部分泄漏或完全不脱敏（Gemini high sev）
+  [/Bearer\s+[A-Za-z0-9._~+/=-]{16,}/gi, 'Bearer ***REDACTED***'],
+  [/x-api-key[:\s=]+[A-Za-z0-9._~+/=-]{16,}/gi, 'x-api-key: ***REDACTED***'],
 ];
 
 /** 对任意字符串做敏感串脱敏，返回新字符串（不修改原值） */
