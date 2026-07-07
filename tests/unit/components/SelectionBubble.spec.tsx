@@ -186,4 +186,127 @@ describe('SelectionBubble', () => {
     document.dispatchEvent(evt);
     expect(onDismiss).not.toHaveBeenCalled();
   });
+
+  // ========================
+  // v0.5.3 P1-1: 补覆盖率 —— 复制按钮 + 关闭按钮 hover 视觉反馈
+  // ========================
+  describe('📋 复制按钮', () => {
+    it('success 态点击 → 调用 navigator.clipboard.writeText(output)', async () => {
+      const writeText = vi.fn().mockResolvedValue(undefined);
+      // jsdom 里 navigator.clipboard 是 read-only；vi.stubGlobal 走 defineProperty
+      vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
+
+      render(
+        <SelectionBubble
+          selectedText="hello"
+          rect={rect}
+          status="success"
+          output="你好"
+          onTrigger={vi.fn()}
+          onDismiss={vi.fn()}
+        />
+      );
+      fireEvent.click(screen.getByRole('button', { name: /复制/ }));
+      expect(writeText).toHaveBeenCalledWith('你好');
+
+      vi.unstubAllGlobals();
+    });
+
+    it('clipboard.writeText 被拒（非 secure context）→ 静默不抛错', async () => {
+      const writeText = vi.fn().mockRejectedValue(new Error('NotAllowedError'));
+      vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
+
+      render(
+        <SelectionBubble
+          selectedText="hello"
+          rect={rect}
+          status="success"
+          output="你好"
+          onTrigger={vi.fn()}
+          onDismiss={vi.fn()}
+        />
+      );
+      // 点击不应抛 uncaught error
+      expect(() =>
+        fireEvent.click(screen.getByRole('button', { name: /复制/ }))
+      ).not.toThrow();
+      // 让 microtask 完成 rejected promise，避免污染下个 test
+      await Promise.resolve();
+
+      vi.unstubAllGlobals();
+    });
+
+    it('output 为空时点击复制 → 不调用 clipboard（早返回）', () => {
+      const writeText = vi.fn();
+      vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
+
+      // status=success 才会渲染 📋 按钮；output 空是理论边界
+      render(
+        <SelectionBubble
+          selectedText="hello"
+          rect={rect}
+          status="success"
+          output=""
+          onTrigger={vi.fn()}
+          onDismiss={vi.fn()}
+        />
+      );
+      const copyBtn = screen.queryByRole('button', { name: /复制/ });
+      if (copyBtn) {
+        fireEvent.click(copyBtn);
+      }
+      expect(writeText).not.toHaveBeenCalled();
+
+      vi.unstubAllGlobals();
+    });
+  });
+
+  describe('hover 视觉反馈（📋 复制 / ✕ 关闭 两个按钮）', () => {
+    it('📋 mouseEnter/Leave → 背景与文字色切换', () => {
+      render(
+        <SelectionBubble
+          selectedText="hello"
+          rect={rect}
+          status="success"
+          output="你好"
+          onTrigger={vi.fn()}
+          onDismiss={vi.fn()}
+        />
+      );
+      const btn = screen.getByRole('button', { name: /复制/ }) as HTMLButtonElement;
+      // 初始态 —— transparent + 灰（jsdom 保留 hex 原样，不转 rgb）
+      expect(btn.style.background).toBe('transparent');
+      expect(btn.style.color).toBe('#ced4da');
+
+      fireEvent.mouseEnter(btn);
+      expect(btn.style.background).toBe('rgba(255, 255, 255, 0.1)');
+      expect(btn.style.color).toBe('white');
+
+      fireEvent.mouseLeave(btn);
+      expect(btn.style.background).toBe('transparent');
+      expect(btn.style.color).toBe('#ced4da');
+    });
+
+    it('✕ mouseEnter/Leave → 背景与文字色切换', () => {
+      render(
+        <SelectionBubble
+          selectedText="hello"
+          rect={rect}
+          status="success"
+          output="你好"
+          onTrigger={vi.fn()}
+          onDismiss={vi.fn()}
+        />
+      );
+      const btn = screen.getByRole('button', { name: /关闭/ }) as HTMLButtonElement;
+      expect(btn.style.background).toBe('transparent');
+
+      fireEvent.mouseEnter(btn);
+      expect(btn.style.background).toBe('rgba(255, 255, 255, 0.1)');
+      expect(btn.style.color).toBe('white');
+
+      fireEvent.mouseLeave(btn);
+      expect(btn.style.background).toBe('transparent');
+    });
+  });
 });
