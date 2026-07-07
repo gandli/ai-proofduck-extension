@@ -11,7 +11,7 @@
  * 7. 按 Esc / 点浮标外 → 触发 onDismiss
  * 8. 定位：默认在选区 bottom+8 / left（避免遮住选区，超出视口自动上翻由浏览器排版兜底）
  */
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { SelectionBubble } from '@components/SelectionBubble';
 
@@ -191,6 +191,11 @@ describe('SelectionBubble', () => {
   // v0.5.3 P1-1: 补覆盖率 —— 复制按钮 + 关闭按钮 hover 视觉反馈
   // ========================
   describe('📋 复制按钮', () => {
+    // Gemini review：断言失败会中断 test，用 afterEach 兜底避免 stub 泄漏
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
     it('success 态点击 → 调用 navigator.clipboard.writeText(output)', async () => {
       const writeText = vi.fn().mockResolvedValue(undefined);
       // jsdom 里 navigator.clipboard 是 read-only；vi.stubGlobal 走 defineProperty
@@ -208,8 +213,6 @@ describe('SelectionBubble', () => {
       );
       fireEvent.click(screen.getByRole('button', { name: /复制/ }));
       expect(writeText).toHaveBeenCalledWith('你好');
-
-      vi.unstubAllGlobals();
     });
 
     it('clipboard.writeText 被拒（非 secure context）→ 静默不抛错', async () => {
@@ -232,8 +235,6 @@ describe('SelectionBubble', () => {
       ).not.toThrow();
       // 让 microtask 完成 rejected promise，避免污染下个 test
       await Promise.resolve();
-
-      vi.unstubAllGlobals();
     });
 
     it('output 为空时点击复制 → 不调用 clipboard（早返回）', () => {
@@ -256,8 +257,6 @@ describe('SelectionBubble', () => {
         fireEvent.click(copyBtn);
       }
       expect(writeText).not.toHaveBeenCalled();
-
-      vi.unstubAllGlobals();
     });
   });
 
@@ -299,7 +298,9 @@ describe('SelectionBubble', () => {
         />
       );
       const btn = screen.getByRole('button', { name: /关闭/ }) as HTMLButtonElement;
+      // Gemini review：补齐初始态 + mouseLeave 恢复态的 color 断言，与 📋 对齐
       expect(btn.style.background).toBe('transparent');
+      expect(btn.style.color).toBe('#ced4da');
 
       fireEvent.mouseEnter(btn);
       expect(btn.style.background).toBe('rgba(255, 255, 255, 0.1)');
@@ -307,6 +308,7 @@ describe('SelectionBubble', () => {
 
       fireEvent.mouseLeave(btn);
       expect(btn.style.background).toBe('transparent');
+      expect(btn.style.color).toBe('#ced4da');
     });
   });
 });
