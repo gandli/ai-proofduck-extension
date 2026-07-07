@@ -15,7 +15,7 @@ export type ChromeLike = {
   };
   commands?: {
     onCommand: {
-      addListener: (fn: (command: string) => void) => void;
+      addListener: (fn: (command: string, tab?: { windowId?: number }) => void) => void;
     };
   };
   windows?: {
@@ -26,19 +26,31 @@ export type ChromeLike = {
 
 /**
  * 处理快捷键触发的命令
- * @returns true 表示识别并执行（无论成败），false 表示未识别
+ *
+ * ⚠️ chrome.sidePanel.open 必须在用户手势内**同步**调用，
+ * 任何 await 都会消耗 gesture context 导致 "may only be called
+ * in response to a user gesture" 错误。
+ *
+ * 因此：
+ * - 优先使用 onCommand 回调直接传入的 tab.windowId（同步可得）
+ * - 不再 await windows.getCurrent()
+ * - open() 立即调用，其返回的 promise 交由调用方 fire-and-forget
+ *
+ * @returns true 表示识别并触发（无论是否真的打开成功）
  */
-export async function handleCommand(cmd: string, c: ChromeLike): Promise<boolean> {
+export function handleCommand(
+  cmd: string,
+  c: ChromeLike,
+  tab?: { windowId?: number },
+): boolean {
   if (cmd !== 'open-side-panel') return false;
-  if (!c.sidePanel?.open) return true; // 识别了但当前上下文不支持，静默
-  try {
-    const win = await c.windows?.getCurrent();
-    if (win?.id !== undefined) {
-      await c.sidePanel.open({ windowId: win.id });
-    }
-  } catch {
-    // 忽略：非扩展环境 / 用户拒绝
-  }
+  if (!c.sidePanel?.open) return true;
+  const windowId = tab?.windowId;
+  if (windowId === undefined) return true; // 无窗口上下文，安全返回
+  // 同步触发 open()，promise 挂 catch 防 unhandled rejection
+  c.sidePanel.open({ windowId })?.catch?.(() => {
+    /* 用户拒绝 / 非扩展环境 */
+  });
   return true;
 }
 
@@ -63,7 +75,8 @@ export function registerBackground(c: ChromeLike | undefined) {
     ?.catch((err: unknown) => console.warn('[proofduck] sidePanel setPanelBehavior failed', err));
 
   // v0.5.2: 快捷键（Alt+Shift+P）打开 sidePanel
-  c.commands?.onCommand.addListener((cmd) => {
-    void handleCommand(cmd, c);
+  // 关键：onCommand 回调直接透传 tab 参数，避免 await 消耗用户手势
+  c.commands?.onCommand.addListener((cmd, tab) => {
+    handleCommand(cmd, c, tab);
   });
 }
