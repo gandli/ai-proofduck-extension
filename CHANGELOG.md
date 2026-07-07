@@ -17,8 +17,9 @@ All notable changes to this project will be documented in this file.
 
 ### 🔐 权限治理（v0.4 核心）
 
-**从 `<all_urls>` 迁移到 `optional_host_permissions`** —— 用户首次翻译时按需请求，
-减少 Chrome Web Store 审核阻力。
+**从 `<all_urls>` 迁移到 `optional_host_permissions`** —— 用户在 Options 页点「授权」时才向 Chrome
+调用 `chrome.permissions.request()`；翻译流只检查权限状态，缺失时展示 CTA 引导。
+更少的默认权限 = 更低的 Chrome Web Store 审核阻力。
 
 - `manifest_version: 3` + `optional_host_permissions: ['<all_urls>']`
 - `chrome.permissions.request()` UX 引导 + `PermissionRequiredError` 类

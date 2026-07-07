@@ -51,7 +51,7 @@
 - **🎯 划词浮标**（v0.3+）：网页任何位置划词即翻，深色 Shadow DOM 与宿主页样式隔离。
 - **🔒 本地隐私优先**：支持通过 WebGPU/WASM 运行本地大模型（如 Qwen2.5），数据完全不出浏览器。
 - **🌐 在线模型支持**：兼容 OpenAI 格式 API，BYOK — API Key 仅存 `chrome.storage.local`，只发往您指定的端点。
-- **🔐 按需授权**（v0.4）：从 `<all_urls>` 迁移到 `optional_host_permissions`，首次翻译时才向用户请求所需域权限。
+- **🔐 按需授权**（v0.4）：从 `<all_urls>` 迁移到 `optional_host_permissions`，在 **Options 页点「授权」按钮**才触发 `chrome.permissions.request()`；翻译流仅读取已授权状态，缺失时展示 CTA 引导用户去授权。
 - **📊 引擎健康度看板**（v0.4）：实时徽章（chrome-ai / webllm / openai-compat / free-translate）指示哪些引擎已就绪、哪些需要配置。
 - **📑 智能内容获取**：
   - 支持划词即时处理。
