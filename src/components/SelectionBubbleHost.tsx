@@ -14,6 +14,7 @@ import { getEngines } from '@core/engines';
 import type { Engine } from '@engines/types';
 import { SelectionBubble, type BubbleStatus } from './SelectionBubble';
 import { isPermissionRequiredError } from '@utils/permission-error';
+import { formatErrorMessage } from '@utils/error';
 
 export interface SelectionBubbleHostProps {
   /** 测试可注入固定引擎；生产走 pickBest() */
@@ -96,7 +97,10 @@ export function SelectionBubbleHost(props: SelectionBubbleHostProps) {
         return;
       }
       const msg = e instanceof Error ? e.message : String(e);
-      setError(msg);
+      // v0.5.5 P1-B（审计 v3）：SelectionBubble 是 UI 出口，Error.message 可能含
+      // API 网关 echo 的 Authorization: Bearer sk-*** 明文。走 formatErrorMessage
+      // 复用全站脱敏出口，防止 apiKey/Bearer/x-api-key 泄漏到用户可见气泡。
+      setError(formatErrorMessage(msg, '翻译失败'));
     }
   }
 
