@@ -2,6 +2,62 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.5.4] - 2026-07-07 · 全量审计 v2 · 12/12 findings 全绿
+
+跟进 v0.5.3 后由深度审计 skill（`fuck-my-shit-mountain`）触发的第二轮全量审计，12 findings 全部结账。
+
+### 🔴 P1 · Critical 修复（3 项）
+
+- **P1-A（#507）**：`sidepanel/App.tsx` 覆盖率 67.24% → **95.83%**（行）/ 52.63% → **97.82%**（分支）；补齐 handleSwap / handleKeyDown / isSameLanguage / pickBest resolve+reject 双路径测试
+- **P1-B（#506）**：33 处 `act warnings` → **0**；提炼 `renderAct()` helper（`tests/helpers/render.ts`），全站测试统一异步渲染惯例
+- **P1-C（#505）**：`bun audit` 36 vulnerabilities（1 crit / 19 high）→ **0**；供应链归零 + `sanitizeSecrets` 单点收口
+
+### 🟠 P2 · High 修复（5 项）
+
+- **P2-A（#508）**：`sidepanel/App.tsx` **383 → 169 loc**（-56%）· SRP 拆分为 4 子组件（EngineStatus / LanguageBar / Editor / ResultPanel）+ constants.ts；每片 ≤ 110 loc
+- **P2-B（#505）**：所有 `fetch` 引擎 AbortController 全链路串联，防用户断网时永久 hang
+- **P2-C（#507）**：`options/App.tsx` 分支覆盖 64.28% → **85.71%**；补 storage.onChanged sync/local 分支测试
+- **P2-D（#505）**：`makeCacheKey` 加 engineId + model 维度，防跨引擎/跨模型缓存污染
+- **P2-E（#506）**：E2E 编译时开关 `isE2EBuild()` 收口，替代散落的 `env.VITE_PD_E2E === 'true'` 字符串对比
+
+### 🟢 P3 · 保健修复（4 项）
+
+- **P3-A（#505）**：popup App `.catch(() => {})` 静默吞异常 → 换 `logSanitizedError`
+- **P3-B（#506）**：README screenshots 版本标签同步到 v0.5.x UI
+- **P3-C**：6 处 `eslint-disable react-hooks/set-state-in-effect` inline 注释审计通过（有 justification，acceptable）
+- **P3-D（#505）**：`fetch` error body 输出前走 `sanitizeSecrets`，防 secret 泄漏到用户可见 UI
+
+### 🧪 测试基线
+
+- 单测 333 → **360** (+27，全绿)
+- E2E **43/43** 全绿（2.1m）
+- act warnings 33 → **0**
+- 覆盖率 lines 93.02% → **94.93%**（+2 pp）
+- 覆盖率 branches 86.21% → **88.83%**（+3 pp）
+
+### 📐 架构收益
+
+- SidePanel App.tsx 拆分为 4 子组件 + constants，未来加多引擎并发流 / 新语言选择器不再挤在单文件
+- LanguageBar 可复用到 popup（如未来需要）
+- review diff 变短：改一处只影响一片
+- 拆分后**测试覆盖率反而提升**（App.tsx 行 89.65 → 95.83）
+
+### 🤖 Bot review 采纳
+
+- Gemini review 全流程采纳（3 批 × 3-7 条建议）：`aria-label` 语义定位、`try/finally` 隔离 mock 状态、字数条件收严、引导文案「左侧」→「上方」
+- CodeRabbit 全绿；Codacy 复杂度告警来自拆分度量副作用（总复杂度 -4），admin merge
+
+### 交付 PR
+
+- #505 (P1-C · P3-D · P2-D · P2-B)
+- #506 (P1-B · P2-E · P3-B)
+- #507 (P1-A · P2-C)
+- **#508 (P2-A · 结构重构)**
+
+### 四大门槛
+
+Open PR **0** · Open Issue **0** · Dependabot **0** · Secret scanning **0**
+
 ## [v0.5.3] - 2026-07-07 · 全量审计闭环 · 安全强化
 
 ### 🛡️ 安全 & 稳定性收尾（4 个 PR）
