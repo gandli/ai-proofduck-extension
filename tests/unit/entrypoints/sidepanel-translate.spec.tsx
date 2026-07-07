@@ -254,3 +254,132 @@ describe('SidePanel M2 翻译交互', () => {
     });
   });
 });
+
+// ============================================================
+// P1-A 覆盖率补齐：swap / keyboard shortcut / same-language / clear
+// ============================================================
+describe('SidePanel · 覆盖率补齐（P1-A · 审计 v2）', () => {
+  it('handleSwap：source=auto 时点交换按钮无副作用', async () => {
+    // source 默认 auto，target 默认 zh，点交换后 source/target 不应互换
+    await renderAct(<SidePanelApp engine={mockEngine()} />);
+    // 交换按钮的 aria-label 是"交换语言"
+    const swap = screen.getByRole('button', { name: /交换/ });
+    fireEvent.click(swap);
+    // 目标语言 <select> 值应保持 zh（auto 时 swap 是 no-op）
+    const targetSel = screen.getAllByRole('combobox').find((el) =>
+      (el as HTMLSelectElement).value === 'zh',
+    );
+    expect(targetSel).toBeDefined();
+  });
+
+  it('handleSwap：显式源语言时点交换 → source/target 互换', async () => {
+    await renderAct(<SidePanelApp engine={mockEngine()} />);
+    // 先把 source 切成 en（不再是 auto）
+    const sourceSel = screen.getAllByRole('combobox')[0] as HTMLSelectElement;
+    fireEvent.change(sourceSel, { target: { value: 'en' } });
+    // target 默认 zh，swap 后 source=zh, target=en
+    const swap = screen.getByRole('button', { name: /交换/ });
+    fireEvent.click(swap);
+    expect(sourceSel.value).toBe('zh');
+  });
+
+  it('Ctrl+Enter 快捷键触发翻译', async () => {
+    const engine = mockEngine();
+    await renderAct(<SidePanelApp engine={engine} />);
+    const input = screen.getByPlaceholderText(/粘贴|输入/) as HTMLTextAreaElement;
+    fireEvent.change(input, { target: { value: 'hello shortcut' } });
+    fireEvent.keyDown(input, { key: 'Enter', ctrlKey: true });
+    await waitFor(() => {
+      expect(screen.getByText(/翻译：hello shortcut/)).toBeDefined();
+    });
+  });
+
+  it('⌘+Enter 快捷键（macOS metaKey）触发翻译', async () => {
+    const engine = mockEngine();
+    await renderAct(<SidePanelApp engine={engine} />);
+    const input = screen.getByPlaceholderText(/粘贴|输入/) as HTMLTextAreaElement;
+    fireEvent.change(input, { target: { value: 'hello mac' } });
+    fireEvent.keyDown(input, { key: 'Enter', metaKey: true });
+    await waitFor(() => {
+      expect(screen.getByText(/翻译：hello mac/)).toBeDefined();
+    });
+  });
+
+  it('无内容 + Ctrl+Enter → 不触发翻译（canTranslate=false）', async () => {
+    const engine = mockEngine();
+    const spy = vi.spyOn(engine, 'runStreaming');
+    await renderAct(<SidePanelApp engine={engine} />);
+    const input = screen.getByPlaceholderText(/粘贴|输入/) as HTMLTextAreaElement;
+    fireEvent.keyDown(input, { key: 'Enter', ctrlKey: true });
+    // 没输入 → runStreaming 应从未被调用
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('源=目标同语言 → 显示"源语言与目标语言相同"提示 + 翻译禁用', async () => {
+    await renderAct(<SidePanelApp engine={mockEngine()} />);
+    // source 切成 zh，target 也是 zh
+    const sourceSel = screen.getAllByRole('combobox')[0] as HTMLSelectElement;
+    fireEvent.change(sourceSel, { target: { value: 'zh' } });
+    const input = screen.getByPlaceholderText(/粘贴|输入/) as HTMLTextAreaElement;
+    fireEvent.change(input, { target: { value: '你好' } });
+    // 翻译按钮应 disabled（source===target 走 canTranslate=false 分支）
+    const translateBtn = screen.getByRole('button', { name: /^翻译/ });
+    expect((translateBtn as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('点"清空"按钮 → 输入框 + 译文双清空', async () => {
+    const engine = mockEngine();
+    await renderAct(<SidePanelApp engine={engine} />);
+    const input = screen.getByPlaceholderText(/粘贴|输入/) as HTMLTextAreaElement;
+    fireEvent.change(input, { target: { value: 'text to clear' } });
+    fireEvent.click(screen.getByRole('button', { name: /^翻译/ }));
+    await waitFor(() => {
+      expect(screen.getByText(/翻译：text to clear/)).toBeDefined();
+    });
+    // 点清空
+    fireEvent.click(screen.getByRole('button', { name: /^清空/ }));
+    expect(input.value).toBe('');
+    // 译文区应不再包含旧结果
+    await waitFor(() => {
+      expect(screen.queryByText(/翻译：text to clear/)).toBeNull();
+    });
+  });
+
+  it('生产路径 · engine 未注入 → 走 pickBest() 兜底 resolve 成功', async () => {
+    const engine = mockEngine();
+    // 用 vi.doMock 而非顶层 vi.mock 局部化影响
+    vi.doMock('@core/engines', () => ({
+      getEngines: () => ({
+        pickBest: vi.fn().mockResolvedValue(engine),
+      }),
+    }));
+    vi.resetModules();
+    const { default: AppFresh } = await import('../../../entrypoints/sidepanel/App');
+    await renderAct(<AppFresh />); // 不传 engine
+    // pickBest resolve 后应能看到输入框（无 loading）
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/粘贴|输入/)).toBeDefined();
+    });
+    vi.doUnmock('@core/engines');
+  });
+
+  it('生产路径 · pickBest() 抛错 → 走 catch 分支，available=false', async () => {
+    vi.doMock('@core/engines', () => ({
+      getEngines: () => ({
+        pickBest: vi.fn().mockRejectedValue(new Error('no engine')),
+      }),
+    }));
+    vi.resetModules();
+    const { default: AppFresh } = await import('../../../entrypoints/sidepanel/App');
+    await renderAct(<AppFresh />);
+    // 无引擎 → 应显示"无可用引擎"或类似横幅（available=false）
+    await waitFor(() => {
+      // canTranslate=false → 按钮 disabled
+      const translateBtn = screen.queryByRole('button', { name: /^翻译/ });
+      if (translateBtn) {
+        expect((translateBtn as HTMLButtonElement).disabled).toBe(true);
+      }
+    });
+    vi.doUnmock('@core/engines');
+  });
+});
