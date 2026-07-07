@@ -144,16 +144,17 @@ export default function SidePanelApp({ engine }: Props = {}) {
   return (
     <div className="min-h-screen bg-white text-ink-800 flex flex-col">
       {/* ============ 品牌 header ============ */}
-      <header className="px-4 pt-4 pb-3 border-b border-ink-200 bg-gradient-to-b from-brand-50 to-white">
-        <div className="flex items-center gap-2.5">
-          <img
-            src="/icons/icon-32.png"
-            alt=""
-            className="w-7 h-7 rounded-lg shadow-brand-lg"
-          />
-          <h1 className="text-base font-bold font-serif text-ink-900 tracking-tight">
-            校对鸭
-          </h1>
+      <header className="pd-plush-sky px-4 pt-4 pb-3 border-b border-brand-100">
+        <div className="flex items-center gap-3">
+          <span className="pd-plush-logo-wrap" aria-hidden>
+            <img src="/icons/icon-32.png" alt="" />
+          </span>
+          <div className="flex flex-col">
+            <h1 className="text-base font-bold font-serif text-ink-900 tracking-tight">
+              校对鸭
+            </h1>
+            <p className="text-[11px] text-ink-500 mt-0.5">你的贴心写作小助手 🦆</p>
+          </div>
         </div>
 
         {/* 引擎徽章 + 就绪概览：让用户知道谁在干活。
@@ -163,10 +164,9 @@ export default function SidePanelApp({ engine }: Props = {}) {
           <div className="mt-2.5 flex items-center gap-2 text-xs">
             <span
               data-testid="engine-chip"
-              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-success-soft text-success-strong font-medium"
-              style={{ background: '#ebfbee', color: '#2f9e44' }}
+              className="pd-plush-chip"
             >
-              <span className="pd-dot pd-dot-ok" style={{ width: 6, height: 6, boxShadow: '0 0 0 3px rgba(47,158,68,0.15)' }} />
+              <span className="pd-dot pd-dot-ok" style={{ width: 6, height: 6 }} />
               {resolvedEngine.name}
             </span>
           </div>
@@ -213,7 +213,7 @@ export default function SidePanelApp({ engine }: Props = {}) {
               id="source-lang"
               value={source}
               onChange={(e) => setSource(e.target.value)}
-              className="rounded-md border border-ink-200 px-2.5 py-2 text-sm bg-white text-ink-800 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 cursor-pointer"
+              className="pd-plush-select px-2.5 py-2 text-sm text-ink-800 focus:outline-none cursor-pointer"
               aria-label="源语言"
             >
               <option value="auto">自动检测</option>
@@ -230,7 +230,7 @@ export default function SidePanelApp({ engine }: Props = {}) {
             onClick={handleSwap}
             disabled={source === 'auto'}
             aria-label="交换语言方向"
-            className="w-8 h-8 rounded-full border border-ink-200 bg-white text-ink-500 flex items-center justify-center hover:border-brand-500 hover:text-brand-600 hover:rotate-180 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:rotate-0 disabled:hover:border-ink-200 disabled:hover:text-ink-500"
+            className="pd-plush-swap flex items-center justify-center"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M7 10h10M7 10l3-3M7 10l3 3M17 14H7M17 14l-3-3M17 14l-3 3" />
@@ -245,7 +245,7 @@ export default function SidePanelApp({ engine }: Props = {}) {
               id="target-lang"
               value={target}
               onChange={(e) => setTarget(e.target.value)}
-              className="rounded-md border border-ink-200 px-2.5 py-2 text-sm bg-white text-ink-800 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 cursor-pointer"
+              className="pd-plush-select px-2.5 py-2 text-sm text-ink-800 focus:outline-none cursor-pointer"
               aria-label="目标语言"
             >
               {TARGET_LANGS.map((l) => (
@@ -273,7 +273,7 @@ export default function SidePanelApp({ engine }: Props = {}) {
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="在这里粘贴要翻译的文本…（⌘/Ctrl + ↵ 快速翻译）"
-            className="w-full min-h-[140px] rounded-md border border-ink-200 p-3 text-sm resize-y bg-white text-ink-800 leading-relaxed focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+            className="pd-plush-input w-full min-h-[140px] p-3 text-sm resize-y text-ink-800 leading-relaxed focus:outline-none"
           />
         </div>
 
@@ -319,7 +319,7 @@ export default function SidePanelApp({ engine }: Props = {}) {
             )}
           </div>
           <div
-            className="min-h-[100px] rounded-md border border-brand-200 bg-brand-50 p-3.5 text-[14px] leading-relaxed font-serif text-ink-900 whitespace-pre-wrap"
+            className="pd-plush-output min-h-[100px] p-3.5 text-[14px] leading-relaxed font-serif text-ink-900 whitespace-pre-wrap"
             aria-label="翻译结果"
             aria-live="polite"
           >

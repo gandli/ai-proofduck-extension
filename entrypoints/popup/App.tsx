@@ -51,22 +51,20 @@ export default function PopupApp() {
 
   return (
     <div className="w-72 bg-white text-ink-800">
-      {/* 品牌 header：带米白→白渐变，突出鸭子 logo */}
-      <header className="flex items-center gap-3 px-4 py-3 border-b border-ink-200 bg-gradient-to-b from-brand-50 to-white">
-        <img
-          src="/icons/icon-32.png"
-          alt=""
-          className="w-8 h-8 rounded-lg shadow-brand-lg"
-        />
+      {/* 品牌 header：毛绒鸭 + 天空底 + 呼吸动画 */}
+      <header className="pd-plush-sky flex items-center gap-3 px-4 py-3.5 border-b border-brand-100">
+        <span className="pd-plush-logo-wrap" aria-hidden>
+          <img src="/icons/icon-32.png" alt="" />
+        </span>
         <div>
           <h1 className="text-base font-bold font-serif text-ink-900 leading-none">校对鸭</h1>
-          <p className="text-[11px] text-ink-400 mt-1">v0.4 · 隐私优先翻译</p>
+          <p className="text-[11px] text-ink-500 mt-1.5">你的贴心写作小助手 🦆</p>
         </div>
       </header>
 
-      <div className="p-4 space-y-2">
+      <div className="p-4 space-y-2.5">
         {selectedText && (
-          <div className="rounded-md bg-brand-50 border border-brand-200 px-3 py-2 text-xs text-ink-700 line-clamp-3">
+          <div className="pd-plush-output px-3 py-2.5 text-xs text-ink-700 line-clamp-3">
             <div className="text-[10px] uppercase tracking-wider text-ink-500 mb-1 font-semibold">
               已选中
             </div>
@@ -74,7 +72,7 @@ export default function PopupApp() {
           </div>
         )}
 
-        <Button variant="primary" onClick={openSidePanel} className="w-full justify-center">
+        <Button variant="primary" onClick={openSidePanel} className="w-full justify-center py-2.5">
           <span aria-hidden>⇱</span>
           <span>打开侧边栏</span>
         </Button>
