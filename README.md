@@ -142,7 +142,7 @@ Every push to `main` and every tag runs the QA gate before packaging:
 ```bash
 tsc --noEmit                # 0 error required
 eslint . --max-warnings=0   # 0 warning required
-vitest run                  # 369/369 tests, coverage ≥ 95%
+vitest run                  # 369/369 tests · thresholds: stmts≥90 / branches≥85 / funcs≥85 / lines≥92 (actual 96.03%)
 bun audit                   # 0 vulnerabilities
 ```
 

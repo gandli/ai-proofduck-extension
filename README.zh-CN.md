@@ -118,6 +118,28 @@
 
    构建产物将位于 `.output/` 目录。
 
+## 🔐 CI / Release · CRX 扩展 ID 稳定性
+
+GitHub Actions 工作流使用 **仓库 Secret** `CRX_KEY`（PKCS#8 RSA-2048 私钥）签名打包 CRX 文件，保证 **每次发布的扩展 ID 保持稳定**，让走私有分发通道的用户获得无感自动升级。
+
+- **Secret 名称**：`CRX_KEY`
+- **格式**：PKCS#8 PEM（`-----BEGIN PRIVATE KEY-----`）
+- **轮换命令**：`openssl genrsa 2048 | openssl pkcs8 -topk8 -nocrypt | gh secret set CRX_KEY`（⚠️ 换新密钥 = 换新扩展 ID → 现有安装会失联）
+- **兜底策略**：如未配置 `CRX_KEY`（外部 Fork/PR 无 secret 访问权限），workflow 生成 **临时密钥** 仅供构建冒烟。这类构建 **永不发布**。
+
+### 质量门禁
+
+每次 push 到 `main` 或打 tag 前，先跑 QA gate：
+
+```bash
+tsc --noEmit                # 0 error 才通过
+eslint . --max-warnings=0   # 0 warning 才通过
+vitest run                  # 369/369 tests · 阈值：stmts≥90 / branches≥85 / funcs≥85 / lines≥92（实际 96.03%）
+bun audit                   # 0 漏洞
+```
+
+任一项未通过则 workflow 中止 —— 不产出产物，不发布 release。
+
 ## ⚙️ 配置说明
 
 点击侧边栏右上角的设置图标，或在模式选择栏右侧点击设置按钮即可进入配置页。
