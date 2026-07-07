@@ -38,7 +38,13 @@
 
 **AI 校对鸭** 是一款基于浏览器侧边栏的智能写作助手扩展。它利用先进的 AI 模型（支持本地 WebGPU/WASM 及在线 API），为您提供实时的文本摘要、润色、纠错、翻译和扩写服务。
 
-当前版本 **v0.4.0** — 品牌统一、引擎健康度看板、深色划词浮标、按需授权。
+当前版本 **v0.4.1** — Plush Duckling 毛绒风、引擎健康度徽章、深色划词浮标、按需授权。
+
+## 📸 界面预览
+
+| Popup | SidePanel | Options |
+|-------|-----------|---------|
+| ![Popup](docs/screenshots/popup-v0.4.1.png) | ![SidePanel](docs/screenshots/sidepanel-v0.4.1.png) | ![Options](docs/screenshots/options-v0.4.1.png) |
 
 ## ✨ 核心功能
 
