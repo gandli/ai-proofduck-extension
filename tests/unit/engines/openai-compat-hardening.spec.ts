@@ -135,8 +135,9 @@ describe('openai-compat 错误脱敏', () => {
       // ignore
     }
     const elapsed = performance.now() - t0;
-    // 缓冲区 1000 后正则量级恒定，即便 body 上 M 级也应远快于 200ms
-    expect(elapsed).toBeLessThan(200);
+    // 缓冲区 1000 后正则量级恒定，即便 body 上 M 级也应远快于 1s
+    // v5 · Gemini review 采纳：CI 环境 CPU 共享 + JIT 冷启动会让 200ms 阈值 flaky，放宽到 1000ms
+    expect(elapsed).toBeLessThan(1000);
   });
 });
 

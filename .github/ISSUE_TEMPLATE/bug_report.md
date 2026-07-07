@@ -37,7 +37,7 @@ assignees: gandli
 校对鸭的 sanitizeSecrets 已经处理内部日志，但你手贴出来的可能没走那层
 -->
 
-```
+```text
 （贴日志或截图）
 ```
 
