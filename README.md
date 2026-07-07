@@ -57,7 +57,7 @@ Currently at **v0.4.0** — brand-unified UI, engine health dashboard, dark sele
   - Process selected text instantly.
   - Automatically fetch page body content when no text is selected for full-page summarization.
 - **🎨 Brand-Unified UI** (v0.4):
-  - **Warm Yellow Theme**: `#f59f00` brand + `#fff9db` background + `#495057` ink — matches our duck mascot 🦆.
+  - **Warm Yellow Theme**: `#f59f00` brand + `#fff9db` background + `#495057` ink — matches our duck mascot.
   - **Compact Layout**: Maximized vertical space for content.
   - **i18n Support**: Full English and Chinese localization.
 

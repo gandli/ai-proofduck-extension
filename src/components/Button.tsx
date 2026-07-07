@@ -29,7 +29,9 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  * detect-object-injection 误报（variant 是 union，实际不可能注入）。
  */
 const VARIANT_CLASS: ReadonlyMap<ButtonVariant, string> = new Map([
-  ['primary', 'pd-btn pd-btn-primary'],
+  // rounded-2xl 会被 .pd-plush-cta 的 border-radius:24px !important 覆盖成 24px；
+  // 保留 rounded-2xl 是为了在 Shadow DOM 里 .pd-plush-cta 失效时也有一个合理 fallback。
+  ['primary', 'pd-btn pd-btn-primary pd-plush-cta rounded-2xl'],
   [
     'ghost',
     'pd-btn pd-btn-ghost bg-transparent text-ink-600 hover:bg-ink-50 hover:text-ink-800 border border-transparent',
@@ -42,10 +44,10 @@ const VARIANT_CLASS: ReadonlyMap<ButtonVariant, string> = new Map([
 
 export function Button({ variant = 'primary', className, children, ...rest }: ButtonProps) {
   const cls = [
-    VARIANT_CLASS.get(variant) ?? '',
     'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md text-sm font-medium',
     'focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1',
     'disabled:opacity-55 disabled:cursor-not-allowed',
+    VARIANT_CLASS.get(variant) ?? '',
     className,
   ]
     .filter(Boolean)

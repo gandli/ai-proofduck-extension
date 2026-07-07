@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>校对鸭 · 涂鸦贴纸</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fredoka:wght@500;600;700&family=LXGW+WenKai+TC&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --paper: #fdfaf3;
+    --paper-line: #d4dcf0;
+    --brand: #ffb800;
+    --brand-2: #ff6f61;
+    --mint: #6fd6b8;
+    --sky: #74b8ff;
+    --pink: #ff9ec7;
+    --ink: #2d2a26;
+    --ink-soft: #6b6560;
+    --stamp: #e73c3c;
+  }
+  body {
+    font-family: 'Fredoka', 'LXGW WenKai TC', -apple-system, sans-serif;
+    background:
+      /* 纸纹 */
+      radial-gradient(circle at 25% 15%, rgba(255,184,0,0.06) 0%, transparent 40%),
+      radial-gradient(circle at 75% 85%, rgba(111,214,184,0.08) 0%, transparent 40%),
+      var(--paper);
+    background-attachment: fixed;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    color: var(--ink);
+  }
+  /* 隐形网格纸 */
+  body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none;
+    background-image:
+      linear-gradient(var(--paper-line) 0.5px, transparent 0.5px),
+      linear-gradient(90deg, var(--paper-line) 0.5px, transparent 0.5px);
+    background-size: 22px 22px;
+    opacity: 0.35;
+  }
+  .panel {
+    width: 420px; min-height: 720px;
+    background: var(--paper);
+    padding: 20px;
+    position: relative;
+    /* 手撕纸边 */
+    box-shadow:
+      0 10px 30px rgba(0,0,0,0.12),
+      0 3px 10px rgba(0,0,0,0.06);
+    transform: rotate(-0.5deg);
+    border-radius: 4px;
+  }
+  /* washi 胶带装饰 */
+  .tape {
+    position: absolute; width: 60px; height: 22px;
+    background: rgba(255, 184, 0, 0.5);
+    top: -8px; left: 30px; transform: rotate(-5deg);
+    background-image: repeating-linear-gradient(45deg, transparent 0 5px, rgba(255,255,255,0.4) 5px 10px);
+  }
+  .tape.t2 { top: -6px; right: 24px; left: auto; background: rgba(111,214,184,0.5); transform: rotate(4deg); }
+  /* Header */
+  header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px; padding: 6px 4px;
+  }
+  .duck-sticker {
+    width: 60px; height: 60px;
+    position: relative;
+    /* 主体 —— 圆润的鸭子头 */
+    background: var(--brand);
+    border: 3px solid var(--ink);
+    border-radius: 55% 55% 50% 50% / 60% 60% 45% 45%;
+    box-shadow: 3px 3px 0 var(--ink);
+    transform: rotate(-6deg);
+  }
+  .duck-sticker::before {
+    /* 嘴 */
+    content: ''; position: absolute;
+    bottom: 8px; left: 50%; transform: translateX(-50%);
+    width: 20px; height: 12px;
+    background: var(--brand-2);
+    border: 2.5px solid var(--ink);
+    border-radius: 50% 50% 60% 60%;
+  }
+  .duck-sticker::after {
+    /* 眼睛 */
+    content: ''; position: absolute;
+    top: 18px; left: 14px;
+    width: 8px; height: 10px;
+    background: var(--ink);
+    border-radius: 50%;
+    box-shadow: 20px 0 0 var(--ink), 2px -2px 0 white, 22px -2px 0 white;
+  }
+  /* 手写标题 */
+  .brand h1 {
+    font-family: 'Caveat', cursive; font-weight: 700;
+    font-size: 32px; line-height: 1;
+    color: var(--ink);
+    transform: rotate(-1deg);
+  }
+  .brand p {
+    font-family: 'Caveat', cursive; font-size: 16px;
+    color: var(--ink-soft); margin-top: 2px;
+  }
+  .brand p::after { content: ' ~'; color: var(--brand); }
+  /* stamp 印章 */
+  .stamp {
+    margin-left: auto;
+    padding: 6px 10px;
+    border: 3px solid var(--stamp);
+    color: var(--stamp);
+    font-family: 'Caveat', cursive; font-weight: 700;
+    font-size: 14px; letter-spacing: 1px;
+    transform: rotate(6deg);
+    background: rgba(231, 60, 60, 0.05);
+    border-radius: 6px;
+    text-transform: uppercase;
+  }
+  /* 引擎徽章 —— 手绘圆形贴纸 */
+  .engine-stickers {
+    display: flex; gap: 8px; margin-bottom: 20px;
+    padding: 6px 0;
+  }
+  .sticker-eng {
+    flex: 1; text-align: center; padding: 8px 4px;
+    border: 2.5px solid var(--ink);
+    border-radius: 16px;
+    font-size: 11px; font-weight: 600;
+    background: white;
+    box-shadow: 2px 2px 0 var(--ink);
+    position: relative;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  .sticker-eng:nth-child(1) { transform: rotate(-2deg); background: #fff9e0; }
+  .sticker-eng:nth-child(2) { transform: rotate(1deg); background: #e0f5ec; }
+  .sticker-eng:nth-child(3) { transform: rotate(-1deg); background: #f0f0f0; opacity: 0.6; }
+  .sticker-eng:nth-child(4) { transform: rotate(2deg); background: #f0f0f0; opacity: 0.6; }
+  .sticker-eng .em { font-size: 16px; }
+  .sticker-eng.on::after {
+    content: '✓'; position: absolute; top: -6px; right: -4px;
+    width: 18px; height: 18px; background: var(--mint);
+    border: 2px solid var(--ink); border-radius: 50%;
+    font-size: 11px; display: grid; place-items: center;
+    color: var(--ink); font-weight: 700;
+  }
+  /* Mode 手绘 tabs */
+  .modes {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 6px; margin-bottom: 18px;
+  }
+  .mode-btn {
+    padding: 10px 4px; text-align: center;
+    border: 2.5px solid var(--ink);
+    background: white;
+    font-family: 'Caveat', cursive; font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    box-shadow: 2px 2px 0 var(--ink);
+    transition: all 0.15s;
+    border-radius: 12px;
+  }
+  .mode-btn:nth-child(1) { transform: rotate(-1deg); }
+  .mode-btn:nth-child(2) { transform: rotate(0.5deg); }
+  .mode-btn:nth-child(3) { transform: rotate(-0.5deg); }
+  .mode-btn:nth-child(4) { transform: rotate(1deg); }
+  .mode-btn:nth-child(5) { transform: rotate(-1.5deg); }
+  .mode-btn:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ink); }
+  .mode-btn.active {
+    background: var(--brand); color: var(--ink);
+    box-shadow: 3px 3px 0 var(--ink), inset 0 0 0 2px white;
+  }
+  .mode-btn .e { font-size: 18px; display: block; margin-bottom: 2px; }
+  /* language pill */
+  .langs {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+  }
+  .lang {
+    flex: 1; padding: 10px; text-align: center;
+    border: 2.5px solid var(--ink);
+    background: white; border-radius: 22px;
+    font-size: 13px; font-weight: 600;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .lang:first-child { background: #fff4d0; transform: rotate(-0.8deg); }
+  .lang:last-child { background: #e0f5ec; transform: rotate(0.8deg); }
+  .swap-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--pink); border: 2.5px solid var(--ink);
+    display: grid; place-items: center;
+    box-shadow: 2px 2px 0 var(--ink);
+    font-size: 16px; cursor: pointer;
+    font-weight: 700;
+  }
+  /* 输入 —— 便签风 */
+  .memo {
+    background:
+      repeating-linear-gradient(180deg,
+        transparent 0 26px,
+        rgba(45, 42, 38, 0.08) 26px 27px);
+    border: 2.5px solid var(--ink);
+    border-radius: 6px 6px 20px 6px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    box-shadow: 3px 3px 0 var(--ink);
+    position: relative;
+  }
+  .memo::before {
+    content: '📝';
+    position: absolute; top: -12px; left: 16px;
+    background: var(--paper); padding: 0 6px;
+    font-size: 16px;
+  }
+  .memo textarea {
+    width: 100%; min-height: 90px; border: none;
+    background: transparent; resize: none; outline: none;
+    font-family: 'LXGW WenKai TC', 'Caveat', cursive;
+    font-size: 15px; line-height: 27px;
+    color: var(--ink);
+  }
+  .memo textarea::placeholder { color: #b0a89e; }
+  .memo-count {
+    text-align: right; font-family: 'Caveat', cursive;
+    font-size: 14px; color: var(--ink-soft);
+    margin-top: 4px;
+  }
+  /* CTA */
+  .go {
+    width: 100%; padding: 16px;
+    border: 3px solid var(--ink);
+    background: linear-gradient(135deg, var(--brand), var(--brand-2));
+    color: var(--ink);
+    font-family: 'Caveat', cursive; font-weight: 700;
+    font-size: 22px; letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 var(--ink);
+    margin-bottom: 18px;
+    border-radius: 14px;
+    transition: all 0.12s;
+  }
+  .go:hover { transform: translate(-1px, -1px); box-shadow: 5px 5px 0 var(--ink); }
+  .go:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--ink); }
+  .go .arrow { display: inline-block; margin-left: 6px; transition: transform 0.2s; }
+  .go:hover .arrow { transform: translateX(4px); }
+  /* 输出 —— 拍立得 */
+  .polaroid {
+    background: white;
+    padding: 14px 14px 30px;
+    border: 2.5px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--ink), 0 6px 16px rgba(0,0,0,0.08);
+    transform: rotate(1.2deg);
+    position: relative;
+    border-radius: 4px;
+  }
+  .polaroid-tag {
+    position: absolute; top: 8px; right: 12px;
+    background: var(--mint); color: var(--ink);
+    padding: 3px 10px; border: 2px solid var(--ink);
+    border-radius: 12px; font-size: 11px; font-weight: 700;
+    transform: rotate(3deg);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .polaroid p {
+    font-family: 'LXGW WenKai TC', serif;
+    font-size: 15px; line-height: 1.8;
+    padding-top: 12px;
+    color: var(--ink);
+  }
+  .polaroid-caption {
+    font-family: 'Caveat', cursive;
+    font-size: 15px; color: var(--ink-soft);
+    text-align: center; margin-top: 8px;
+    position: absolute; bottom: 8px; left: 0; right: 0;
+  }
+  .footer {
+    text-align: center; margin-top: 24px;
+    font-family: 'Caveat', cursive; font-size: 15px;
+    color: var(--ink-soft);
+  }
+  .footer span { color: var(--brand-2); font-weight: 700; }
+</style>
+</head>
+<body>
+  <div class="panel">
+    <div class="tape"></div>
+    <div class="tape t2"></div>
+
+    <header>
+      <div class="duck-sticker"></div>
+      <div class="brand">
+        <h1>校对鸭</h1>
+        <p>写作路上的小伙伴</p>
+      </div>
+      <div class="stamp">v0.4</div>
+    </header>
+
+    <div class="engine-stickers">
+      <div class="sticker-eng on"><span class="em">🤖</span>Chrome</div>
+      <div class="sticker-eng on"><span class="em">🌐</span>Free</div>
+      <div class="sticker-eng"><span class="em">💻</span>WebLLM</div>
+      <div class="sticker-eng"><span class="em">🔑</span>OpenAI</div>
+    </div>
+
+    <div class="modes">
+      <div class="mode-btn"><span class="e">📝</span>摘要</div>
+      <div class="mode-btn"><span class="e">✏️</span>纠错</div>
+      <div class="mode-btn"><span class="e">✨</span>润色</div>
+      <div class="mode-btn active"><span class="e">🌏</span>翻译</div>
+      <div class="mode-btn"><span class="e">📖</span>扩写</div>
+    </div>
+
+    <div class="langs">
+      <div class="lang">🇬🇧 English</div>
+      <div class="swap-btn">⇄</div>
+      <div class="lang">🇨🇳 中文</div>
+    </div>
+
+    <div class="memo">
+      <textarea>Machine learning is a subfield of artificial intelligence.</textarea>
+      <div class="memo-count">— 57 字符 —</div>
+    </div>
+
+    <button class="go">开始翻译<span class="arrow">→</span></button>
+
+    <div class="polaroid">
+      <div class="polaroid-tag">✓ 完成</div>
+      <p>机器学习是人工智能的一个子领域。</p>
+      <div class="polaroid-caption">— by 校对鸭 🦆</div>
+    </div>
+
+    <div class="footer">
+      在网页任意位置<span>划词</span>试试 ✧
+    </div>
+  </div>
+</body>
+</html>

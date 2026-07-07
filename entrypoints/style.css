@@ -67,6 +67,185 @@ body {
   box-shadow: none;
 }
 
+/* ===============================================================
+ * v0.4.1 可爱风扩展（Plush Duckling 方向）
+ * 只加视觉，不改 DOM / 文本 / testid。所有类以 pd-plush-* 命名，
+ * 与既有 pd-btn-primary / pd-dot-* 平行，避免命名冲突。
+ * =============================================================== */
+
+/* 品牌 logo 毛绒容器：把 /icons/icon-32.png 包一层呼吸感 */
+.pd-plush-logo-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 30%, rgba(255,255,255,0.85) 0%, transparent 55%),
+    radial-gradient(circle at 70% 75%, var(--brand-500) 0%, var(--brand-600) 100%);
+  box-shadow:
+    inset -3px -5px 0 rgba(73, 80, 87, 0.08),
+    0 4px 14px rgba(245, 159, 0, 0.35);
+  animation: pd-plush-bob 3.2s ease-in-out infinite;
+}
+.pd-plush-logo-wrap > img,
+.pd-plush-logo-wrap > svg {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  filter: drop-shadow(0 2px 3px rgba(73, 80, 87, 0.15));
+  position: relative;
+  z-index: 1;
+}
+/* 两颗腮红：伪元素挂在容器上，不动 DOM */
+.pd-plush-logo-wrap::before,
+.pd-plush-logo-wrap::after {
+  content: '';
+  position: absolute;
+  width: 9px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ffb3ba;
+  opacity: 0.65;
+  top: 60%;
+}
+.pd-plush-logo-wrap::before { left: 4px; }
+.pd-plush-logo-wrap::after  { right: 4px; }
+@keyframes pd-plush-bob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-3px) rotate(2deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pd-plush-logo-wrap { animation: none; }
+}
+
+/* Header 底色氛围：暖黄天空 + 淡云 */
+.pd-plush-sky {
+  background:
+    radial-gradient(ellipse 200px 60px at 80% 20%, rgba(255,255,255,0.9) 0%, transparent 60%),
+    radial-gradient(ellipse 160px 50px at 15% 70%, rgba(255,255,255,0.75) 0%, transparent 60%),
+    linear-gradient(180deg, var(--brand-100) 0%, #fffdf3 100%);
+}
+
+/* 引擎徽章：胶囊 → 毛绒软卡片 */
+.pd-plush-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffffff 0%, #ebfbee 100%);
+  border: 1.5px solid rgba(47, 158, 68, 0.35);
+  color: #2f9e44;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(47, 158, 68, 0.12);
+  transition: transform 0.15s;
+}
+.pd-plush-chip:hover { transform: translateY(-1px); }
+
+/* 主 CTA 按钮变体 —— rounded 用 !important 覆盖基础 rounded-md，
+ * 避免 Tailwind class 顺序不稳定导致视觉不一致（Gemini review） */
+.pd-plush-cta {
+  border-radius: 24px !important;
+  background: linear-gradient(135deg, var(--brand-300) 0%, var(--brand-500) 55%, #ff8b3d 100%);
+  color: var(--ink-900);
+  border: 1.5px solid rgba(213, 139, 0, 0.5);
+  box-shadow:
+    0 6px 14px rgba(255, 139, 61, 0.32),
+    inset 0 -3px 0 rgba(73, 80, 87, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  font-weight: 700;
+  transition: all 0.15s ease-out;
+}
+.pd-plush-cta:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 8px 18px rgba(255, 139, 61, 0.42),
+    inset 0 -3px 0 rgba(73, 80, 87, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.pd-plush-cta:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 2px 6px rgba(255, 139, 61, 0.3);
+}
+.pd-plush-cta:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* 译文卡片：毛绒软圆角 —— 基础版（Popup preview 复用，无 💛 装饰） */
+.pd-plush-output {
+  background: linear-gradient(135deg, #ffffff 0%, var(--brand-50) 100%);
+  border: 1.5px solid var(--brand-200);
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(245, 159, 0, 0.10);
+  position: relative;
+}
+/* 💛 装饰标签 —— 只挂在 SidePanel 主输出上，通过额外类启用，
+ * 避免 Popup 里的选中预览卡也顶一个 💛 破坏语义（Gemini review） */
+.pd-plush-output-tagged::before {
+  content: '💛';
+  position: absolute;
+  top: -12px;
+  left: 16px;
+  background: white;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  box-shadow: 0 2px 4px rgba(73, 80, 87, 0.08);
+  border: 1px solid var(--brand-100);
+}
+
+/* 输入卡：软圆角 + focus 时黄色光晕 */
+.pd-plush-input {
+  border: 1.5px solid var(--brand-100);
+  border-radius: 18px;
+  background: #fffdf7;
+  transition: all 0.2s;
+}
+.pd-plush-input:focus {
+  border-color: var(--brand-500);
+  box-shadow: 0 0 0 4px rgba(245, 159, 0, 0.15);
+  background: white;
+}
+
+/* 语言选择器：胶囊感 */
+.pd-plush-select {
+  border-radius: 14px;
+  border: 1.5px solid var(--brand-100);
+  background: #fffdf7;
+  transition: all 0.15s;
+}
+.pd-plush-select:focus {
+  border-color: var(--brand-500);
+  box-shadow: 0 0 0 3px rgba(245, 159, 0, 0.18);
+}
+
+/* Swap 按钮：圆形 + hover 旋转 */
+.pd-plush-swap {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid var(--brand-200);
+  background: linear-gradient(135deg, #ffffff 0%, var(--brand-50) 100%);
+  color: var(--ink-600);
+  transition: all 0.25s;
+  box-shadow: 0 2px 4px rgba(73, 80, 87, 0.06);
+}
+.pd-plush-swap:hover:not(:disabled) {
+  border-color: var(--brand-500);
+  color: var(--brand-600);
+  transform: rotate(180deg);
+  box-shadow: 0 3px 8px rgba(245, 159, 0, 0.25);
+}
+.pd-plush-swap:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* 引擎状态点：小圆点 + soft halo */
 .pd-dot {
   display: inline-block;
