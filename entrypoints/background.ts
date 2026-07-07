@@ -1,17 +1,20 @@
 /**
- * Service Worker（M1 骨架版）
+ * Service Worker（v0.5.2 · commands 快捷键 + badge on icon）
  *
- * TDD 里 background 的职责：
- * 1. 注册 chrome.sidePanel 打开行为（点击扩展图标 → 打开侧边栏）
- * 2. 消息路由中心（M2 之后接入 EngineManager）
- *
- * 现在只做最小可用骨架，让 wxt build 通过。
+ * 业务逻辑抽到 @/background/lifecycle.ts 便于单测。
  */
+import { registerBackground, updateBadgeFromCompat } from '../src/background/lifecycle';
+import { openaiCompatConfig } from '../src/core/openai-compat-config';
+
 export default defineBackground(() => {
-  // 点击工具栏图标打开 Side Panel（Chrome 114+ API）
-  if (typeof chrome !== 'undefined' && chrome.sidePanel?.setPanelBehavior) {
-    chrome.sidePanel
-      .setPanelBehavior({ openPanelOnActionClick: true })
-      .catch((err: unknown) => console.warn('[proofduck] sidePanel setPanelBehavior failed', err));
-  }
+  const c = (globalThis as { chrome?: typeof chrome }).chrome;
+  registerBackground(c);
+
+  // v0.5.2: 首次同步 + watch openai-compat 配置 → 更新 icon badge
+  void openaiCompatConfig.get().then((cfg) => {
+    updateBadgeFromCompat(cfg, c);
+  });
+  openaiCompatConfig.watch((cfg) => {
+    updateBadgeFromCompat(cfg, c);
+  });
 });

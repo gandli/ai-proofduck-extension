@@ -130,3 +130,12 @@ describe('PopupApp · 选中态', () => {
     vi.doUnmock('@hooks/useSelection');
   });
 });
+
+describe('PopupApp · v0.5.2 UX polish', () => {
+  it('容器宽度使用 w-80 (320px) 而非 w-72 (288px)，避免长引擎名截断', () => {
+    const { container } = render(<PopupApp />);
+    const root = container.querySelector('.bg-beige-50');
+    expect(root?.className).toContain('w-80');
+    expect(root?.className).not.toContain('w-72');
+  });
+});
