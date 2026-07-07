@@ -83,26 +83,36 @@ describe('createFetchAbortHandle', () => {
     it('userSignal 未 abort → 走 addEventListener 转发', () => {
       const user = new AbortController();
       const h = createFetchAbortHandle(user.signal, 5000);
-      expect(h.signal.aborted).toBe(false);
-      user.abort(new DOMException('user cancel', 'AbortError'));
-      expect(h.signal.aborted).toBe(true);
-      h.cleanup();
+      try {
+        expect(h.signal.aborted).toBe(false);
+        user.abort(new DOMException('user cancel', 'AbortError'));
+        expect(h.signal.aborted).toBe(true);
+      } finally {
+        // Gemini review 采纳：try/finally 防定时器泄漏（fake timers 环境下尤其重要）
+        h.cleanup();
+      }
     });
 
     it('userSignal 已 abort → 降级立即触发 timeoutCtl.abort + clearTimeout', () => {
       const user = new AbortController();
       user.abort(new DOMException('user cancel', 'AbortError'));
       const h = createFetchAbortHandle(user.signal, 5000);
-      expect(h.signal.aborted).toBe(true);
-      h.cleanup();
+      try {
+        expect(h.signal.aborted).toBe(true);
+      } finally {
+        h.cleanup();
+      }
     });
 
     it('无 userSignal → combined = timeoutCtl.signal 分支', () => {
       const h = createFetchAbortHandle(undefined, 100);
-      expect(h.signal.aborted).toBe(false);
-      vi.advanceTimersByTime(101);
-      expect(h.signal.aborted).toBe(true);
-      h.cleanup();
+      try {
+        expect(h.signal.aborted).toBe(false);
+        vi.advanceTimersByTime(101);
+        expect(h.signal.aborted).toBe(true);
+      } finally {
+        h.cleanup();
+      }
     });
   });
 });

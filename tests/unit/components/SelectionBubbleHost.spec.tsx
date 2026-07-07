@@ -170,31 +170,34 @@ describe('SelectionBubbleHost', () => {
     p.textContent = 'hi';
     document.body.appendChild(p);
 
-    const engine = makeMockEngine({
-      run: (async () => {
-        // 跨进程 rehydrated 形态（无原型），触发 isPermissionRequiredError 双通道
-        throw {
-          name: 'PermissionRequiredError',
-          origin: 'https://api.deepseek.com/',
-          pattern: 'https://api.deepseek.com/*',
-          message: 'permission missing',
-        } as unknown as Error;
-      }) as never,
-    });
+    try {
+      const engine = makeMockEngine({
+        run: (async () => {
+          // 跨进程 rehydrated 形态（无原型），触发 isPermissionRequiredError 双通道
+          throw {
+            name: 'PermissionRequiredError',
+            origin: 'https://api.deepseek.com/',
+            pattern: 'https://api.deepseek.com/*',
+            message: 'permission missing',
+          } as unknown as Error;
+        }) as never,
+      });
 
-    render(<SelectionBubbleHost engine={engine} />);
-    act(() => selectText(p));
-    await waitFor(() => screen.getByRole('button', { name: /翻译/ }));
-    fireEvent.click(screen.getByRole('button', { name: /翻译/ }));
+      render(<SelectionBubbleHost engine={engine} />);
+      act(() => selectText(p));
+      await waitFor(() => screen.getByRole('button', { name: /翻译/ }));
+      fireEvent.click(screen.getByRole('button', { name: /翻译/ }));
 
-    await waitFor(() => {
-      expect(
-        screen.getByText(/扩展缺少访问 https:\/\/api\.deepseek\.com\/ 的权限/),
-      ).toBeInTheDocument();
-    });
-    expect(screen.getByText(/扩展设置.+授权/)).toBeInTheDocument();
-
-    document.body.removeChild(p);
+      await waitFor(() => {
+        expect(
+          screen.getByText(/扩展缺少访问 https:\/\/api\.deepseek\.com\/ 的权限/),
+        ).toBeInTheDocument();
+        expect(screen.getByText(/扩展设置.+授权/)).toBeInTheDocument();
+      });
+    } finally {
+      // Gemini review 采纳：try/finally 防测试污染（断言失败时也保证清理）
+      document.body.removeChild(p);
+    }
   });
 
   // ========================
