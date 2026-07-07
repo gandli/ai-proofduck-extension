@@ -2,6 +2,52 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.4.0] - 2026-07-07 · 品牌统一 + 引擎健康度 + 深色 Bubble
+
+### 🎨 UI/UX 重设计
+
+**品牌色统一**：`#f59f00`（brand-yellow-500）+ `#fff9db`（brand-yellow-50）+ `#495057`（ink-700），
+告别 v0.3 的 vibrant orange `#FF5A11`，与品牌吉祥物"鸭"更贴合。
+
+- **Popup**：品牌黄操作按钮 + 引擎徽章（chrome-ai / webllm / openai-compat / free-translate）
+- **SidePanel**：引擎健康度条（就绪 = 品牌黄 · 不可用 = ink-500）+ 徽章闪烁修复（`available === true` 严格判断）
+- **Options**：健康度卡实时响应 `chrome.storage.onChanged`（Gemini review 采纳）
+- **SelectionBubble**：深色 Shadow DOM 浮标（`--pd-ink-900` 底色 + `--pd-brand` 高亮），
+  用 CSS vars 保持宿主页样式隔离契约
+
+### 🔐 权限治理（v0.4 核心）
+
+**从 `<all_urls>` 迁移到 `optional_host_permissions`** —— 用户首次翻译时按需请求，
+减少 Chrome Web Store 审核阻力。
+
+- `manifest_version: 3` + `optional_host_permissions: ['<all_urls>']`
+- `chrome.permissions.request()` UX 引导 + `PermissionRequiredError` 类
+- Options 页「授权」按钮 · 权限变化事件监听
+- `.tmp/google_api_key` 是 Chrome 内嵌 FCM 公钥（Dependabot false-positive，已在 secret scan 标记）
+
+### 🧹 代码质量
+
+- **ESLint type-aware lint 首次落地**（PR #485）：
+  - `typescript-eslint@8` + `projectService: true` 自动发现 tsconfig
+  - `.codacy.yaml` 让云端读仓库 flat config
+  - 采纳 CodeRabbit 2 条 actionable：细粒度 `checksVoidReturn: { attributes: false }` + src/ 恢复 `no-unsafe-*` 保护
+  - 采纳 Gemini 5 条：`STUB_ENGINE` Promise.resolve · SelectionBubbleHost 渲染阶段状态重置替代 useEffect
+- **首次达成 0 err · 0 warn** lint gate
+- `Button.tsx` VARIANT_CLASS 用 `Map` 避免 detect-object-injection 误报
+
+### ✅ 测试基线
+
+- **tsc**: 0 err
+- **lint**: 0 err · 0 warn（首次）
+- **单测**: 247 passed（96% / 89% / 95% / 99% coverage）
+- **E2E**: 38 passed（v0.4.0 BUG 猎手 · full-ui-flow · live-extension · selection-bubble · demo）
+- **build**: MV3 全绿
+
+### 📦 依赖
+
+- 新增：`eslint@10` · `typescript-eslint@8` · `eslint-plugin-react-hooks` · `eslint-plugin-react-refresh`
+- 删除：`package-lock.json` 僵尸文件（v0.3.x 遗留，Dependabot 6 alerts 自动关闭）
+
 ## [v0.3.2] - 2026-07-06 · Patch (P0 covering all engines)
 
 ### 🚨 Fixed — P0：v0.3.1 只修了 free-translate 一条链路，另外 3 条也是 CORS 死的

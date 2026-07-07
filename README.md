@@ -38,6 +38,8 @@
 
 **AI proofduck** is an intelligent writing assistant extension for your browser sidepanel. Powered by advanced AI models (supporting both local WebGPU/WASM and online APIs), it provides real-time summarization, pivoting, proofreading, translation, and expansion of text.
 
+Currently at **v0.4.0** — brand-unified UI, engine health dashboard, dark selection bubble, and permission-on-demand.
+
 ## ✨ Features
 
 - **🚀 Multi-Mode Writing Assistance**:
@@ -46,13 +48,16 @@
   - **Proofread**: Polish sentences for better flow and professionalism.
   - **Translate**: Accurate translation between languages.
   - **Expand**: Enrich details based on existing content.
+- **🎯 Selection Bubble** (v0.3+): Select any text on any webpage → floating bubble translates instantly. Dark Shadow DOM, host-page style isolation guaranteed.
 - **🔒 Privacy First (Local Models)**: Run LLMs locally via WebGPU/WASM (e.g., Qwen2.5). Your data never leaves your browser.
-- **🌐 Online Model Support**: Compatible with OpenAI-format APIs for connecting to powerful cloud models.
+- **🌐 Online Model Support**: Compatible with OpenAI-format APIs for connecting to powerful cloud models. BYOK — API keys stay in `chrome.storage.local`, never sent anywhere except your chosen endpoint.
+- **🔐 Permission on Demand** (v0.4): Migrated from `<all_urls>` to `optional_host_permissions`. Grant only the origins you need, when you need them.
+- **📊 Engine Health Dashboard** (v0.4): Real-time badges (chrome-ai / webllm / openai-compat / free-translate) show which engine is ready and which needs setup.
 - **📑 Smart Content Fetching**:
   - Process selected text instantly.
   - Automatically fetch page body content when no text is selected for full-page summarization.
-- **🎨 Premium UI Design**:
-  - **Vibrant Orange Theme**: Modern interface using brand color `#FF5A11`.
+- **🎨 Brand-Unified UI** (v0.4):
+  - **Warm Yellow Theme**: `#f59f00` brand + `#fff9db` background + `#495057` ink — matches our duck mascot 🦆.
   - **Compact Layout**: Maximized vertical space for content.
   - **i18n Support**: Full English and Chinese localization.
 
