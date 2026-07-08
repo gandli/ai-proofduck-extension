@@ -350,7 +350,7 @@ export function OpenAiCompatSection() {
           disabled={!canTest || testState.status === 'testing'}
           className="px-3 py-1.5 rounded-md text-sm font-medium border border-slate-300 disabled:opacity-50 hover:bg-slate-50"
         >
-          测试连接
+          {testState.status === 'testing' ? '测试中...' : '测试连接'}
         </button>
         {savedFlash && <span className="text-sm text-emerald-600">已保存 ✓</span>}
       </div>
