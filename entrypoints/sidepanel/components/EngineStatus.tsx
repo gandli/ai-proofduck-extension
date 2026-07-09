@@ -57,7 +57,7 @@ export function EngineStatus({ resolvedEngine, available }: EngineStatusProps) {
               <a
                 href="options.html"
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 className="mx-1 underline text-brand-700 font-medium"
                 style={{ color: '#a56501' }}
               >
