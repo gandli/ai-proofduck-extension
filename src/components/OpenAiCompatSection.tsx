@@ -229,7 +229,7 @@ export function OpenAiCompatSection() {
             key={p.name}
             type="button"
             onClick={() => handlePreset(p)}
-            className="px-2.5 py-1 text-xs rounded-md bg-slate-100 hover:bg-slate-200"
+            className="px-2.5 py-1 text-xs rounded-md bg-slate-100 hover:bg-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1"
           >
             {p.name}
           </button>
@@ -247,7 +247,7 @@ export function OpenAiCompatSection() {
           value={baseUrl}
           onChange={(e) => setBaseUrl(e.target.value)}
           placeholder="https://api.deepseek.com"
-          className="w-full rounded-md border border-slate-300 p-2 text-sm font-mono"
+          className="w-full rounded-md border border-slate-300 p-2 text-sm font-mono focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
         />
         {/* Round 5 (#465): host 权限状态 */}
         {hostPattern && hostOrigin && permState.status === 'missing' && (
@@ -258,7 +258,7 @@ export function OpenAiCompatSection() {
             <button
               type="button"
               onClick={handleAuthorize}
-              className="px-2.5 py-1 rounded-md text-xs font-medium bg-amber-500 text-white hover:bg-amber-600"
+              className="px-2.5 py-1 rounded-md text-xs font-medium bg-amber-500 text-white hover:bg-amber-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-1"
             >
               授权访问 {hostOrigin}
             </button>
@@ -282,7 +282,7 @@ export function OpenAiCompatSection() {
             <button
               type="button"
               onClick={handleAuthorize}
-              className="px-2.5 py-1 rounded-md text-xs font-medium bg-amber-500 text-white hover:bg-amber-600"
+              className="px-2.5 py-1 rounded-md text-xs font-medium bg-amber-500 text-white hover:bg-amber-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-1"
             >
               授权访问 {hostOrigin}
             </button>
@@ -303,14 +303,14 @@ export function OpenAiCompatSection() {
             onChange={(e) => setApiKey(e.target.value)}
             placeholder="sk-..."
             autoComplete="off"
-            className="flex-1 rounded-md border border-slate-300 p-2 text-sm font-mono"
+            className="flex-1 rounded-md border border-slate-300 p-2 text-sm font-mono focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
           />
           <button
             type="button"
             onClick={() => setShowKey((s) => !s)}
             title={showKey ? '隐藏 API Key' : '显示 API Key'}
             aria-label={showKey ? '隐藏 API Key' : '显示 API Key'}
-            className="px-2 rounded-md border border-slate-300 hover:bg-slate-50"
+            className="px-2 rounded-md border border-slate-300 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1"
           >
             {showKey ? '🙈' : '👁️'}
           </button>
@@ -331,7 +331,7 @@ export function OpenAiCompatSection() {
           value={model}
           onChange={(e) => setModel(e.target.value)}
           placeholder="deepseek-chat / gpt-4o-mini / qwen-turbo ..."
-          className="w-full rounded-md border border-slate-300 p-2 text-sm font-mono"
+          className="w-full rounded-md border border-slate-300 p-2 text-sm font-mono focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
         />
       </div>
 
@@ -348,7 +348,7 @@ export function OpenAiCompatSection() {
           type="button"
           onClick={handleTest}
           disabled={!canTest || testState.status === 'testing'}
-          className="px-3 py-1.5 rounded-md text-sm font-medium border border-slate-300 disabled:opacity-50 hover:bg-slate-50"
+          className="px-3 py-1.5 rounded-md text-sm font-medium border border-slate-300 disabled:opacity-50 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1"
         >
           测试连接
         </button>
