@@ -35,17 +35,19 @@ export function Editor({
       {/* 原文输入 */}
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center justify-between text-[10.5px] uppercase tracking-wider font-semibold text-ink-400">
-          <span>原文</span>
+          <label htmlFor="source-text">原文</label>
           <span
             className={`font-mono normal-case tracking-normal ${
               isOver ? 'text-danger font-semibold' : 'font-normal'
             }`}
             style={isOver ? { color: '#e03131' } : undefined}
+            aria-live="polite"
           >
             {charCount} / {MAX_CHARS}
           </span>
         </div>
         <textarea
+          id="source-text"
           value={text}
           onChange={(e) => onTextChange(e.target.value)}
           onKeyDown={onKeyDown}
