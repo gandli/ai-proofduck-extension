@@ -8,7 +8,7 @@
  *
  * 单独抽出让 content script 主文件保持精简，也方便单测。
  */
-import { useRef, useState } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import { useSelection } from '@hooks/useSelection';
 import { getEngines } from '@core/engines';
 import type { Engine } from '@engines/types';
@@ -106,9 +106,11 @@ export function SelectionBubbleHost(props: SelectionBubbleHostProps) {
     }
   }
 
-  function handleDismiss() {
+  // ⚡ Bolt: Memoize handleDismiss callback to prevent child component re-renders.
+  // Impact: Avoids unnecessary re-attachment of global event listeners in SelectionBubble on every render.
+  const handleDismiss = useCallback(() => {
     setDismissed(true);
-  }
+  }, []);
 
   // 用户 dismiss 后隐藏浮标（直到新选区）
   const visibleText = dismissed ? '' : selectedText;
