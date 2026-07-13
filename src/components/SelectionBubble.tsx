@@ -30,7 +30,7 @@
  * Shadow DOM 场景：Tailwind 在 content script 里通常靠 wxt-css 注入；
  * 这里所有关键样式**同时给一层内联 fallback**，即使 CSS 加载失败也能看。
  */
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { SelectionRect } from '@hooks/useSelection';
 
 export type BubbleStatus = 'idle' | 'loading' | 'success' | 'error';
@@ -49,6 +49,7 @@ export interface SelectionBubbleProps {
 export function SelectionBubble(props: SelectionBubbleProps) {
   const { selectedText, rect, status, output, error, engineName, onTrigger, onDismiss } = props;
   const rootRef = useRef<HTMLDivElement>(null);
+  const [copied, setCopied] = useState(false);
 
   // Esc 关闭
   useEffect(() => {
@@ -81,7 +82,10 @@ export function SelectionBubble(props: SelectionBubbleProps) {
   // 复制到剪贴板
   const handleCopy = () => {
     if (!output) return;
-    navigator.clipboard.writeText(output).catch(() => {
+    navigator.clipboard.writeText(output).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {
       // 用户拒绝或非 secure context —— 忽略即可
     });
   };
@@ -210,8 +214,8 @@ export function SelectionBubble(props: SelectionBubbleProps) {
               <button
                 type="button"
                 onClick={handleCopy}
-                aria-label="复制译文"
-                title="复制译文"
+                aria-label={copied ? "已复制" : "复制译文"}
+                title={copied ? "已复制" : "复制译文"}
                 style={{
                   width: 22,
                   height: 22,
@@ -234,7 +238,7 @@ export function SelectionBubble(props: SelectionBubbleProps) {
                   (e.currentTarget).style.color = '#ced4da';
                 }}
               >
-                📋
+                {copied ? "\u2713" : "📋"}
               </button>
               <button
                 type="button"
