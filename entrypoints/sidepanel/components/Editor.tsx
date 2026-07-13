@@ -41,6 +41,7 @@ export function Editor({
               isOver ? 'text-danger font-semibold' : 'font-normal'
             }`}
             style={isOver ? { color: '#e03131' } : undefined}
+            aria-live="polite"
           >
             {charCount} / {MAX_CHARS}
           </span>
