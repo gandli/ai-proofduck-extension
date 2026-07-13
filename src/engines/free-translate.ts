@@ -93,8 +93,8 @@ export function createFreeTranslateEngine(): Engine {
 
       // dt=t 只要翻译文本；client=gtx 是公开可用的 Chrome 翻译扩展 client id
       const url =
-        `${ENDPOINT}?client=gtx&sl=${sourceLang}&tl=${targetLang}` +
-        `&dt=t&q=${encodeURIComponent(text)}`;
+        `${ENDPOINT}?client=gtx&sl=${encodeURIComponent(sourceLang)}&tl=${encodeURIComponent(targetLang)}` +
+        `&dt=t&q=${encodeURIComponent(text)}`; // 🛡️ Sentinel: URL injection prevention
 
       const abortH = createFetchAbortHandle(input.signal);
       try {
