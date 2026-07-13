@@ -15,7 +15,7 @@
  * Bug #P0 修复：早期版本硬编码 pickById('chrome-ai')，Chrome 138 以下就废了整个扩展。
  * 现在走 pickBest() 自动选出**当前可用**的最高优先级引擎。
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useTranslate } from '@hooks/useTranslate';
 import { getEngines } from '@core/engines';
 import type { Engine } from '@engines/types';
@@ -102,31 +102,33 @@ export default function SidePanelApp({ engine }: Props = {}) {
     available !== false &&
     !isSameLanguage;
 
-  const handleTranslate = () => {
+  // ⚡ Bolt: Memoize event handler functions to prevent unnecessary re-renders of child components.
+  // Impact: Avoids unnecessary React re-renders when parent state updates that don't affect these specific components.
+  const handleTranslate = useCallback(() => {
     // 'auto' → 让引擎自己推断；chrome-ai 目前需要显式 source，暂用启发式：中→英，其他→中
     const src = source === 'auto' ? (target === 'zh' ? 'en' : 'zh') : source;
     void translate(text, { source: src, target });
-  };
+  }, [source, target, text, translate]);
 
   // 交换语言：auto 时不能交换（无源语言）
-  const handleSwap = () => {
+  const handleSwap = useCallback(() => {
     if (source === 'auto') return;
     setSource(target);
     setTarget(source);
-  };
+  }, [source, target]);
 
   // Ctrl/⌘ + Enter 快捷键提交
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && canTranslate) {
       e.preventDefault();
       handleTranslate();
     }
-  };
+  }, [canTranslate, handleTranslate]);
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     setText('');
     reset();
-  };
+  }, [reset]);
 
   return (
     <div className="min-h-screen bg-beige-50 text-ink-warm flex flex-col">
