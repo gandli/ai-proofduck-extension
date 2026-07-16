@@ -1,0 +1,3 @@
+## 2026-07-16 - Add focus-visible styling to SelectionBubble buttons
+**Learning:** `SelectionBubble` uses dynamic Tailwind classes but standard `focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500` applies correctly to buttons when injected. A temporary mock HTML running a React render allows safe testing of isolated component styles without full extension context.
+**Action:** When working with inline/dynamically styled elements in isolated components, ensure `focus-visible` classes are included alongside standard interaction styling to maintain a11y keyboard support. Use a minimal HTML wrapper with matching custom CSS variables for Playwright verification of injected components.
