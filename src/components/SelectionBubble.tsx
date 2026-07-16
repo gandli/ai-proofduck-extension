@@ -109,7 +109,7 @@ export function SelectionBubble(props: SelectionBubbleProps) {
           type="button"
           aria-label="翻译（校对鸭）"
           onClick={() => onTrigger(selectedText)}
-          className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold text-ink-800 shadow-brand-lg ring-1 ring-brand-600 hover:brightness-105 transition"
+          className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold text-ink-800 shadow-brand-lg ring-1 ring-brand-600 hover:brightness-105 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
           style={{
             // v0.4：品牌黄渐变（与 icon.svg 同源 #f59f00）
             background: 'linear-gradient(180deg, #f59f00 0%, #d68b00 100%)',
@@ -213,6 +213,7 @@ export function SelectionBubble(props: SelectionBubbleProps) {
             <div style={{ display: 'flex', gap: 1 }}>
               <button
                 type="button"
+                className="focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                 onClick={handleCopy}
                 aria-label={copied ? "已复制" : "复制译文"}
                 title={copied ? "已复制" : "复制译文"}
@@ -242,6 +243,7 @@ export function SelectionBubble(props: SelectionBubbleProps) {
               </button>
               <button
                 type="button"
+                className="focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                 onClick={onDismiss}
                 aria-label="关闭"
                 title="关闭（Esc）"
