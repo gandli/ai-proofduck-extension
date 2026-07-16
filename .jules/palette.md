@@ -1,3 +1,3 @@
-## 2024-05-14 - Improve accessibility of dynamic status messages
-**Learning:** React status messages (like "已保存" or test results) in this component appear dynamically. Screen readers may not announce these changes unless they are wrapped in an element with `role="status"` and `aria-live="polite"`. The dynamic changes need to be communicated explicitly.
-**Action:** Wrapped the "savedFlash" feedback and "testState" results in `div` elements with `role="status"` and `aria-live="polite"` to ensure screen readers announce these dynamic state updates in the `OpenAiCompatSection` component.
+## 2026-07-16 - Add focus-visible styling to SelectionBubble buttons
+**Learning:** `SelectionBubble` uses dynamic Tailwind classes but standard `focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500` applies correctly to buttons when injected. A temporary mock HTML running a React render allows safe testing of isolated component styles without full extension context.
+**Action:** When working with inline/dynamically styled elements in isolated components, ensure `focus-visible` classes are included alongside standard interaction styling to maintain a11y keyboard support. Use a minimal HTML wrapper with matching custom CSS variables for Playwright verification of injected components.
