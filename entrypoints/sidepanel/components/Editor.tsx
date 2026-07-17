@@ -57,7 +57,7 @@ export function Editor({
 
       {/* CTA */}
       <div className="flex gap-2 items-center">
-        <Button variant="primary" onClick={onTranslate} disabled={!canTranslate}>
+        <Button variant="primary" onClick={onTranslate} disabled={!canTranslate} aria-controls="translation-result">
           {status === 'loading' ? (
             <>
               <span aria-hidden className="pd-btn-dot" />
