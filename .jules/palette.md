@@ -1,0 +1,3 @@
+## 2024-05-18 - Translation Result Landmarks and Controls
+**Learning:** For dynamic content areas like translation results, simply adding an `aria-label` is insufficient for screen readers if the area lacks a semantic or landmark role (like `role="region"`). Furthermore, the relationship between the trigger (the "Translate" button) and the result area needs to be explicitly defined.
+**Action:** Always pair `aria-label` with `role="region"` for dynamic content containers that users need to navigate to. Use `aria-controls` on the triggering button to explicitly link it to the `id` of the region it updates.
