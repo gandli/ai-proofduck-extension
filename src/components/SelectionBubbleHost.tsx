@@ -60,7 +60,9 @@ export function SelectionBubbleHost(props: SelectionBubbleHostProps) {
     requestIdRef.current += 1;
   }
 
-  async function handleTrigger(_text: string) {
+  // ⚡ Bolt: Memoize handleTrigger callback to prevent child component re-renders.
+  // Impact: With SelectionBubble wrapped in React.memo, memoizing this handler prevents breaking the memoization on every SelectionBubbleHost render.
+  const handleTrigger = useCallback(async (_text: string) => {
     // 领当前请求令牌；只有这个令牌全程未变，本次结果才允许写状态
     const myRequestId = ++requestIdRef.current;
     setStatus('loading');
@@ -104,7 +106,7 @@ export function SelectionBubbleHost(props: SelectionBubbleHostProps) {
       // 手动 e.message 会拿不到；formatErrorMessage 通过 extractRawMessage 兜底。
       setError(formatErrorMessage(e, '翻译失败'));
     }
-  }
+  }, [engine, targetLang]);
 
   // ⚡ Bolt: Memoize handleDismiss callback to prevent child component re-renders.
   // Impact: Avoids unnecessary re-attachment of global event listeners in SelectionBubble on every render.
