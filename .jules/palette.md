@@ -1,3 +1,3 @@
-## 2026-07-20 - Add Copy Button to SidePanel Result
-**Learning:** Users need a quick way to copy translated text from the sidepanel. Adding a copy button next to the word count improves the workflow. The button should have proper ARIA attributes, focus states for keyboard navigation, and provide visual feedback when clicked.
-**Action:** Add a copy button with an icon, ARIA label, hover and focus styles, and a success state to the `ResultPanel` component.
+## 2024-05-14 - Improve accessibility of dynamic status messages
+**Learning:** React status messages (like "已保存" or test results) in this component appear dynamically. Screen readers may not announce these changes unless they are wrapped in an element with `role="status"` and `aria-live="polite"`. The dynamic changes need to be communicated explicitly.
+**Action:** Wrapped the "savedFlash" feedback and "testState" results in `div` elements with `role="status"` and `aria-live="polite"` to ensure screen readers announce these dynamic state updates in the `OpenAiCompatSection` component.
