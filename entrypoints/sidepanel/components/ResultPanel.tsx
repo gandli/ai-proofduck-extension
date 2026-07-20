@@ -1,3 +1,4 @@
+import { useState, useCallback } from 'react';
 import { MAX_CHARS } from '../constants';
 import type { TranslateStatus } from '@hooks/useTranslate';
 
@@ -30,6 +31,18 @@ export function ResultPanel({
   canTranslate,
   onRetry,
 }: ResultPanelProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(() => {
+    if (!output) return;
+    navigator.clipboard.writeText(output).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {
+      // 忽略 clipboard 写入错误
+    });
+  }, [output]);
+
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between text-[10.5px] uppercase tracking-wider font-semibold text-ink-400">
@@ -37,9 +50,23 @@ export function ResultPanel({
         {/* Gemini review #508 采纳：只在实际展示译文时显示字数，
             避免 loading/error/isOver/isSameLanguage 态下泄漏上一次翻译的历史字数 */}
         {output && !isOver && !isSameLanguage && status !== 'loading' && status !== 'error' && (
-          <span className="font-mono normal-case tracking-normal font-normal">
-            {output.length} 字
-          </span>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleCopy}
+              className="hover:text-ink-600 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink-400 rounded transition-colors flex items-center gap-1"
+              title="复制译文"
+              aria-label={copied ? "已复制" : "复制译文"}
+            >
+              <span aria-hidden>{copied ? '✓' : '📋'}</span>
+              <span aria-live="polite" className={copied ? 'text-emerald-600' : ''}>
+                {copied ? '已复制' : '复制'}
+              </span>
+            </button>
+            <span className="font-mono normal-case tracking-normal font-normal">
+              {output.length} 字
+            </span>
+          </div>
         )}
       </div>
       <div
