@@ -85,7 +85,7 @@ jobs:
 
       - name: Release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v2.0.9
+        uses: softprops/action-gh-release@993656c1297b377dd710e28a608696937eb109b5 # v3.0.2
         with:
           body: ${{steps.build_changelog.outputs.changelog}}
           files: |
