@@ -52,17 +52,23 @@ export function SelectionBubble(props: SelectionBubbleProps) {
   const [copied, setCopied] = useState(false);
 
   // Esc 关闭
+  // ⚡ Bolt: Only attach global keyboard listener when the bubble is visible to reduce CPU overhead.
+  // Impact: Prevents firing the keydown event listener on every keypress across all pages when the extension bubble is inactive.
   useEffect(() => {
+    if (!selectedText || !rect) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onDismiss();
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [onDismiss]);
+  }, [onDismiss, selectedText, rect]);
 
   // 点浮标外关闭（Gemini review #1：Shadow DOM 里 e.target 会被 retargeting
   // 到 host 节点，contains 就假 false 直接 dismiss；用 composedPath 拿真路径）
+  // ⚡ Bolt: Only attach global mousedown listener when the bubble is visible to reduce CPU overhead.
+  // Impact: Prevents firing the mousedown event listener on every click across all pages when the extension bubble is inactive.
   useEffect(() => {
+    if (!selectedText || !rect) return;
     const onMouseDown = (e: MouseEvent) => {
       const el = rootRef.current;
       if (!el) return;
@@ -74,7 +80,7 @@ export function SelectionBubble(props: SelectionBubbleProps) {
     };
     document.addEventListener('mousedown', onMouseDown);
     return () => document.removeEventListener('mousedown', onMouseDown);
-  }, [onDismiss]);
+  }, [onDismiss, selectedText, rect]);
 
   // 无选中不渲染
   if (!selectedText || !rect) return null;
