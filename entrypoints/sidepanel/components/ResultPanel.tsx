@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { MAX_CHARS } from '../constants';
 import type { TranslateStatus } from '@hooks/useTranslate';
 
@@ -33,15 +33,15 @@ export function ResultPanel({
 }: ResultPanelProps) {
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = () => {
+  const handleCopy = useCallback(() => {
     if (!output) return;
     navigator.clipboard.writeText(output).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    }).catch(() => {});
-  };
-
-  const showHeaderInfo = output && !isOver && !isSameLanguage && status !== 'loading' && status !== 'error';
+    }).catch(() => {
+      // 忽略 clipboard 写入错误
+    });
+  }, [output]);
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -49,24 +49,23 @@ export function ResultPanel({
         <span>译文</span>
         {/* Gemini review #508 采纳：只在实际展示译文时显示字数，
             避免 loading/error/isOver/isSameLanguage 态下泄漏上一次翻译的历史字数 */}
-        {showHeaderInfo && (
+        {output && !isOver && !isSameLanguage && status !== 'loading' && status !== 'error' && (
           <div className="flex items-center gap-3">
-            <span className="font-mono normal-case tracking-normal font-normal">
-              {output.length} 字
-            </span>
             <button
               type="button"
               onClick={handleCopy}
+              className="hover:text-ink-600 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink-400 rounded transition-colors flex items-center gap-1"
+              title="复制译文"
               aria-label={copied ? "已复制" : "复制译文"}
-              title={copied ? "已复制" : "复制译文"}
-              className="text-ink-500 hover:text-ink-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
             >
-              {copied ? (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#2b8a3e' }}><polyline points="20 6 9 17 4 12"></polyline></svg>
-              ) : (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-              )}
+              <span aria-hidden>{copied ? '✓' : '📋'}</span>
+              <span aria-live="polite" className={copied ? 'text-emerald-600' : ''}>
+                {copied ? '已复制' : '复制'}
+              </span>
             </button>
+            <span className="font-mono normal-case tracking-normal font-normal">
+              {output.length} 字
+            </span>
           </div>
         )}
       </div>
