@@ -135,6 +135,7 @@ export function SelectionBubble(props: SelectionBubbleProps) {
 
       {status === 'loading' && (
         <div
+          role="status"
           className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm shadow-lg ring-1 ring-ink-200"
           style={{
             background: 'white',
@@ -315,6 +316,7 @@ export function SelectionBubble(props: SelectionBubbleProps) {
 
       {status === 'error' && (
         <div
+          role="alert"
           className="max-w-sm rounded-lg text-sm shadow-lg"
           style={{
             background: '#fff5f5',
