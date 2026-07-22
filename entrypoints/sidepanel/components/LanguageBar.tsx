@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { TARGET_LANGS } from '../constants';
 
 /**
@@ -13,7 +14,9 @@ export interface LanguageBarProps {
   onSwap: () => void;
 }
 
-export function LanguageBar({
+// ⚡ Bolt: Wrap in React.memo to prevent unnecessary re-renders when parent text state changes.
+// Impact: Avoids re-rendering this pure component on every keystroke in the Editor.
+export const LanguageBar = memo(function LanguageBar({
   source,
   target,
   onSourceChange,
@@ -88,4 +91,4 @@ export function LanguageBar({
       </div>
     </div>
   );
-}
+});

@@ -1,3 +1,7 @@
 ## 2025-02-15 - React state redundant updates in useSelection
 **Learning:** In React, passing a structurally identical but newly created object (like a new DOMRect copy from `getBoundingClientRect()`) to `setState` will trigger a re-render because React uses `Object.is` for state comparison. This is especially problematic in events that fire rapidly (like `selectionchange`), leading to expensive layout thrashing when the actual visually useful properties (like top/left/width/height) haven't changed.
 **Action:** When updating complex state objects derived from rapid events, use the functional update form of `setState((prev) => ...)` to perform a structural comparison (shallow or deep as needed) between `prev` and `next`. If they are structurally the same for your application's purposes, return the `prev` reference to explicitly bail out of the re-render.
+
+## 2025-02-15 - React.memo for pure subcomponents
+**Learning:** Even if parent components memoize callbacks with `useCallback`, child components will still re-render when the parent's state changes unless the child is wrapped in `React.memo()`. In `SidePanelApp`, typing in the `Editor` updates the `text` state, which forces `LanguageBar`, `EngineStatus`, and `ResultPanel` to re-render unnecessarily on every keystroke.
+**Action:** Use `React.memo()` to wrap pure child components (especially those accepting props like functions and strings/booleans) to prevent them from re-rendering when parent state changes don't affect their props.
