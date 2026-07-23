@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { Engine } from '@engines/types';
 
 /**
@@ -13,7 +14,9 @@ export interface EngineStatusProps {
   available: boolean | null;
 }
 
-export function EngineStatus({ resolvedEngine, available }: EngineStatusProps) {
+// ⚡ Bolt: Memoize EngineStatus to prevent re-renders when parent text state changes.
+// Impact: Avoids unnecessary layout recalculations for the header area on every keystroke.
+export const EngineStatus = memo(function EngineStatus({ resolvedEngine, available }: EngineStatusProps) {
   return (
     <>
       <header className="pd-plush-sky px-4 pt-4 pb-3 border-b border-brand-100">
@@ -77,4 +80,4 @@ export function EngineStatus({ resolvedEngine, available }: EngineStatusProps) {
       )}
     </>
   );
-}
+});

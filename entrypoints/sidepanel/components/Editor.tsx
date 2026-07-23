@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Button } from '@components/Button';
 import { MAX_CHARS } from '../constants';
 import type { TranslateStatus } from '@hooks/useTranslate';
@@ -19,7 +20,9 @@ export interface EditorProps {
   onClear: () => void;
 }
 
-export function Editor({
+// ⚡ Bolt: Memoize Editor to prevent unnecessary re-renders when parent states (like resolvedEngine or translate status) change.
+// Impact: Reduces React rendering workload.
+export const Editor = memo(function Editor({
   text,
   onTextChange,
   onKeyDown,
@@ -86,4 +89,4 @@ export function Editor({
       </div>
     </>
   );
-}
+});
