@@ -348,14 +348,16 @@ export function OpenAiCompatSection() {
           type="button"
           onClick={handleTest}
           disabled={!canTest || testState.status === 'testing'}
+          aria-busy={testState.status === 'testing'}
           className="px-3 py-1.5 rounded-md text-sm font-medium border border-slate-300 disabled:opacity-50 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1"
         >
           {testState.status === 'testing' ? '测试中...' : '测试连接'}
         </button>
-        {savedFlash && <span className="text-sm text-emerald-600">已保存 ✓</span>}
+        {savedFlash && <span className="text-sm text-emerald-600" role="status" aria-live="polite">已保存 ✓</span>}
       </div>
 
       {/* 测试连接结果 */}
+      <div role="status" aria-live="polite">
       {testState.status === 'testing' && (
         <div className="text-sm text-slate-500">测试中...</div>
       )}
@@ -369,6 +371,7 @@ export function OpenAiCompatSection() {
           ❌ {testState.message}
         </div>
       )}
+      </div>
     </section>
   );
 }
