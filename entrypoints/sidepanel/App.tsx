@@ -125,6 +125,8 @@ export default function SidePanelApp({ engine }: Props = {}) {
     }
   }, [canTranslate, handleTranslate]);
 
+  // ⚡ Bolt: Memoize handleClear using useCallback to prevent child Editor component from re-rendering.
+  // Impact: Avoids unnecessary React diffing of the Editor on every parent state change.
   const handleClear = useCallback(() => {
     setText('');
     reset();
