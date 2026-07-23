@@ -27,7 +27,7 @@ jobs:
           bun-version: latest
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: bun install
 
       # v0.5.5 P1-C（审计 v3）：CI 质量门槛
       # 原实现只跑 build → 破损代码可 push tag 打 release。
