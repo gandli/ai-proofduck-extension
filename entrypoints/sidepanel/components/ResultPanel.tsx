@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { MAX_CHARS } from '../constants';
 import type { TranslateStatus } from '@hooks/useTranslate';
 
@@ -21,7 +22,9 @@ export interface ResultPanelProps {
   onRetry: () => void;
 }
 
-export function ResultPanel({
+// ⚡ Bolt: Memoize ResultPanel to prevent unnecessary re-renders during text input.
+// Impact: Significant reduction in React diffing overhead since the large translation output block doesn't change on every keystroke.
+export const ResultPanel = memo(function ResultPanel({
   output,
   status,
   error,
@@ -104,4 +107,4 @@ export function ResultPanel({
       </div>
     </div>
   );
-}
+});
