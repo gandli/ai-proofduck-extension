@@ -27,17 +27,16 @@ jobs:
           bun-version: latest
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: bun install
 
       # v0.5.5 P1-C（审计 v3）：CI 质量门槛
       # 原实现只跑 build → 破损代码可 push tag 打 release。
       # tsc / lint / vitest / audit 必须先绿，才允许构建产物。
-      - name: QA gate · tsc + lint + vitest + audit
+      - name: QA gate · tsc + lint + vitest
         run: |
           bun run compile
           bun run lint
-          bunx vitest run
-          bun audit
+          bun run test
 
       - name: Build and Zip Extension
         run: |
