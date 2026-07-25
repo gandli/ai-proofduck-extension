@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useCopyToClipboard } from '../../../src/hooks/useCopyToClipboard';
 import { MAX_CHARS } from '../constants';
 import type { TranslateStatus } from '@hooks/useTranslate';
 
@@ -31,16 +32,11 @@ export function ResultPanel({
   canTranslate,
   onRetry,
 }: ResultPanelProps) {
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
 
   const handleCopy = () => {
     if (!output) return;
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(output).then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }).catch(() => {});
-    }
+    copy(output);
   };
 
   return (
