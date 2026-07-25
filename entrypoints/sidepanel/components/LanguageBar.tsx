@@ -1,4 +1,3 @@
-import { memo } from 'react';
 import { TARGET_LANGS } from '../constants';
 
 /**
@@ -14,9 +13,7 @@ export interface LanguageBarProps {
   onSwap: () => void;
 }
 
-// ⚡ Bolt: Wrap LanguageBar in React.memo to prevent unnecessary re-renders when parent state (like 'text') changes.
-// Impact: Reduces React render time and layout thrashing during text input by skipping reconciliation for this component.
-export const LanguageBar = memo(function LanguageBar({
+export function LanguageBar({
   source,
   target,
   onSourceChange,
@@ -91,4 +88,4 @@ export const LanguageBar = memo(function LanguageBar({
       </div>
     </div>
   );
-});
+}

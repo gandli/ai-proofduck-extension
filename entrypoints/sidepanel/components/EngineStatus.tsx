@@ -1,4 +1,3 @@
-import { memo } from 'react';
 import type { Engine } from '@engines/types';
 
 /**
@@ -14,9 +13,7 @@ export interface EngineStatusProps {
   available: boolean | null;
 }
 
-// ⚡ Bolt: Wrap EngineStatus in React.memo to prevent unnecessary re-renders when parent state (like 'text') changes.
-// Impact: Reduces React render time and layout thrashing during text input by skipping reconciliation for this component.
-export const EngineStatus = memo(function EngineStatus({ resolvedEngine, available }: EngineStatusProps) {
+export function EngineStatus({ resolvedEngine, available }: EngineStatusProps) {
   return (
     <>
       <header className="pd-plush-sky px-4 pt-4 pb-3 border-b border-brand-100">
@@ -80,4 +77,4 @@ export const EngineStatus = memo(function EngineStatus({ resolvedEngine, availab
       )}
     </>
   );
-});
+}
