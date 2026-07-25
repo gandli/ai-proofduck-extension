@@ -365,7 +365,7 @@ export function OpenAiCompatSection() {
         </div>
       )}
       {testState.status === 'error' && (
-        <div className="text-sm text-rose-600 whitespace-pre-wrap break-all">
+        <div role="alert" className="text-sm text-rose-600 whitespace-pre-wrap break-all">
           ❌ {testState.message}
         </div>
       )}
