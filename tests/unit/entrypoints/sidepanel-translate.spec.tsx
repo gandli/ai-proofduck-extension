@@ -1,3 +1,4 @@
+import { act } from '@testing-library/react';
 /**
  * SidePanel M2 交互测试：翻译流程
  *
@@ -230,6 +231,34 @@ describe('SidePanel M2 翻译交互', () => {
     await waitFor(() => {
       expect(screen.getByText('恢复成功')).toBeDefined();
     });
+  });
+
+  it('ResultPanel: 点击复制译文按钮 → 复制并切换图标状态', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
+
+    await renderAct(<SidePanelApp engine={mockEngine()} />);
+    const input = screen.getByPlaceholderText(/粘贴|输入/) as HTMLTextAreaElement;
+    fireEvent.change(input, { target: { value: 'copy test' } });
+    fireEvent.click(screen.getByRole('button', { name: /^翻译/ }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/翻译：copy test/)).toBeDefined();
+    });
+
+    const copyBtn = screen.getByRole('button', { name: /复制/ });
+    expect(copyBtn.textContent).toContain('复制');
+
+    await act(async () => {
+      fireEvent.click(copyBtn);
+    });
+
+    await waitFor(() => {
+        expect(writeText).toHaveBeenCalledWith('翻译：copy test');
+    });
+
+    expect(writeText).toHaveBeenCalledWith('翻译：copy test');
+    expect(copyBtn.textContent).toContain('已复制');
   });
 
   it('加载态渲染骨架块而非 ⏳ emoji（品牌禁用 emoji）', async () => {

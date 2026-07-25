@@ -12,7 +12,7 @@
  * 8. 定位：默认在选区 bottom+8 / left（避免遮住选区，超出视口自动上翻由浏览器排版兜底）
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { SelectionBubble } from '@components/SelectionBubble';
 
 const rect = {
@@ -211,7 +211,9 @@ describe('SelectionBubble', () => {
           onDismiss={vi.fn()}
         />
       );
-      fireEvent.click(screen.getByRole('button', { name: /复制/ }));
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /复制/ }));
+      });
       expect(writeText).toHaveBeenCalledWith('你好');
     });
 
@@ -230,9 +232,11 @@ describe('SelectionBubble', () => {
         />
       );
       // 点击不应抛 uncaught error
-      expect(() =>
-        fireEvent.click(screen.getByRole('button', { name: /复制/ }))
-      ).not.toThrow();
+      await act(async () => {
+        expect(() =>
+          fireEvent.click(screen.getByRole('button', { name: /复制/ }))
+        ).not.toThrow();
+      });
       // 让 microtask 完成 rejected promise，避免污染下个 test
       await Promise.resolve();
     });
