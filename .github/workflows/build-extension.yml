@@ -17,7 +17,7 @@ jobs:
     steps:
       # v0.5.5 P2-B（审计 v3）：全部 action pin 到 40 位 SHA，防 tag 被移动到恶意 commit
       # 若上游发新版：手动查最新 SHA 后按注释里的 tag 版本更新
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.2.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v4.2.2
         with:
           fetch-depth: 0
 
