@@ -352,12 +352,12 @@ export function OpenAiCompatSection() {
         >
           {testState.status === 'testing' ? '测试中...' : '测试连接'}
         </button>
-        {savedFlash && <span className="text-sm text-emerald-600">已保存 ✓</span>}
+        {savedFlash && <span className="text-sm text-emerald-600" role="status">已保存 ✓</span>}
       </div>
 
       {/* 测试连接结果 */}
       {testState.status === 'testing' && (
-        <div className="text-sm text-slate-500">测试中...</div>
+        <div className="text-sm text-slate-500" role="status">测试中...</div>
       )}
       {testState.status === 'success' && (
         <div className="text-sm text-emerald-600">
