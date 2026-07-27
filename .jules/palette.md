@@ -1,3 +1,7 @@
 ## 2025-07-15 - Added Copy Button to ResultPanel
 **Learning:** Adding a copy button for translation results is a significant UX improvement for quick operations in a sidepanel. While implementing this, it's critical to ensure the `navigator.clipboard` access is guarded with a `typeof navigator !== 'undefined'` check to avoid SSR or test environment crashes. It's also important to provide visual feedback (like a checkmark) and use proper ARIA labels (`aria-label`) that update based on the copy state for accessibility.
 **Action:** Always include visual feedback, `aria-label`, `title`, and `focus-visible` styles for icon-only interactive buttons to ensure accessibility and usability. Always guard browser APIs like `navigator` against undefined environments.
+
+## 2025-07-27 - Fixed Focus Loss on Clear Button
+**Learning:** When a button disables itself upon being clicked (like a "Clear Text" button that becomes disabled when the input is empty), the keyboard focus is lost and resets to the `body` element. This creates a highly frustrating experience for screen reader and keyboard users who must tab all the way back through the page. Additionally, adding `aria-invalid` to textareas when limits are exceeded improves form accessibility.
+**Action:** Always programmatically manage focus (e.g., return focus to the primary input field) when an action disables the currently focused interactive element. Use `aria-invalid` for constraint validation states.
