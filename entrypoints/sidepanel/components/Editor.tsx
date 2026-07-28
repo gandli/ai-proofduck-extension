@@ -40,6 +40,7 @@ export const Editor = memo(function Editor({
         <div className="flex items-center justify-between text-[10.5px] uppercase tracking-wider font-semibold text-ink-400">
           <label htmlFor="source-text">原文</label>
           <span
+            id="char-count"
             className={`font-mono normal-case tracking-normal ${
               isOver ? 'text-danger font-semibold' : 'font-normal'
             }`}
@@ -55,6 +56,8 @@ export const Editor = memo(function Editor({
           onKeyDown={onKeyDown}
           placeholder="在这里粘贴要翻译的文本…（⌘/Ctrl + ↵ 快速翻译）"
           className="pd-plush-input w-full min-h-[140px] p-3 text-sm resize-y text-ink-800 leading-relaxed focus:outline-none"
+          aria-invalid={isOver}
+          aria-describedby="char-count"
         />
       </div>
 
