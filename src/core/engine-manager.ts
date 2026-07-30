@@ -23,9 +23,11 @@ export interface EngineManager {
 
 export function createEngineManager(): EngineManager {
   const engines = new Map<EngineId, Engine>();
+  let sortedCache: Engine[] | null = null;
 
   return {
     register(engine) {
+      sortedCache = null; // ⚡ Bolt: Invalidate cache when a new engine is registered
       engines.set(engine.id, engine); // 同 id 覆盖，天然去重
     },
 
@@ -36,8 +38,12 @@ export function createEngineManager(): EngineManager {
     async pickBest(mode) {
       // priority 降序遍历，找到第一个既 supports(mode) 又 available 的
       // 若未指定 mode，只按 isAvailable 兜底（历史兼容）
-      const sorted = Array.from(engines.values()).sort((a, b) => b.priority - a.priority);
-      for (const engine of sorted) {
+      // ⚡ Bolt: Cache the sorted engines array to prevent redundant O(N log N) sorting overhead on the hot path (pickBest is called on every translation).
+      // Impact: Eliminates array allocation and sorting overhead during every text selection or API trigger.
+      if (!sortedCache) {
+        sortedCache = Array.from(engines.values()).sort((a, b) => b.priority - a.priority);
+      }
+      for (const engine of sortedCache) {
         if (mode !== undefined && !engine.supports(mode)) continue;
         if (await engine.isAvailable()) {
           return engine;
