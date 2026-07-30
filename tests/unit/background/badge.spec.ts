@@ -18,9 +18,9 @@ describe('applyBadge · v0.5.2 图标状态', () => {
     applyBadge('warn', { setBadgeText, setBadgeBackgroundColor, setTitle });
     expect(setBadgeText).toHaveBeenCalledWith({ text: '!' });
     expect(setBadgeBackgroundColor).toHaveBeenCalled();
-    const color = setBadgeBackgroundColor.mock.calls[0][0].color;
+    const color = setBadgeBackgroundColor.mock.calls[0]![0]!.color;
     expect(color).toMatch(/^#[0-9A-Fa-f]{6,8}$/);
-    expect(setTitle.mock.calls[0][0].title).toContain('需配置');
+    expect(setTitle.mock.calls[0]![0]!.title).toContain('需配置');
   });
 
   it('error → 红色 "×" badge', () => {
@@ -29,7 +29,7 @@ describe('applyBadge · v0.5.2 图标状态', () => {
     applyBadge('error', { setBadgeText, setBadgeBackgroundColor });
     expect(setBadgeText).toHaveBeenCalledWith({ text: '×' });
     // 红色 → red 分量应显著大于 green/blue
-    const color = setBadgeBackgroundColor.mock.calls[0][0].color;
+    const color = setBadgeBackgroundColor.mock.calls[0]![0]!.color;
     const r = parseInt(color.slice(1, 3), 16);
     const g = parseInt(color.slice(3, 5), 16);
     expect(r).toBeGreaterThan(g);

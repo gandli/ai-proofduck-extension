@@ -14,7 +14,7 @@
  * 5. hydrate() 从 storage 拉最新值填充 store
  */
 import { describe, it, expect, beforeEach } from 'vitest';
-import { fakeBrowser } from 'wxt/testing';
+import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { useSettingsStore, hydrateSettings } from '@stores/settings';
 
 describe('settings store', () => {

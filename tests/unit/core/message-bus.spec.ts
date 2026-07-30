@@ -14,7 +14,7 @@
  * 5. on() 应返回一个取消订阅函数
  */
 import { describe, it, expect, vi } from 'vitest';
-import { fakeBrowser } from 'wxt/testing';
+import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { defineMessages } from '@core/message-bus';
 
 // 定义业务消息 schema（示例：M2 之后真正的消息在这里加）

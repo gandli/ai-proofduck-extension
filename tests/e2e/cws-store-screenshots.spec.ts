@@ -70,8 +70,7 @@ test.describe('CWS store screenshots · 1280×800 · v0.5.2', () => {
         const swPromise = ctx.serviceWorkers()[0]
           ? Promise.resolve(ctx.serviceWorkers()[0])
           : ctx.waitForEvent('serviceworker', { timeout: 8000 });
-        const sw = await swPromise;
-        const extId = sw.url().match(/chrome-extension:\/\/([a-z]+)/i)![1];
+        const extId = (await swPromise)!.url().match(/chrome-extension:\/\/([a-z]+)/i)![1];
 
         // 打开对应面板 · popup 用真实小尺寸避免空白
         const panelUrl = `chrome-extension://${extId}/${scene.panel}.html`;

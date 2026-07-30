@@ -169,7 +169,7 @@ describe('formatErrorMessage', () => {
       const key = ['s', 'k', '-'].join('') + 'proj-A'.padEnd(35, 'x');
       logSanitizedError('[popup]', new Error(`hydrate failed: ${key}`));
       expect(spy).toHaveBeenCalledTimes(1);
-      const logged = spy.mock.calls[0][0] as string;
+      const logged = spy.mock.calls[0]![0] as string;
       expect(logged).toContain('[popup]');
       expect(logged).toContain('***REDACTED***');
       expect(logged).not.toContain(key);
@@ -180,7 +180,7 @@ describe('formatErrorMessage', () => {
       const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
       const token = 'abcdefghijklmnop123456';
       logSanitizedError('[sidepanel]', new Error(`req failed: ${'Bea' + 'rer'} ${token}`));
-      const logged = spy.mock.calls[0][0] as string;
+      const logged = spy.mock.calls[0]![0] as string;
       expect(logged).not.toContain(token);
       expect(logged).toContain('***');
       spy.mockRestore();
@@ -189,7 +189,7 @@ describe('formatErrorMessage', () => {
     it('未知错误 fallback + prefix 组合正确', () => {
       const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
       logSanitizedError('[options]', undefined);
-      const logged = spy.mock.calls[0][0] as string;
+      const logged = spy.mock.calls[0]![0] as string;
       expect(logged).toBe('[options] 未知错误');
       spy.mockRestore();
     });
@@ -202,7 +202,7 @@ describe('formatErrorMessage', () => {
       // 手动塞一个含 secret 的 stack 便于断言脱敏
       err.stack = `Error: boom\n    at foo (${secret}:1:1)`;
       logSanitizedError('[sidepanel]', err);
-      const logged = spy.mock.calls[0][0] as string;
+      const logged = spy.mock.calls[0]![0] as string;
       expect(logged).toContain('boom'); // message 保留
       expect(logged).toContain('at foo'); // stack 保留
       expect(logged).not.toContain(secret); // secret 被脱敏
@@ -213,7 +213,7 @@ describe('formatErrorMessage', () => {
     it('非 Error（string）不产生假 stack', () => {
       const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
       logSanitizedError('[popup]', 'raw string error');
-      const logged = spy.mock.calls[0][0] as string;
+      const logged = spy.mock.calls[0]![0] as string;
       expect(logged).toBe('[popup] raw string error');
       // 只有一行，无 stack 拼接
       expect(logged.split('\n')).toHaveLength(1);

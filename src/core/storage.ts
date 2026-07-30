@@ -61,7 +61,7 @@ export function defineStorage<T>(
       ) => {
         if (areaName !== area) return;
         if (!(key in changes)) return;
-        const change = changes[key];
+        const change = changes[key]!;
         cb(
           (change.newValue as T | undefined) ?? defaultValue,
           (change.oldValue as T | undefined) ?? defaultValue,

@@ -9,7 +9,7 @@
  * 关键契约：apiKey 必须存 local（不能存 sync）
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { fakeBrowser } from 'wxt/testing';
+import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { openaiCompatConfig } from '@core/openai-compat-config';
 
 describe('openai-compat-config', () => {
@@ -69,7 +69,7 @@ describe('openai-compat-config', () => {
     await new Promise((r) => setTimeout(r, 20));
 
     expect(cb).toHaveBeenCalled();
-    const lastCall = cb.mock.calls[cb.mock.calls.length - 1][0];
+    const lastCall = cb.mock.calls[cb.mock.calls.length - 1]![0];
     expect(lastCall).toEqual({
       baseUrl: 'https://x.com',
       apiKey: 'k',

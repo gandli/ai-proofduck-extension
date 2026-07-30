@@ -153,8 +153,9 @@ describe('createOpenAiCompatEngine', () => {
       });
 
       expect(result).toBe('你好');
-      const [url, init] = (fetchMock as unknown as { mock: { calls: [string, RequestInit][] } })
-        .mock.calls[0];
+      const call = (fetchMock as unknown as { mock: { calls: [string, RequestInit][] } })
+        .mock.calls[0]!;
+      const [url, init] = call;
       expect(url).toBe('https://api.deepseek.com/v1/chat/completions');
       expect(init.method).toBe('POST');
       expect((init.headers as Record<string, string>).Authorization).toBe('Bearer sk-test');
@@ -175,7 +176,7 @@ describe('createOpenAiCompatEngine', () => {
       vi.stubGlobal('fetch', fetchMock);
 
       await createOpenAiCompatEngine().run({ mode: 'translate', text: 'hi', sourceLang: 'en', targetLang: 'zh' });
-      const [url] = (fetchMock as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls[0];
+      const url = (fetchMock as unknown as { mock: { calls: [string][] } }).mock.calls[0]![0]!;
       expect(url).toBe('https://api.deepseek.com/v1/chat/completions');
     });
 
@@ -189,13 +190,13 @@ describe('createOpenAiCompatEngine', () => {
       // 场景 A: 用户填 https://api.openai.com/v1
       mocks.config.value.baseUrl = 'https://api.openai.com/v1';
       await createOpenAiCompatEngine().run({ mode: 'translate', text: 'a', sourceLang: 'en', targetLang: 'zh' });
-      const urlA = (fetchMock as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls[0][0];
+      const urlA = (fetchMock as unknown as { mock: { calls: [string][] } }).mock.calls[0]![0]!;
       expect(urlA).toBe('https://api.openai.com/v1/chat/completions');
 
       // 场景 B: 用户填 https://api.openai.com/v1/（带尾斜杠）
       mocks.config.value.baseUrl = 'https://api.openai.com/v1/';
       await createOpenAiCompatEngine().run({ mode: 'translate', text: 'b', sourceLang: 'en', targetLang: 'zh' });
-      const urlB = (fetchMock as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls[1][0];
+      const urlB = (fetchMock as unknown as { mock: { calls: [string][] } }).mock.calls[1]![0]!;
       expect(urlB).toBe('https://api.openai.com/v1/chat/completions');
     });
 
@@ -287,7 +288,7 @@ describe('createOpenAiCompatEngine', () => {
 
       await createOpenAiCompatEngine().run({ mode, text: '文本' });
       const body = JSON.parse(
-        ((fetchMock as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls[0][1].body) as string,
+        ((fetchMock as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls[0]![1]!.body) as string,
       );
       const sys = body.messages.find((m: { role: string }) => m.role === 'system');
       expect(sys.content).toMatch(keyword);
@@ -340,7 +341,7 @@ describe('createOpenAiCompatEngine', () => {
 
       // 确认发起时 body.stream === true
       const body = JSON.parse(
-        ((fetchMock as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls[0][1].body) as string,
+        ((fetchMock as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls[0]![1]!.body) as string,
       );
       expect(body.stream).toBe(true);
     });

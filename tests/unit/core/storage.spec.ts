@@ -14,7 +14,7 @@
  * 5. area 决定用 sync 还是 local
  */
 import { describe, it, expect, vi } from 'vitest';
-import { fakeBrowser } from 'wxt/testing';
+import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { defineStorage } from '@core/storage';
 
 describe('storage', () => {

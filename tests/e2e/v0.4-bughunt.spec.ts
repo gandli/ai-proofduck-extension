@@ -123,7 +123,7 @@ test.describe('v0.4.0 BUG 猎手 · 真实装机全入口扫描', () => {
   test('装机后 Service Worker 立即启动 + 无 background 错误', async () => {
     const { context, extId, userDataDir } = await launch();
     try {
-      const sw = context.serviceWorkers()[0];
+      const sw = context.serviceWorkers()[0]!;
       expect(sw).toBeDefined();
       expect(extId).toMatch(/^[a-p]{32}$/); // 32 char lowercase MV3 id
 
@@ -248,7 +248,7 @@ test.describe('v0.4.0 BUG 猎手 · 真实装机全入口扫描', () => {
   test('Service Worker 收到 message 不崩溃', async () => {
     const { context, userDataDir } = await launch();
     try {
-      const sw = context.serviceWorkers()[0];
+      const sw = context.serviceWorkers()[0]!;
       // 发一个未知 message 看 background 崩不崩
       const result = await sw.evaluate(async () => {
         try {

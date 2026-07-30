@@ -169,7 +169,8 @@ describe('OpenAiCompatSection', () => {
       expect(screen.getByText(/连接成功.*3.*模型/)).toBeInTheDocument();
     });
     // 检查请求：GET /v1/models + Bearer
-    const [url, init] = (fetchMock as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls[0];
+    const call = (fetchMock as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls[0]!;
+    const [url, init] = call;
     expect(url).toBe('https://api.deepseek.com/v1/models');
     expect((init.headers as Record<string, string>).Authorization).toBe('Bearer sk-x');
   });

@@ -96,7 +96,7 @@ test.describe('v0.4 权限迁移 (#465)', () => {
     const { context, extId, userDataDir } = await launchWithExt();
     try {
       // 通过 service worker 上下文查 chrome.permissions.contains
-      const sw = context.serviceWorkers()[0];
+      const sw = context.serviceWorkers()[0]!;
       const granted = await sw.evaluate(async () => {
         return await new Promise<boolean>((resolve) => {
           chrome.permissions.contains(

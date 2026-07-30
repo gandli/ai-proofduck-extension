@@ -60,7 +60,7 @@ async function launchWithExt(): Promise<{
     if (!worker) {
       worker = await context.waitForEvent('serviceworker', { timeout: 10_000 });
     }
-    const extId = worker.url().split('/')[2];
+    const extId = worker.url().split('/')[2]!;
 
     return { context, extId, userDataDir, errors };
   } catch (err) {

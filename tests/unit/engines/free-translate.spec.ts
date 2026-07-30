@@ -82,11 +82,11 @@ describe('free-translate engine', () => {
 
     expect(result).toBe('你好');
     const calls = (fetchMock as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls;
-    expect(calls[0][0]).toContain('translate.googleapis.com/translate_a/single');
-    expect(calls[0][0]).toContain('client=gtx');
-    expect(calls[0][0]).toContain('sl=en');
-    expect(calls[0][0]).toContain('tl=zh');
-    expect(calls[0][0]).toContain('q=hello');
+    expect(calls[0]![0]).toContain('translate.googleapis.com/translate_a/single');
+    expect(calls[0]![0]).toContain('client=gtx');
+    expect(calls[0]![0]).toContain('sl=en');
+    expect(calls[0]![0]).toContain('tl=zh');
+    expect(calls[0]![0]).toContain('q=hello');
   });
 
   it('run: source=auto 会用 auto 参数', async () => {
@@ -100,7 +100,7 @@ describe('free-translate engine', () => {
     const eng = createFreeTranslateEngine();
     await eng.run({ mode: 'translate', text: 'hi', sourceLang: 'auto', targetLang: 'zh' });
 
-    const url = (fetchMock as unknown as { mock: { calls: [string][] } }).mock.calls[0][0];
+    const url = (fetchMock as unknown as { mock: { calls: [string][] } }).mock.calls[0]![0]!;
     expect(url).toContain('sl=auto');
   });
 
@@ -221,7 +221,7 @@ describe('free-translate engine', () => {
     const eng = createFreeTranslateEngine();
     await eng.run({ mode: 'translate', text: 'hi & bye', sourceLang: 'en', targetLang: 'zh' });
 
-    const url = (fetchMock as unknown as { mock: { calls: [string][] } }).mock.calls[0][0];
+    const url = (fetchMock as unknown as { mock: { calls: [string][] } }).mock.calls[0]![0]!;
     // "hi & bye" → hi%20%26%20bye
     expect(url).toContain('q=hi%20%26%20bye');
   });

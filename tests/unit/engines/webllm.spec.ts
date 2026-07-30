@@ -170,7 +170,7 @@ describe('createWebLlmEngine', () => {
       const engine = createWebLlmEngine();
       await engine.run({ mode: 'translate', text: 'hello', sourceLang: 'en', targetLang: 'zh' });
 
-      const sys = mocks.mockChatCreate.mock.calls[0][0].messages.find(
+      const sys = mocks.mockChatCreate.mock.calls[0]![0]!.messages.find(
         (m: { role: string }) => m.role === 'system',
       );
       expect(sys.content).toMatch(/en/);
@@ -190,7 +190,7 @@ describe('createWebLlmEngine', () => {
       const engine = createWebLlmEngine();
       await engine.run({ mode, text: '一段测试文本' });
 
-      const sys = mocks.mockChatCreate.mock.calls[0][0].messages.find(
+      const sys = mocks.mockChatCreate.mock.calls[0]![0]!.messages.find(
         (m: { role: string }) => m.role === 'system',
       );
       expect(sys.content).toMatch(keyword);
@@ -239,7 +239,7 @@ describe('createWebLlmEngine', () => {
       }
       expect(out.join('')).toBe('你好世界');
       // 验证是 stream:true 调用
-      expect(mocks.mockChatCreate.mock.calls[0][0].stream).toBe(true);
+      expect(mocks.mockChatCreate.mock.calls[0]![0]!.stream).toBe(true);
     });
   });
 
