@@ -5,7 +5,7 @@
  * 同步调用，任何 await 都会消耗 gesture context。回调直接接收 tab 参数。
  */
 import { describe, it, expect, vi } from 'vitest';
-import { handleCommand, registerBackground, type ChromeLike } from '../../../src/background/lifecycle';
+import { handleCommand, registerBackground, updateBadgeFromCompat, type ChromeLike } from '../../../src/background/lifecycle';
 
 describe('handleCommand · v0.5.2 快捷键路由（同步）', () => {
   it('open-side-panel 命令 → 立即（同步）调用 sidePanel.open，携带来自 tab 的 windowId', () => {
@@ -91,5 +91,31 @@ describe('registerBackground · v0.5.2', () => {
 
   it('传入 undefined chrome 不抛错', () => {
     expect(() => registerBackground(undefined)).not.toThrow();
+  });
+
+  it('setPanelBehavior 拒绝时静默 catch（logSanitizedError）', () => {
+    const addListener = vi.fn();
+    const c: ChromeLike = {
+      sidePanel: {
+        setPanelBehavior: vi.fn().mockRejectedValue(new Error('API blocked')),
+      },
+      commands: { onCommand: { addListener } },
+    };
+    expect(() => registerBackground(c)).not.toThrow();
+  });
+});
+
+describe('updateBadgeFromCompat', () => {
+  it('c 有 action 时调用 applyBadge', () => {
+    const setBadgeText = vi.fn();
+    const c: ChromeLike = { action: { setBadgeText } };
+    const result = updateBadgeFromCompat({ baseUrl: '', apiKey: '', model: '' }, c);
+    expect(setBadgeText).toHaveBeenCalled();
+    expect(result).toBeDefined();
+  });
+
+  it('c 为 undefined 时静默返回', () => {
+    const result = updateBadgeFromCompat({ baseUrl: '', apiKey: '', model: '' }, undefined);
+    expect(result).toBeDefined();
   });
 });
