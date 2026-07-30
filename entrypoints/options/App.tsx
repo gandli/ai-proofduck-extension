@@ -112,7 +112,7 @@ export default function OptionsApp() {
             className="w-10 h-10 rounded-lg shadow-brand-lg"
           />
           <div>
-            <h1 className="text-2xl font-bold font-serif tracking-tight text-ink-900">
+            <h1 className="text-2xl font-bold font-serif text-ink-900">
               设置
             </h1>
             <p className="text-[13px] text-ink-500 mt-0.5">
@@ -125,7 +125,7 @@ export default function OptionsApp() {
         <div
           className="pd-plush-health-card rounded-lg border border-sakura/50 p-4 mb-6"
         >
-          <div className="text-[11px] uppercase tracking-wider font-semibold text-ink-500 mb-2.5">
+          <div className="text-[11px] uppercase font-semibold text-ink-500 mb-2.5">
             引擎健康度
           </div>
           <div className="grid grid-cols-2 gap-x-4 gap-y-2">

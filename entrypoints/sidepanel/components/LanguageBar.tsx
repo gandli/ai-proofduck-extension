@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { TARGET_LANGS } from '../constants';
+import { ArrowLeftRight } from 'lucide-react';
 
 /**
  * SidePanel 语言选择栏（3 列 · 源 / 交换 / 目标）
@@ -28,7 +29,7 @@ export const LanguageBar = memo(function LanguageBar({
       <div className="flex flex-col gap-1">
         <label
           htmlFor="source-lang"
-          className="text-[10.5px] uppercase tracking-wider text-ink-400 font-semibold"
+          className="text-[10.5px] uppercase text-ink-400 font-semibold"
         >
           源语言
         </label>
@@ -56,22 +57,17 @@ export const LanguageBar = memo(function LanguageBar({
         aria-label="交换语言方向"
         className="pd-plush-swap flex items-center justify-center"
       >
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <path d="M7 10h10M7 10l3-3M7 10l3 3M17 14H7M17 14l-3-3M17 14l-3 3" />
-        </svg>
+        <ArrowLeftRight
+          size={14}
+          strokeWidth={1.5}
+          aria-hidden="true"
+        />
       </button>
 
       <div className="flex flex-col gap-1">
         <label
           htmlFor="target-lang"
-          className="text-[10.5px] uppercase tracking-wider text-ink-400 font-semibold"
+          className="text-[10.5px] uppercase text-ink-400 font-semibold"
         >
           目标语言
         </label>
