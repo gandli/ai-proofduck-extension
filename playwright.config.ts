@@ -1,60 +1,15 @@
 import { defineConfig, devices } from '@playwright/test';
 
-/**
- * Playwright configuration for browser extension testing
- * See https://playwright.dev/docs/test-configuration
- */
 export default defineConfig({
   testDir: './tests/e2e',
-  /* 商店素材生成脚本不参与常规 E2E（v0.5.2 手动跑） */
-  testIgnore: ['**/cws-store-screenshots.spec.ts'],
-  
-  /* Run tests in files in parallel */
-  fullyParallel: true,
-  
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
-  
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
-  
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
-  
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  timeout: 60000,
   use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    // baseURL: 'http://127.0.0.1:3000',
-
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
-
-    /* Screenshot every test (delivered as artifact) */
-    screenshot: 'on',
-
-    /* Record video of every test */
-    video: 'on',
+    ...devices['Desktop Chrome'],
+    headless: true,
   },
-
-  /* Configure projects for major browsers */
-  projects: [
-    {
-      name: 'chromium-extension',
-      use: {
-        ...devices['Desktop Chrome'],
-        // Path to the built extension
-        // This will be set dynamically in the test setup
-      },
-    },
-  ],
-
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'bun run dev',
-  //   url: 'http://127.0.0.1:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
+  webServer: {
+    command: 'cd dist/chrome-mv3 && python3 -m http.server 8877',
+    port: 8877,
+    reuseExistingServer: true,
+  },
 });
