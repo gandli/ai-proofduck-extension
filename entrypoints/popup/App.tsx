@@ -65,7 +65,7 @@ export default function PopupApp() {
       <div className="p-4 space-y-2.5">
         {selectedText && (
           <div className="pd-plush-output px-3 py-2.5 text-xs text-ink-700 line-clamp-3">
-            <div className="text-[10px] uppercase tracking-wider text-ink-500 mb-1 font-semibold">
+            <div className="text-[10px] uppercase text-ink-500 mb-1 font-semibold">
               已选中
             </div>
             {selectedText.slice(0, 80)}

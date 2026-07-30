@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { MAX_CHARS } from '../constants';
 import type { TranslateStatus } from '@hooks/useTranslate';
+import { Check, Copy } from 'lucide-react';
 
 /**
  * SidePanel 译文输出面板
@@ -43,7 +44,7 @@ export function ResultPanel({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="flex items-center justify-between text-[10.5px] uppercase tracking-wider font-semibold text-ink-400">
+      <div className="flex items-center justify-between text-[10.5px] uppercase font-semibold text-ink-400">
         <span>译文</span>
         {/* Gemini review #508 采纳：只在实际展示译文时显示字数，
             避免 loading/error/isOver/isSameLanguage 态下泄漏上一次翻译的历史字数 */}
@@ -61,14 +62,9 @@ export function ResultPanel({
             >
               <span className="sr-only">{copied ? "已复制" : "复制译文"}</span>
               {copied ? (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-600">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
+                <Check size={14} className="text-emerald-600" strokeWidth={2.5} aria-hidden="true" />
               ) : (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
+                <Copy size={14} aria-hidden="true" />
               )}
             </button>
           </div>

@@ -100,9 +100,7 @@ body {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background:
-    radial-gradient(circle at 32% 30%, rgba(255,255,255,0.75) 0%, transparent 55%),
-    radial-gradient(circle at 60% 65%, var(--brand-300) 0%, var(--brand-500) 100%);
+  background: var(--brand-100);
   box-shadow:
     inset -3px -5px 0 rgba(46, 36, 24, 0.10),
     0 3px 10px rgba(158, 118, 40, 0.28),
@@ -144,10 +142,7 @@ body {
 /* Header 底色：米色天空 + 樱花斑点（替代刺眼的暖黄天空）
  * 关键：从 brand-100 米黄 → beige-100 蛋壳，去掉"发光屏幕"感 */
 .pd-plush-sky {
-  background:
-    radial-gradient(80% 60% at 20% 0%, rgba(245,195,184,0.28) 0%, transparent 55%),
-    radial-gradient(70% 50% at 80% 30%, rgba(226,208,165,0.35) 0%, transparent 60%),
-    var(--beige-100);
+  background: var(--beige-100);
 }
 
 /* v0.5.0：健康度总览卡片背景（原为 tsx 内联，抽出以支持 dark mode） */
@@ -455,9 +450,7 @@ body {
 
   /* logo 光晕在暗底过突：降低 radial 白光 + 阴影缩小 */
   .pd-plush-logo-wrap {
-    background:
-      radial-gradient(circle at 32% 30%, rgba(255,255,255,0.35) 0%, transparent 55%),
-      radial-gradient(circle at 60% 65%, var(--brand-300) 0%, var(--brand-500) 100%);
+    background: #3D3420;
     box-shadow:
       inset -3px -5px 0 rgba(0, 0, 0, 0.25),
       0 3px 8px rgba(0, 0, 0, 0.35),
@@ -546,10 +539,7 @@ body {
 
   /* pd-plush-sky header 底色暗化：去除刺眼樱粉/黄斑晕，改用平静暗底 */
   .pd-plush-sky {
-    background:
-      radial-gradient(80% 60% at 20% 0%, rgba(224, 149, 139, 0.08) 0%, transparent 55%),
-      radial-gradient(70% 50% at 80% 30%, rgba(224, 179, 85, 0.05) 0%, transparent 60%),
-      #241D14;
+    background: #241D14;
   }
 
   /* pd-plush-chip 胶囊：暗底米黄描边 */

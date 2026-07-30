@@ -47,7 +47,7 @@ export const Editor = memo(function Editor({
     <>
       {/* 原文输入 */}
       <div className="flex flex-col gap-1.5">
-        <div className="flex items-center justify-between text-[10.5px] uppercase tracking-wider font-semibold text-ink-400">
+        <div className="flex items-center justify-between text-[10.5px] uppercase font-semibold text-ink-400">
           <label htmlFor="source-text">原文</label>
           <span
             id="char-count"
