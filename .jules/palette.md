@@ -5,3 +5,7 @@
 ## 2025-07-28 - Link error state to textarea
 **Learning:** Using `aria-invalid` and `aria-describedby` provides immediate context to screen reader users when a text area enters an error state (like exceeding character limit). Removing `aria-live` from the counter span prevents the screen reader from double-announcing input.
 **Action:** Always link visual error states and helper texts to inputs using `aria-invalid` and `aria-describedby`.
+
+## 2025-07-27 - Fixed Focus Loss on Clear Button
+**Learning:** When a button disables itself upon being clicked (like a "Clear Text" button that becomes disabled when the input is empty), the keyboard focus is lost and resets to the `body` element. This creates a highly frustrating experience for screen reader and keyboard users who must tab all the way back through the page. Additionally, adding `aria-invalid` to textareas when limits are exceeded improves form accessibility.
+**Action:** Always programmatically manage focus (e.g., return focus to the primary input field) when an action disables the currently focused interactive element. Use `aria-invalid` for constraint validation states.

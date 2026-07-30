@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useRef } from 'react';
 import { Button } from '@components/Button';
 import { MAX_CHARS } from '../constants';
 import type { TranslateStatus } from '@hooks/useTranslate';
@@ -33,6 +33,16 @@ export const Editor = memo(function Editor({
   onTranslate,
   onClear,
 }: EditorProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleClearClick = () => {
+    onClear();
+    // Return focus to textarea to avoid focus loss when the button becomes disabled
+    setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 0);
+  };
+
   return (
     <>
       {/* 原文输入 */}
@@ -50,20 +60,22 @@ export const Editor = memo(function Editor({
             {charCount} / {MAX_CHARS}
           </span>
         </div>
-        <textarea id="source-text"
+        <textarea
+          id="source-text"
+          ref={textareaRef}
+          aria-invalid={isOver}
+          aria-describedby="char-count"
           value={text}
           onChange={(e) => onTextChange(e.target.value)}
           onKeyDown={onKeyDown}
           placeholder="在这里粘贴要翻译的文本…（⌘/Ctrl + ↵ 快速翻译）"
           className="pd-plush-input w-full min-h-[140px] p-3 text-sm resize-y text-ink-800 leading-relaxed focus:outline-none"
-          aria-invalid={isOver}
-          aria-describedby="char-count"
         />
       </div>
 
       {/* CTA */}
       <div className="flex gap-2 items-center">
-        <Button variant="primary" onClick={onTranslate} disabled={!canTranslate} aria-controls="translation-result">
+        <Button variant="primary" onClick={onTranslate} disabled={!canTranslate} aria-controls="translation-result" aria-disabled={!canTranslate}>
           {status === 'loading' ? (
             <>
               <span aria-hidden className="pd-btn-dot" />
@@ -85,7 +97,7 @@ export const Editor = memo(function Editor({
           variant="ghost"
           disabled={!text}
           title={!text ? '没有可清空的内容' : '清空输入和翻译结果'}
-          onClick={onClear}
+          onClick={handleClearClick}
         >
           清空
         </Button>
