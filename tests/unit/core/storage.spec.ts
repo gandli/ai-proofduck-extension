@@ -76,4 +76,18 @@ describe('storage', () => {
 
     expect(themeCb).not.toHaveBeenCalled();
   });
+
+  it('onChanged newValue=undefined → 回调收到 defaultValue', async () => {
+    const theme = defineStorage<string>('theme', 'system', { area: 'sync' });
+    const cb = vi.fn();
+    theme.watch(cb);
+
+    // 直接触发 chrome.storage.onChanged，newValue 为 undefined
+    fakeBrowser.storage.onChanged.trigger({
+      theme: { newValue: undefined, oldValue: 'light' },
+    }, 'sync');
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(cb).toHaveBeenCalledWith('system', 'light');
+  });
 });
