@@ -146,6 +146,49 @@ entrypoints/          WXT 入口
 
 更详细的引擎 API 契约见 `src/engines/types.ts`。
 
+## 本地开发快速指南
+
+```bash
+# 一窗三开：单元测试监听 + E2E + 构建
+bun run dev              # 自动加载 unpacked 扩展到 Chrome
+bun run test             # vite --mode test (377 tests)
+npx playwright test --headed tests/e2e/visual.spec.ts  # 截图验证 (先 build)
+
+# 覆盖率
+bunx vitest run --coverage
+# target: stmts ≥95%, branch ≥90%, funcs ≥92%
+
+# lint (非类型感知 — 类型安全依赖 tsc --noEmit)
+bun run lint
+
+# 升级 wxt / typescript-eslint 后验证三件套
+bun run compile && bun run lint && bun run test
+```
+
+### E2E 测试秘籍
+- MV3 扩展必须在 launched Chrome 里加载 (headless: false)
+- 每文件 `launchPersistentContext` + `--disable-extensions-except` 起独立实例 (userDataDir 用 mkdtemp + rmSync)
+- 截图默认 `screenshots/`，visual E2E 无 assert — 纯视觉确认
+- 已有 e2e: `perms-v0.4.spec.ts` (权限迁移)、`visual.spec.ts` (渲染)
+
+```bash
+# 跑全部 e2e (≈25s)
+npx playwright test tests/e2e/
+```
+
+### 组件边界速查
+```
+src/components/
+├── OpenAiCompatSection.tsx   # 327loc — 配置表单 (3 子域: preset/host-perms/test)
+├── HostPermissionStatus.tsx   # 72loc — 域名授权状态 UI
+├── SelectionBubble.tsx        # 184loc — 划词浮标 (idle/loading/error)
+├── SuccessBubble.tsx          # 99loc — 成功态深色气泡
+├── types.ts                   # 18loc — 共享类型
+└── ...                        # PD-Logo, Settings, EngineStatus 等保持现状
+```
+
+**最后更新**：2026-07-30 · v0.5.6 审计 v6
+
 ## Skills / 内部约定
 
 本项目使用了 Hermes Agent 的 skill 系统。相关 skill 的最新版可在 [Hermes docs](https://hermes-agent.nousresearch.com/docs) 找到：
