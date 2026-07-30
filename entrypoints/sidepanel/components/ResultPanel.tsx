@@ -59,6 +59,7 @@ export function ResultPanel({
               title={copied ? "已复制" : "复制译文"}
               className="flex items-center justify-center w-6 h-6 rounded hover:bg-ink-100 text-ink-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 transition-colors"
             >
+              <span className="sr-only">{copied ? "已复制" : "复制译文"}</span>
               {copied ? (
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-600">
                   <polyline points="20 6 9 17 4 12" />
