@@ -65,4 +65,20 @@ describe('GeminiSection', () => {
       expect(screen.getByText(/已保存/)).toBeInTheDocument();
     });
   });
+
+  it('storage 有已存 config 时自动加载', async () => {
+    const _chrome = (globalThis as { chrome?: Record<string, unknown> }).chrome ?? {};
+    (globalThis as { chrome?: Record<string, unknown> }).chrome = {
+      ..._chrome,
+      storage: {
+        ...(_chrome.storage as Record<string, unknown> ?? {}),
+        local: {
+          get: async () => ({ geminiConfig: { apiKey: 'AIzaSyPreloaded', model: 'gemini-2.0-flash' } }),
+          set: vi.fn(),
+        },
+      },
+    };
+    render(<GeminiSection />);
+    await screen.findByDisplayValue('AIzaSyPreloaded');
+  });
 });

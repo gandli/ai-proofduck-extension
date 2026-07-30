@@ -120,4 +120,18 @@ describe('createGeminiEngine', () => {
       ).rejects.toThrow('The operation was aborted');
     });
   });
+
+  describe('systemPromptFor — all 5 modes', () => {
+    const modes = ['translate', 'summarize', 'correct', 'polish', 'expand'] as const;
+    for (const mode of modes) {
+      it(`mode=${mode} 返回成功`, async () => {
+        mocks.storage.value = { apiKey: 'AIzaSyMulti' };
+        vi.mocked(fetch).mockResolvedValueOnce(
+          new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: `result-${mode}` }] } }] }), { status: 200 }),
+        );
+        const result = await createGeminiEngine().run({ mode, text: 'test' });
+        expect(result).toBe(`result-${mode}`);
+      });
+    }
+  });
 });
