@@ -32,6 +32,7 @@
  */
 import { useEffect, useRef, useState, memo } from 'react';
 import type { SelectionRect } from '@hooks/useSelection';
+import { SuccessBubble } from './SuccessBubble';
 
 export type BubbleStatus = 'idle' | 'loading' | 'success' | 'error';
 
@@ -51,7 +52,6 @@ export interface SelectionBubbleProps {
 export const SelectionBubble = memo(function SelectionBubble(props: SelectionBubbleProps) {
   const { selectedText, rect, status, output, error, engineName, onTrigger, onDismiss } = props;
   const rootRef = useRef<HTMLDivElement>(null);
-  const [copied, setCopied] = useState(false);
 
   // Esc 关闭
   // ⚡ Bolt: Only attach global keyboard listener when the bubble is visible to reduce CPU overhead.
@@ -86,17 +86,6 @@ export const SelectionBubble = memo(function SelectionBubble(props: SelectionBub
 
   // 无选中不渲染
   if (!selectedText || !rect) return null;
-
-  // 复制到剪贴板
-  const handleCopy = () => {
-    if (!output) return;
-    navigator.clipboard.writeText(output).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }).catch(() => {
-      // 用户拒绝或非 secure context —— 忽略即可
-    });
-  };
 
   return (
     <div
@@ -161,167 +150,11 @@ export const SelectionBubble = memo(function SelectionBubble(props: SelectionBub
       )}
 
       {status === 'success' && (
-        <div
-          // v0.4：深色气泡 + 顶部箭头
-          style={{
-            position: 'relative',
-            background: '#495057',
-            color: 'white',
-            borderRadius: 10,
-            boxShadow: '0 12px 32px rgba(73,80,87,0.28), 0 2px 4px rgba(73,80,87,0.15)',
-            border: '1px solid #343a40',
-            padding: '10px 12px',
-            fontSize: 13,
-            maxWidth: 320,
-            lineHeight: 1.6,
-          }}
-        >
-          {/* 顶部箭头指向选区 */}
-          <span
-            aria-hidden
-            style={{
-              position: 'absolute',
-              top: -6,
-              left: 20,
-              width: 12,
-              height: 12,
-              background: '#495057',
-              transform: 'rotate(45deg)',
-              borderRadius: 2,
-              borderTop: '1px solid #343a40',
-              borderLeft: '1px solid #343a40',
-            }}
-          />
-          {/* 顶栏：引擎 + 操作 */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: 6,
-              gap: 8,
-            }}
-          >
-            {engineName && (
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                  fontSize: 10.5,
-                  color: '#ffd43b',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.06em',
-                  fontWeight: 600,
-                }}
-              >
-                <span aria-hidden>🖥</span>
-                <span>{engineName}</span>
-              </span>
-            )}
-            <div style={{ display: 'flex', gap: 1 }}>
-              <button
-                type="button"
-                className="focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
-                onClick={handleCopy}
-                aria-label={copied ? "已复制" : "复制译文"}
-                title={copied ? "已复制" : "复制译文"}
-                style={{
-                  width: 22,
-                  height: 22,
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#ced4da',
-                  cursor: 'pointer',
-                  borderRadius: 4,
-                  display: 'grid',
-                  placeItems: 'center',
-                  fontSize: 11,
-                  padding: 0,
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget).style.background = 'rgba(255,255,255,0.1)';
-                  (e.currentTarget).style.color = 'white';
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget).style.background = 'transparent';
-                  (e.currentTarget).style.color = '#ced4da';
-                }}
-              >
-                {copied ? "\u2713" : "📋"}
-              </button>
-              <button
-                type="button"
-                className="focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
-                onClick={onDismiss}
-                aria-label="关闭"
-                title="关闭（Esc）"
-                style={{
-                  width: 22,
-                  height: 22,
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#ced4da',
-                  cursor: 'pointer',
-                  borderRadius: 4,
-                  display: 'grid',
-                  placeItems: 'center',
-                  fontSize: 11,
-                  padding: 0,
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget).style.background = 'rgba(255,255,255,0.1)';
-                  (e.currentTarget).style.color = 'white';
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget).style.background = 'transparent';
-                  (e.currentTarget).style.color = '#ced4da';
-                }}
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-          {/* 译文 */}
-          <div
-            style={{
-              fontFamily: '"Noto Serif SC", Georgia, serif',
-              fontSize: 14,
-              lineHeight: 1.6,
-              color: 'white',
-            }}
-          >
-            {output}
-          </div>
-          {/* 底部快捷键提示 */}
-          <div
-            style={{
-              marginTop: 8,
-              paddingTop: 6,
-              borderTop: '1px solid rgba(255,255,255,0.1)',
-              fontSize: 10.5,
-              color: '#adb5bd',
-              display: 'flex',
-              justifyContent: 'flex-end',
-            }}
-          >
-            <span>
-              <kbd
-                style={{
-                  fontFamily: '"JetBrains Mono", "SF Mono", monospace',
-                  background: 'rgba(255,255,255,0.08)',
-                  padding: '1px 5px',
-                  borderRadius: 3,
-                  color: '#ced4da',
-                  fontSize: 10,
-                }}
-              >
-                Esc
-              </kbd>{' '}
-              关闭
-            </span>
-          </div>
-        </div>
+        <SuccessBubble
+          output={output || ''}
+          engineName={engineName}
+          onDismiss={onDismiss}
+        />
       )}
 
       {status === 'error' && (

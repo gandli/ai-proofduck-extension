@@ -22,14 +22,9 @@ import {
 } from '@core/host-permissions';
 import { extractOriginPattern } from '@core/origin-pattern';
 import { Eye, EyeOff } from 'lucide-react';
+import { HostPermissionStatus } from './HostPermissionStatus';
+import type { PermState, TestState, Preset } from './types';
 
-interface Preset {
-  name: string;
-  baseUrl: string;
-  model: string;
-}
-
-// 预设：官方文档推荐入口 + 便宜/中文友好模型默认值
 const PRESETS: Preset[] = [
   { name: 'OpenAI', baseUrl: 'https://api.openai.com', model: 'gpt-4o-mini' },
   { name: 'DeepSeek', baseUrl: 'https://api.deepseek.com', model: 'deepseek-chat' },
@@ -37,20 +32,6 @@ const PRESETS: Preset[] = [
   { name: '豆包', baseUrl: 'https://ark.cn-beijing.volces.com/api', model: 'doubao-1-5-lite-32k' },
   { name: 'Kimi', baseUrl: 'https://api.moonshot.cn', model: 'moonshot-v1-8k' },
 ];
-
-type TestState =
-  | { status: 'idle' }
-  | { status: 'testing' }
-  | { status: 'success'; modelCount: number }
-  | { status: 'error'; message: string };
-
-// Round 5 (#465): 授权状态机
-type PermState =
-  | { status: 'unknown' }              // 首次未查完 / baseUrl 空
-  | { status: 'granted' }
-  | { status: 'missing' }              // 缺权限，可点【授权】
-  | { status: 'requesting' }
-  | { status: 'denied' };              // 用户点了拒绝
 
 export function OpenAiCompatSection() {
   const [loaded, setLoaded] = useState(false);
@@ -251,44 +232,7 @@ export function OpenAiCompatSection() {
           className="w-full rounded-md border border-slate-300 p-2 text-sm font-mono focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
         />
         {/* Round 5 (#465): host 权限状态 */}
-        {hostPattern && hostOrigin && permState.status === 'missing' && (
-          <div className="mt-2 p-2 rounded-md bg-amber-50 border border-amber-300 text-xs">
-            <p className="text-amber-800 mb-2">
-              ⚠️ 校对鸭还没获得访问 <code className="font-mono">{hostOrigin}</code> 的权限，翻译请求会被浏览器拦截。
-            </p>
-            <button
-              type="button"
-              onClick={handleAuthorize}
-              className="px-2.5 py-1 rounded-md text-xs font-medium bg-amber-500 text-white hover:bg-amber-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-1"
-            >
-              授权访问 {hostOrigin}
-            </button>
-          </div>
-        )}
-        {hostPattern && hostOrigin && permState.status === 'requesting' && (
-          <div className="mt-2 p-2 rounded-md bg-slate-50 border border-slate-300 text-xs text-slate-600">
-            正在请求授权...
-          </div>
-        )}
-        {hostPattern && hostOrigin && permState.status === 'granted' && (
-          <p className="mt-2 text-xs text-emerald-600">
-            ✅ 已授权访问 <code className="font-mono">{hostOrigin}</code>
-          </p>
-        )}
-        {hostPattern && hostOrigin && permState.status === 'denied' && (
-          <div className="mt-2 p-2 rounded-md bg-rose-50 border border-rose-300 text-xs">
-            <p className="text-rose-800 mb-2">
-              ❌ 授权被拒绝，翻译无法访问 <code className="font-mono">{hostOrigin}</code>。
-            </p>
-            <button
-              type="button"
-              onClick={handleAuthorize}
-              className="px-2.5 py-1 rounded-md text-xs font-medium bg-amber-500 text-white hover:bg-amber-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-1"
-            >
-              授权访问 {hostOrigin}
-            </button>
-          </div>
-        )}
+        <HostPermissionStatus baseUrl={baseUrl} permState={permState} onAuthorize={handleAuthorize} />
       </div>
 
       {/* apiKey */}
