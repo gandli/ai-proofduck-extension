@@ -247,7 +247,7 @@ describe('SidePanel M2 翻译交互', () => {
     });
 
     const copyBtn = screen.getByRole('button', { name: /复制/ });
-    expect(copyBtn.textContent).toContain('复制');
+    expect(copyBtn.getAttribute('aria-label')).toContain('复制');
 
     await act(async () => {
       fireEvent.click(copyBtn);
@@ -258,7 +258,7 @@ describe('SidePanel M2 翻译交互', () => {
     });
 
     expect(writeText).toHaveBeenCalledWith('翻译：copy test');
-    expect(copyBtn.textContent).toContain('已复制');
+    expect(copyBtn.getAttribute('aria-label')).toContain('已复制');
   });
 
   it('加载态渲染骨架块而非 ⏳ emoji（品牌禁用 emoji）', async () => {
