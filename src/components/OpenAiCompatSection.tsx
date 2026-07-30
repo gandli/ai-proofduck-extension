@@ -71,7 +71,6 @@ export function OpenAiCompatSection() {
   }, [baseUrl]);
 
   // 派生状态：无 hostPattern 时 permState 统一为 unknown，避免 setState in effect
-  // (Gemini review 建议：You Might Not Need an Effect)
   const permState: PermState = useMemo(
     () => (hostPattern ? rawPermState : { status: 'unknown' }),
     [hostPattern, rawPermState],
@@ -96,16 +95,6 @@ export function OpenAiCompatSection() {
       unsub();
     };
   }, [hostPattern]);
-
-  // 计算显示用 origin（去掉 /*）
-  const hostOrigin = useMemo(() => {
-    if (!baseUrl) return '';
-    try {
-      return new URL(baseUrl).host;
-    } catch {
-      return '';
-    }
-  }, [baseUrl]);
 
   const handleAuthorize = useCallback(async () => {
     if (!hostPattern) return;

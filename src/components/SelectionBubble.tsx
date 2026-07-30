@@ -30,7 +30,7 @@
  * Shadow DOM 场景：Tailwind 在 content script 里通常靠 wxt-css 注入；
  * 这里所有关键样式**同时给一层内联 fallback**，即使 CSS 加载失败也能看。
  */
-import { useEffect, useRef, useState, memo } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import type { SelectionRect } from '@hooks/useSelection';
 import { SuccessBubble } from './SuccessBubble';
 

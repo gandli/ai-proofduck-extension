@@ -39,7 +39,6 @@ function systemPromptFor(input: EngineRunInput): string {
 }
 
 function buildContents(input: EngineRunInput) {
-  const parts: { text: string }[] = [{ text: input.text }];
   const sys = systemPromptFor(input);
   // Gemini system instruction via contents[0].role='user' with system prefix
   return [
