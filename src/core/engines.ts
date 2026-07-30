@@ -14,6 +14,7 @@ import { createChromeAiEngine } from '@engines/chrome-ai';
 import { createWebLlmEngine } from '@engines/webllm';
 import { createOpenAiCompatEngine } from '@engines/openai-compat';
 import { createFreeTranslateEngine } from '@engines/free-translate';
+import { createGeminiEngine } from '@engines/gemini';
 import type { EngineManager } from './engine-manager';
 
 let instance: EngineManager | undefined;
@@ -24,6 +25,7 @@ export function getEngines(): EngineManager {
     // 注册顺序 = 优先级顺序（数字大的优先）
     instance.register(createChromeAiEngine());       // 100: 最快最准（Chrome 内置 Translator）
     instance.register(createWebLlmEngine());         //  90: WebGPU 本地推理（Qwen2.5-1.5B）
+    instance.register(createGeminiEngine());         //  80: Google Gemini API
     instance.register(createOpenAiCompatEngine());   //  70: 用户 BYOK 云端 / 自建
     instance.register(createFreeTranslateEngine()); //  60: Google 公开端点，装完即用兜底
     // M2 后续 cycle：（都上齐了！）

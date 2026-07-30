@@ -9,7 +9,7 @@
  *   chrome-ai / webllm / wasm / openai-compat / free-translate
  */
 
-export type EngineId = 'chrome-ai' | 'webllm' | 'wasm' | 'openai-compat' | 'free-translate';
+export type EngineId = 'chrome-ai' | 'webllm' | 'wasm' | 'openai-compat' | 'free-translate' | 'gemini';
 
 export type EngineMode = 'translate' | 'summarize' | 'correct' | 'polish' | 'expand';
 
