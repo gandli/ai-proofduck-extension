@@ -157,6 +157,7 @@ describe('OptionsApp 行为', () => {
     > = [];
     (globalThis as unknown as { chrome: unknown }).chrome = {
       storage: {
+        local: { get: async () => ({}) },
         onChanged: {
           addListener: (fn: (typeof listeners)[number]) => listeners.push(fn),
           removeListener: (fn: (typeof listeners)[number]) => {
@@ -192,6 +193,7 @@ describe('OptionsApp 行为', () => {
     > = [];
     (globalThis as unknown as { chrome: unknown }).chrome = {
       storage: {
+        local: { get: async () => ({}) },
         onChanged: {
           addListener: (fn: (typeof listeners)[number]) => listeners.push(fn),
           removeListener: () => undefined,

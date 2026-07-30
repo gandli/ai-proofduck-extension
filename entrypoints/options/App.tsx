@@ -3,7 +3,7 @@
  *
  * v0.4 UI 变更：
  * - 品牌 header：logo 渐变 + serif 标题 + 简介
- * - 引擎健康度总览卡（chrome-ai / webllm / openai-compat / free-translate 一览）
+ * - 引擎健康度总览卡（chrome-ai / webllm / openai-compat / free-translate / gemini 一览）
  * - 分区语义化：外观 / 引擎路由 / OpenAI 兼容 / 免费兜底
  * - 品牌黄贯穿：header 渐变、focus ring、健康度卡背景
  *
@@ -17,6 +17,7 @@ import { useEffect, useState } from 'react';
 import { useSettingsStore } from '@stores/settings';
 import type { Theme, Locale, EngineId } from '@stores/settings';
 import { OpenAiCompatSection } from '@components/OpenAiCompatSection';
+import { GeminiSection } from '@components/GeminiSection';
 import { FreeTranslateSection } from '@components/FreeTranslateSection';
 import { getEngines } from '@core/engines';
 import { defineStorage } from '@core/storage';
@@ -214,9 +215,10 @@ export default function OptionsApp() {
               value={defaultEngine}
               onChange={(e) => setDefaultEngine(e.target.value as EngineId)}
             >
-              <option value="auto">自动（chrome-ai → webllm → openai → 兜底）</option>
+              <option value="auto">自动（chrome-ai → webllm → gemini → openai → 兜底）</option>
               <option value="chrome-ai">Chrome AI · Gemini Nano</option>
               <option value="webllm">WebLLM · WebGPU</option>
+              <option value="gemini">Gemini API</option>
               <option value="openai-compat">OpenAI 兼容 API</option>
               <option value="free-translate">免费翻译（Google 公开端点）</option>
             </select>
@@ -228,6 +230,11 @@ export default function OptionsApp() {
           {/* OpenAI 兼容 API */}
           <section className="p-5 border-b border-ink-200">
             <OpenAiCompatSection />
+          </section>
+
+          {/* Gemini API */}
+          <section className="p-5 border-b border-ink-200">
+            <GeminiSection />
           </section>
 
           {/* 免费翻译兜底 */}
