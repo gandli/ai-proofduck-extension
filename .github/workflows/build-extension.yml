@@ -35,7 +35,7 @@ jobs:
       - name: QA gate · tsc + lint + vitest
         run: |
           bun run compile
-          # bun run lint (Disabled temporarily due to typescript-eslint env issue)
+          bun run lint
           bun run test
 
       - name: Build and Zip Extension

@@ -23,6 +23,7 @@ export default defineConfig({
     name: '__MSG_extensionName__',
     description: '__MSG_extensionDescription__',
     default_locale: 'zh_CN',
+    minimum_chrome_version: '116',
     permissions: ['sidePanel', 'storage', 'activeTab'],
     // Round 6 (#465): 权限收窄 v0.4 —— 静态列 3 引擎的固定域名 required；
     // openai-compat 的 baseUrl 由用户运行时按需授权。
