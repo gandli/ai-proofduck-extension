@@ -14,7 +14,7 @@
  * content 侧：  bus.send('engine:translate', { text: 'hi' })
  */
 
-import { formatErrorMessage } from '@utils/error';
+import { formatErrorMessage, logSanitizedError } from '@utils/error';
 
 /** 消息 schema 约束：key 是消息类型字符串，value 是 payload 类型 */
 export type MessageSchema = Record<string, unknown>;
@@ -86,7 +86,7 @@ export function defineMessages<M extends MessageSchema>(): MessageBus<M> {
             .catch((err: unknown) => {
               // 只打脱敏后的 message，不打 raw err —— err.stack 可能包含用户输入
               // （e.g. translate:request 里 text 会被拼进 error stack）
-              console.error('[message-bus] handler failed:', formatErrorMessage(err));
+              logSanitizedError('[message-bus]', err);
               sendResponse?.({ error: formatErrorMessage(err) });
             });
           return true;

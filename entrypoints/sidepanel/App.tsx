@@ -158,6 +158,11 @@ export default function SidePanelApp({ engine }: Props = {}) {
           onClear={handleClear}
         />
 
+        {/* aria-live 区域：屏幕阅读器播报翻译状态变化 */}
+        <div aria-live="polite" aria-atomic="true" className="sr-only">
+          {status === 'loading' ? '翻译中' : status === 'done' ? '翻译完成' : status === 'error' ? '翻译失败' : ''}
+        </div>
+
         <ResultPanel
           output={output}
           status={status}

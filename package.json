@@ -48,8 +48,8 @@
     "jsdom": "^29.1.1",
     "postcss": "^8.5.16",
     "tailwindcss": "^4.3.2",
-    "typescript": "^7.0.2",
-    "typescript-eslint": "^8.63.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "8.65.1-alpha.17",
     "vitest": "^4.1.10",
     "wxt": "^0.21.2"
   },
