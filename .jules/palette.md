@@ -9,3 +9,7 @@
 ## 2025-07-27 - Fixed Focus Loss on Clear Button
 **Learning:** When a button disables itself upon being clicked (like a "Clear Text" button that becomes disabled when the input is empty), the keyboard focus is lost and resets to the `body` element. This creates a highly frustrating experience for screen reader and keyboard users who must tab all the way back through the page. Additionally, adding `aria-invalid` to textareas when limits are exceeded improves form accessibility.
 **Action:** Always programmatically manage focus (e.g., return focus to the primary input field) when an action disables the currently focused interactive element. Use `aria-invalid` for constraint validation states.
+## 2025-05-18 - Improve Gemini API Key Visibility
+
+**Learning:** The Gemini API configuration section in the Options page had a password field for the API Key but no way for the user to toggle visibility. Given that API Keys are long and hard to verify when pasted, providing a toggle (like the one used in `OpenAiCompatSection`) significantly improves the user experience by reducing errors.
+**Action:** Implemented a visibility toggle for the API key input in `GeminiSection` to match the UX in `OpenAiCompatSection`, using the `Eye` and `EyeOff` icons from `lucide-react` with proper aria-labels and tooltips.

@@ -1,5 +1,6 @@
 /** GeminiSection: Options 页的 Gemini API 配置 */
 import { useEffect, useState, useCallback } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface GeminiConfig {
   apiKey: string;
@@ -12,6 +13,7 @@ const STORAGE_KEY = 'geminiConfig';
 export function GeminiSection() {
   const [loaded, setLoaded] = useState(false);
   const [apiKey, setApiKey] = useState('');
+  const [showKey, setShowKey] = useState(false);
   const [model, setModel] = useState(DEFAULT_MODEL);
   const [savedFlash, setSavedFlash] = useState(false);
 
@@ -50,15 +52,30 @@ export function GeminiSection() {
 
       <div className="space-y-1">
         <label htmlFor="gem-apikey" className="block text-sm font-medium">API Key</label>
-        <input
-          id="gem-apikey"
-          type="password"
-          value={apiKey}
-          onChange={(e) => setApiKey(e.target.value)}
-          placeholder="从 aistudio.google.com 获取"
-          autoComplete="off"
-          className="w-full rounded-md border border-slate-300 p-2 text-sm font-mono focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
-        />
+        <div className="flex gap-2">
+          <input
+            id="gem-apikey"
+            type={showKey ? 'text' : 'password'}
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder="从 aistudio.google.com 获取"
+            autoComplete="off"
+            className="flex-1 rounded-md border border-slate-300 p-2 text-sm font-mono focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+          />
+          <button
+            type="button"
+            onClick={() => setShowKey((s) => !s)}
+            title={showKey ? '隐藏 API Key' : '显示 API Key'}
+            aria-label={showKey ? '隐藏 API Key' : '显示 API Key'}
+            className="px-2 flex items-center justify-center text-slate-500 rounded-md border border-slate-300 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 hover:text-slate-700 transition-colors"
+          >
+            {showKey ? (
+              <EyeOff size={16} aria-hidden="true" />
+            ) : (
+              <Eye size={16} aria-hidden="true" />
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="flex items-center gap-3 pt-2">
