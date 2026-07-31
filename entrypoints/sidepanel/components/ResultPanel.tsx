@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { MAX_CHARS } from '../constants';
 import type { TranslateStatus } from '@hooks/useTranslate';
 import { Check, Copy } from 'lucide-react';
@@ -23,7 +23,9 @@ export interface ResultPanelProps {
   onRetry: () => void;
 }
 
-export function ResultPanel({
+// ⚡ Bolt: Memoize ResultPanel to prevent unnecessary re-renders when Editor text changes.
+// Impact: Reduces React rendering workload when typing in the Editor.
+export const ResultPanel = memo(function ResultPanel({
   output,
   status,
   error,
@@ -132,4 +134,4 @@ export function ResultPanel({
       </div>
     </div>
   );
-}
+});
