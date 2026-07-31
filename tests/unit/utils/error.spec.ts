@@ -73,6 +73,13 @@ describe('formatErrorMessage', () => {
   // v0.5.3 P1-2: 出口脱敏，防 Error.message 里的 apiKey/Bearer 泄露到日志或 UI
   // ========================
   describe('敏感串脱敏', () => {
+    it('Google AIza key 被脱敏', () => {
+      const key = 'AIzaSy' + 'G'.repeat(33);
+      const msg = formatErrorMessage(new Error(`Failed to load: ${key}`));
+      expect(msg).not.toContain(key);
+      expect(msg).toContain('AIza***REDACTED***');
+    });
+
     it('OpenAI sk-* key 被脱敏', () => {
       // 用字符串拼接构造，规避静态 secret scanner 误报
       const key = 'sk-' + 'A'.repeat(40);
