@@ -18,6 +18,8 @@
  * 单独 export 供 openai-compat 等场景直接对 body 脱敏（避免拼进 Error message 前二次拷贝）。
  */
 export const SECRET_PATTERNS: Array<[RegExp, string]> = [
+  // Google AI Studio API Key
+  [/AIza[0-9A-Za-z_-]{35}/g, 'AIza***REDACTED***'],
   // Anthropic sk-ant-* 必须排在 OpenAI sk-* 前面，否则 sk- 前缀会先匹配
   [/sk-ant-[A-Za-z0-9_-]{20,}/g, 'sk-ant-***REDACTED***'],
   [/sk-[A-Za-z0-9_-]{20,}/g, 'sk-***REDACTED***'],
