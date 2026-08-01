@@ -13,3 +13,7 @@
 
 **Learning:** The Gemini API configuration section in the Options page had a password field for the API Key but no way for the user to toggle visibility. Given that API Keys are long and hard to verify when pasted, providing a toggle (like the one used in `OpenAiCompatSection`) significantly improves the user experience by reducing errors.
 **Action:** Implemented a visibility toggle for the API key input in `GeminiSection` to match the UX in `OpenAiCompatSection`, using the `Eye` and `EyeOff` icons from `lucide-react` with proper aria-labels and tooltips.
+
+## 2025-08-01 - Fix dangling aria-controls
+**Learning:** When using `aria-controls` on a button, it is critical to ensure the target element actually has the corresponding `id` attribute. A dangling `aria-controls` without a matching `id` breaks screen reader navigation, as the screen reader cannot programmatically link the control to the content it affects.
+**Action:** Always verify that the `id` specified in `aria-controls` exists in the DOM.

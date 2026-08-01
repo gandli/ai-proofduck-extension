@@ -73,6 +73,7 @@ export const ResultPanel = memo(function ResultPanel({
         )}
       </div>
       <div
+        id="translation-result"
         className="pd-plush-input min-h-[140px] p-3 text-sm text-ink-warm leading-relaxed font-serif whitespace-pre-wrap"
         aria-label="翻译结果"
         aria-live="polite"
