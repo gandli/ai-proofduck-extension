@@ -11,6 +11,7 @@
  */
 import type { Engine, EngineMode, EngineRunInput } from './types';
 import { createFetchAbortHandle } from '@utils/fetch-abort';
+import { sanitizeSecrets } from '@utils/error';
 
 const BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 const DEFAULT_MODEL = 'gemini-2.0-flash';
@@ -101,7 +102,7 @@ export function createGeminiEngine(): Engine {
         });
         if (!resp.ok) {
           const body = await resp.text().catch(() => '');
-          throw new Error(`Gemini HTTP ${resp.status} ${body.slice(0, 200)}`);
+          throw new Error(`Gemini HTTP ${resp.status} ${sanitizeSecrets(body.slice(0, 1000)).slice(0, 200)}`);
         }
         const data = await resp.json() as {
           candidates?: { content?: { parts?: { text?: string }[] } }[];
