@@ -87,11 +87,15 @@ export function createGeminiEngine(): Engine {
       const cfg = await getConfig();
       const abort = createFetchAbortHandle(input.signal, 60_000);
       try {
-        const url = `${BASE}/${model}:generateContent?key=${cfg.apiKey}`;
+        const url = `${BASE}/${model}:generateContent`;
         const resp = await fetch(url, {
           method: 'POST',
           signal: abort.signal,
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            // 🛡️ Sentinel: Pass API key in header to prevent URL logging leakage
+            'x-goog-api-key': cfg.apiKey,
+          },
           body: JSON.stringify({
             contents: buildContents(input),
             generationConfig: {
