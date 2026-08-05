@@ -17,3 +17,7 @@
 ## 2025-08-01 - Fix dangling aria-controls
 **Learning:** When using `aria-controls` on a button, it is critical to ensure the target element actually has the corresponding `id` attribute. A dangling `aria-controls` without a matching `id` breaks screen reader navigation, as the screen reader cannot programmatically link the control to the content it affects.
 **Action:** Always verify that the `id` specified in `aria-controls` exists in the DOM.
+
+## 2025-08-05 - Add aria-live wrapper for conditional flash messages
+**Learning:** To ensure screen readers correctly announce dynamic status messages (like a conditionally rendered "Saved" checkmark), the conditionally rendered text must be wrapped inside a permanent, non-conditional container with `role="status"` and `aria-live="polite"`. If the `aria-live` container itself is conditionally rendered alongside the text, screen readers often fail to announce the change.
+**Action:** Always wrap conditionally rendered success/error messages in a permanent `<div role="status" aria-live="polite">` container to guarantee accessibility announcements.
