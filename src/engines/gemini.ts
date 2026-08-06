@@ -21,6 +21,28 @@ interface GeminiConfig {
   model: string;
 }
 
+
+/**
+ * 脱敏错误响应体，避免网关 echo 的 API key / Bearer token 泄露到日志或 UI。
+ *
+ * v0.6.0 Sentinel: 引擎侧对齐 openai-compat 的 sanitizeErrorBody，
+ * 解决 Gemini API key 漏检风险，使用 apiKey 字面量兜底，确保双保险。
+ */
+function sanitizeErrorBody(body: string, apiKey?: string): string {
+  // step 1: 缓冲区限流（安全 + 性能双赢）
+  const buffered = body.slice(0, 1000);
+  // step 2: 正则脱敏
+  const patternSanitized = sanitizeSecrets(buffered);
+  // step 3: 字面量 apiKey 兜底（自定义格式）
+  if (typeof apiKey === 'string') {
+    const trimmed = apiKey.trim();
+    if (trimmed.length >= 8) {
+      return patternSanitized.split(trimmed).join('***REDACTED***');
+    }
+  }
+  return patternSanitized;
+}
+
 function systemPromptFor(input: EngineRunInput): string {
   switch (input.mode) {
     case 'translate': {
@@ -102,7 +124,7 @@ export function createGeminiEngine(): Engine {
         });
         if (!resp.ok) {
           const body = await resp.text().catch(() => '');
-          throw new Error(`Gemini HTTP ${resp.status} ${sanitizeSecrets(body.slice(0, 1000)).slice(0, 200)}`);
+          throw new Error(`Gemini HTTP ${resp.status} ${sanitizeErrorBody(body, cfg.apiKey).slice(0, 200)}`);
         }
         const data = await resp.json() as {
           candidates?: { content?: { parts?: { text?: string }[] } }[];
