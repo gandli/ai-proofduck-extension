@@ -17,3 +17,7 @@
 ## 2025-08-01 - Fix dangling aria-controls
 **Learning:** When using `aria-controls` on a button, it is critical to ensure the target element actually has the corresponding `id` attribute. A dangling `aria-controls` without a matching `id` breaks screen reader navigation, as the screen reader cannot programmatically link the control to the content it affects.
 **Action:** Always verify that the `id` specified in `aria-controls` exists in the DOM.
+
+## 2025-08-06 - Improve loading state in Test Connection button
+**Learning:** Replacing complete text string replacement (e.g., '测试中...') with a structural UI/accessibility indicator (like a pulsing `.pd-btn-dot`) on buttons preserves button layout width and context for localized text when communicating asynchronous loading states.
+**Action:** Always prefer adding visual indicators like `.pd-btn-dot` adjacent to existing text over completely replacing the text content for button loading states.
