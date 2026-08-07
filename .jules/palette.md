@@ -17,3 +17,7 @@
 ## 2025-08-01 - Fix dangling aria-controls
 **Learning:** When using `aria-controls` on a button, it is critical to ensure the target element actually has the corresponding `id` attribute. A dangling `aria-controls` without a matching `id` breaks screen reader navigation, as the screen reader cannot programmatically link the control to the content it affects.
 **Action:** Always verify that the `id` specified in `aria-controls` exists in the DOM.
+
+## 2025-08-07 - Dynamic Status Message Accessibility
+**Learning:** Screen readers may fail to announce dynamic status messages if the `aria-live` region itself is conditionally rendered, as the screen reader does not register the region in time.
+**Action:** Always wrap conditionally rendered success or error text (e.g., `{isVisible && <span>...</span>}`) inside a permanent, non-conditional container element with `role="status"` and `aria-live="polite"`.
