@@ -15,7 +15,7 @@
  * Bug #P0 修复：早期版本硬编码 pickById('chrome-ai')，Chrome 138 以下就废了整个扩展。
  * 现在走 pickBest() 自动选出**当前可用**的最高优先级引擎。
  */
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslate } from '@hooks/useTranslate';
 import { getEngines } from '@core/engines';
 import type { Engine } from '@engines/types';
@@ -32,6 +32,12 @@ interface Props {
 
 export default function SidePanelApp({ engine }: Props = {}) {
   const [text, setText] = useState('');
+  const textRef = useRef(text);
+  // ⚡ Bolt: Update ref in useEffect to avoid 'cannot update ref during render' lint errors
+  // Impact: Ensures React linting passes while still allowing the ref to be used to avoid handleTranslate recreation.
+  useEffect(() => {
+    textRef.current = text;
+  }, [text]);
   const [target, setTarget] = useState('zh');
   const [source, setSource] = useState('auto'); // 'auto' 由引擎推断
   const [available, setAvailable] = useState<boolean | null>(null);
@@ -104,11 +110,13 @@ export default function SidePanelApp({ engine }: Props = {}) {
 
   // ⚡ Bolt: Memoize event handler functions to prevent unnecessary re-renders of child components.
   // Impact: Avoids unnecessary React re-renders when parent state updates that don't affect these specific components.
+  // ⚡ Bolt: Remove `text` from handleTranslate dependencies by using a ref.
+  // Impact: Prevents recreating handleTranslate on every keystroke, which preserves the memoization of Editor and ResultPanel components and significantly reduces re-renders during typing.
   const handleTranslate = useCallback(() => {
     // 'auto' → 让引擎自己推断；chrome-ai 目前需要显式 source，暂用启发式：中→英，其他→中
     const src = source === 'auto' ? (target === 'zh' ? 'en' : 'zh') : source;
-    void translate(text, { source: src, target });
-  }, [source, target, text, translate]);
+    void translate(textRef.current, { source: src, target });
+  }, [source, target, translate]);
 
   // 交换语言：auto 时不能交换（无源语言）
   const handleSwap = useCallback(() => {
