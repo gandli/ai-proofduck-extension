@@ -1,5 +1,5 @@
 /** SuccessBubble: SelectionBubble 成功态气泡 */
-import { useState } from 'react';
+import { useState, memo } from 'react';
 
 interface Props {
   output: string;
@@ -9,7 +9,9 @@ interface Props {
   onRetry?: () => void;
 }
 
-export function SuccessBubble({ output, engineName, onDismiss }: Props) {
+// ⚡ Bolt: Memoize SuccessBubble to prevent unnecessary re-renders when parent SelectionBubble state updates.
+// Impact: Reduces React rendering workload during text selection and floating bubble updates.
+export const SuccessBubble = memo(function SuccessBubble({ output, engineName, onDismiss }: Props) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -96,4 +98,4 @@ export function SuccessBubble({ output, engineName, onDismiss }: Props) {
       </div>
     </div>
   );
-}
+});
