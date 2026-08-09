@@ -82,7 +82,9 @@ export function GeminiSection() {
         <button type="button" onClick={handleSave} className="pd-btn pd-btn-primary px-3 py-1.5 rounded-md text-sm font-medium">
           保存
         </button>
-        {savedFlash && <span className="text-sm text-emerald-600">已保存 ✓</span>}
+        <div role="status" aria-live="polite">
+          {savedFlash && <span className="text-sm text-emerald-600">已保存 ✓</span>}
+        </div>
       </div>
     </section>
   );

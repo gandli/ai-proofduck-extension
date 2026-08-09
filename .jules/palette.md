@@ -17,3 +17,7 @@
 ## 2025-08-01 - Fix dangling aria-controls
 **Learning:** When using `aria-controls` on a button, it is critical to ensure the target element actually has the corresponding `id` attribute. A dangling `aria-controls` without a matching `id` breaks screen reader navigation, as the screen reader cannot programmatically link the control to the content it affects.
 **Action:** Always verify that the `id` specified in `aria-controls` exists in the DOM.
+
+## 2025-08-09 - Ensure dynamic success messages are announced
+**Learning:** When conditionally rendering a success message upon form save (e.g., in `GeminiSection`), placing the condition outside an `aria-live` region means screen readers often miss the update because the region itself wasn't in the DOM at the time of the update.
+**Action:** Always wrap conditionally rendered status messages inside a permanent, non-conditional container element with `role="status"` and `aria-live="polite"` to ensure they are reliably announced.
