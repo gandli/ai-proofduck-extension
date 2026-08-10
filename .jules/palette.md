@@ -21,3 +21,6 @@
 ## 2025-08-09 - Ensure dynamic success messages are announced
 **Learning:** When conditionally rendering a success message upon form save (e.g., in `GeminiSection`), placing the condition outside an `aria-live` region means screen readers often miss the update because the region itself wasn't in the DOM at the time of the update.
 **Action:** Always wrap conditionally rendered status messages inside a permanent, non-conditional container element with `role="status"` and `aria-live="polite"` to ensure they are reliably announced.
+## 2025-08-10 - Add tooltip explaining disabled button state
+**Learning:** Buttons that are disabled dynamically (e.g. "Test Connection" when form is incomplete) can be confusing for users if they don't know *why* it's disabled. Adding a dynamic `title` attribute that explains the disabled state significantly improves usability.
+**Action:** Always provide a `title` or tooltip explaining the condition when disabling an interactive element based on form state.
