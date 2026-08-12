@@ -11,3 +11,8 @@
 **Vulnerability:** The cached `getConfig` closure returned a literal `'runtime-loaded'` for the `apiKey` instead of reading it from storage.
 **Learning:** When modifying module-level caching closures (like `getConfig` in API engines) that use a boolean flag (e.g., `configLoaded`) to prevent redundant storage reads, you must ensure the variables holding the cached data are declared in the same outer scope as the flag. Declaring them locally or hardcoding them inside the closure will return uninitialized/hardcoded values on subsequent cache hits.
 **Prevention:** Always test credential caching layers and carefully review scope in closure-based caching mechanisms for API credentials.
+
+## 2026-07-07 - Prevent Gemini API Key Leakage via Error Logs
+**Vulnerability:** Gemini API key leakage via error messages could bypass regex redaction if a custom/short key does not match predefined SECRET_PATTERNS.
+**Learning:** For defense-in-depth, relying solely on generic regex patterns (like AIza or sk-) is insufficient when integrations may allow custom keys. An exact string literal fallback replacement must be implemented on the specific endpoint's error handler before the error is thrown.
+**Prevention:** Implement a standard literal replacement fallback (like openai-compat does) for all integrations where the actual configured key is accessible in scope during error handling. Note: Ensure not to retrieve keys directly in content scripts (like Gemini's runtime-loaded pattern) when applying this fallback if doing so breaks existing background interceptors.
