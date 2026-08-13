@@ -21,3 +21,6 @@
 ## 2025-08-09 - Ensure dynamic success messages are announced
 **Learning:** When conditionally rendering a success message upon form save (e.g., in `GeminiSection`), placing the condition outside an `aria-live` region means screen readers often miss the update because the region itself wasn't in the DOM at the time of the update.
 **Action:** Always wrap conditionally rendered status messages inside a permanent, non-conditional container element with `role="status"` and `aria-live="polite"` to ensure they are reliably announced.
+## 2025-08-13 - Add disabled state to Save buttons in Options forms
+**Learning:** In configuration forms (e.g., Gemini or OpenAI-Compat APIs), failing to disable the Save/Submit button when required fields are missing can lead users to save invalid states or trigger unnecessary validation errors.
+**Action:** Always add a `disabled` attribute tied to the completion state of required fields, and provide visual feedback by applying standard utility classes (like `disabled:opacity-50`) to the button.

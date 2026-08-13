@@ -79,7 +79,12 @@ export function GeminiSection() {
       </div>
 
       <div className="flex items-center gap-3 pt-2">
-        <button type="button" onClick={handleSave} className="pd-btn pd-btn-primary px-3 py-1.5 rounded-md text-sm font-medium">
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={!apiKey.trim()}
+          className="pd-btn pd-btn-primary px-3 py-1.5 rounded-md text-sm font-medium disabled:opacity-50"
+        >
           保存
         </button>
         <div role="status" aria-live="polite">
