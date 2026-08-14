@@ -24,3 +24,8 @@
 ## 2025-08-10 - Add tooltip explaining disabled button state
 **Learning:** Buttons that are disabled dynamically (e.g. "Test Connection" when form is incomplete) can be confusing for users if they don't know *why* it's disabled. Adding a dynamic `title` attribute that explains the disabled state significantly improves usability.
 **Action:** Always provide a `title` or tooltip explaining the condition when disabling an interactive element based on form state.
+
+## 2025-10-23 - Disable Save buttons when required fields are empty
+**Learning:** In configuration forms (like Gemini or OpenAI-Compat APIs), users might click "Save" when required fields (like API Key or Base URL) are missing, resulting in saving invalid states to storage.
+**Action:** Always disable the Save/Submit button when required fields are missing using `disabled` attribute and visual feedback (`disabled:opacity-50`) to prevent saving invalid configurations and improve the intuitiveness of the form.
+ (🎨 Palette: Disable Save buttons when required fields are empty)
