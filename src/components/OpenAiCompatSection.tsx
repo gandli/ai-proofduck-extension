@@ -278,7 +278,8 @@ export function OpenAiCompatSection() {
         <button
           type="button"
           onClick={handleSave}
-          className="pd-btn pd-btn-primary px-3 py-1.5 rounded-md text-sm font-medium"
+          disabled={!baseUrl.trim() || !apiKey.trim() || !model.trim()}
+          className="pd-btn pd-btn-primary px-3 py-1.5 rounded-md text-sm font-medium disabled:opacity-50"
         >
           保存
         </button>
