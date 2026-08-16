@@ -4,3 +4,6 @@
 ## 2024-05-18 - EngineManager pickBest Sorting
 **Learning:** Found that `EngineManager.pickBest` repeatedly sorts the `engines` Map values on every invocation. Since `pickBest` is called frequently (e.g., when resolving engines or opening selection bubbles), sorting the engines repeatedly adds an O(N log N) overhead that can be optimized by caching the sorted result and invalidating it only when `register` is called.
 **Action:** Implement caching of the sorted engines array in `createEngineManager` to reduce overhead and improve responsiveness.
+## 2024-05-18 - Stable Callbacks and React.memo
+**Learning:** Found that \`ResultPanel\` in \`App.tsx\` was unnecessarily re-rendering on every keystroke in the \`Editor\`. Even though \`ResultPanel\` is memoized with \`React.memo\`, it receives the \`handleTranslate\` callback as a prop. Because \`handleTranslate\` depended on rapidly changing state like \`text\`, it was re-created on every keystroke, defeating the memoization.
+**Action:** Use the latest-ref pattern (storing state in a \`useRef\` and keeping the callback dependency array empty) to decouple callbacks from rapidly changing state, ensuring memoized child components don't unnecessarily re-render.

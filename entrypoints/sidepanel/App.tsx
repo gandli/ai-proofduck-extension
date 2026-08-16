@@ -15,7 +15,7 @@
  * Bug #P0 修复：早期版本硬编码 pickById('chrome-ai')，Chrome 138 以下就废了整个扩展。
  * 现在走 pickBest() 自动选出**当前可用**的最高优先级引擎。
  */
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslate } from '@hooks/useTranslate';
 import { getEngines } from '@core/engines';
 import type { Engine } from '@engines/types';
@@ -104,11 +104,19 @@ export default function SidePanelApp({ engine }: Props = {}) {
 
   // ⚡ Bolt: Memoize event handler functions to prevent unnecessary re-renders of child components.
   // Impact: Avoids unnecessary React re-renders when parent state updates that don't affect these specific components.
+  // ⚡ Bolt: Use latest-ref pattern for callbacks to prevent re-creating them on every keystroke.
+  // Impact: Keeps handleTranslate stable, which prevents ResultPanel from re-rendering on every Editor keystroke (defeating its React.memo).
+  const stateRef = useRef({ source, target, text, translate, canTranslate });
+  useEffect(() => {
+    stateRef.current = { source, target, text, translate, canTranslate };
+  }, [source, target, text, translate, canTranslate]);
+
   const handleTranslate = useCallback(() => {
+    const { source, target, text, translate } = stateRef.current;
     // 'auto' → 让引擎自己推断；chrome-ai 目前需要显式 source，暂用启发式：中→英，其他→中
     const src = source === 'auto' ? (target === 'zh' ? 'en' : 'zh') : source;
     void translate(text, { source: src, target });
-  }, [source, target, text, translate]);
+  }, []);
 
   // 交换语言：auto 时不能交换（无源语言）
   const handleSwap = useCallback(() => {
@@ -119,11 +127,11 @@ export default function SidePanelApp({ engine }: Props = {}) {
 
   // Ctrl/⌘ + Enter 快捷键提交
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && canTranslate) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && stateRef.current.canTranslate) {
       e.preventDefault();
       handleTranslate();
     }
-  }, [canTranslate, handleTranslate]);
+  }, [handleTranslate]);
 
   // ⚡ Bolt: Memoize handleClear using useCallback to prevent child Editor component from re-rendering.
   // Impact: Avoids unnecessary React diffing of the Editor on every parent state change.
