@@ -108,7 +108,13 @@ export function createGeminiEngine(): Engine {
         });
         if (!resp.ok) {
           const body = await resp.text().catch(() => '');
-          throw new Error(`Gemini HTTP ${resp.status} ${sanitizeSecrets(body.slice(0, 1000)).slice(0, 200)}`);
+          // 🛡️ Sentinel: added apiKey literal fallback fallback just like openai-compat
+          const patternSanitized = sanitizeSecrets(body.slice(0, 1000));
+          const trimmedKey = cfg.apiKey !== 'runtime-loaded' ? cfg.apiKey.trim() : '';
+          const finalBody = trimmedKey.length >= 8
+            ? patternSanitized.split(trimmedKey).join('***REDACTED***')
+            : patternSanitized;
+          throw new Error(`Gemini HTTP ${resp.status} ${finalBody.slice(0, 200)}`);
         }
         const data = await resp.json() as {
           candidates?: { content?: { parts?: { text?: string }[] } }[];
