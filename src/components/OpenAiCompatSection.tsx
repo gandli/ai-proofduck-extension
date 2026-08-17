@@ -110,7 +110,7 @@ export function OpenAiCompatSection() {
   }, [hostPattern]);
 
   const handleSave = useCallback(async () => {
-    await openaiCompatConfig.set({ baseUrl, apiKey, model });
+    await openaiCompatConfig.set({ baseUrl: baseUrl.trim(), apiKey: apiKey.trim(), model: model.trim() });
     setSavedFlash(true);
     setTimeout(() => setSavedFlash(false), 2000);
   }, [baseUrl, apiKey, model]);
@@ -278,7 +278,8 @@ export function OpenAiCompatSection() {
         <button
           type="button"
           onClick={handleSave}
-          className="pd-btn pd-btn-primary px-3 py-1.5 rounded-md text-sm font-medium"
+          disabled={!baseUrl.trim() || !apiKey.trim()}
+          className="pd-btn pd-btn-primary px-3 py-1.5 rounded-md text-sm font-medium disabled:opacity-50"
         >
           保存
         </button>
