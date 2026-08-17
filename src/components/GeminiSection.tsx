@@ -31,8 +31,6 @@ export function GeminiSection() {
     return () => { mounted = false; };
   }, []);
 
-  const canSave = Boolean(apiKey.trim() && model.trim());
-
   const handleSave = useCallback(async () => {
     await chrome.storage.local.set({ [STORAGE_KEY]: { apiKey, model } });
     setSavedFlash(true);
@@ -81,12 +79,7 @@ export function GeminiSection() {
       </div>
 
       <div className="flex items-center gap-3 pt-2">
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={!canSave}
-          className="pd-btn pd-btn-primary px-3 py-1.5 rounded-md text-sm font-medium disabled:opacity-50"
-        >
+        <button type="button" onClick={handleSave} className="pd-btn pd-btn-primary px-3 py-1.5 rounded-md text-sm font-medium">
           保存
         </button>
         <div role="status" aria-live="polite">
