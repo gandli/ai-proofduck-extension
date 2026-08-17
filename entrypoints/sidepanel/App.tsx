@@ -15,7 +15,7 @@
  * Bug #P0 修复：早期版本硬编码 pickById('chrome-ai')，Chrome 138 以下就废了整个扩展。
  * 现在走 pickBest() 自动选出**当前可用**的最高优先级引擎。
  */
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslate } from '@hooks/useTranslate';
 import { getEngines } from '@core/engines';
 import type { Engine } from '@engines/types';
@@ -102,13 +102,19 @@ export default function SidePanelApp({ engine }: Props = {}) {
     available !== false &&
     !isSameLanguage;
 
-  // ⚡ Bolt: Memoize event handler functions to prevent unnecessary re-renders of child components.
-  // Impact: Avoids unnecessary React re-renders when parent state updates that don't affect these specific components.
+  const textRef = useRef(text);
+  // Update ref in effect to avoid React concurrent mode warnings
+  useEffect(() => {
+    textRef.current = text;
+  }, [text]);
+
+  // ⚡ Bolt: Use textRef to decouple handleTranslate from the rapidly changing text state.
+  // Impact: Prevents ResultPanel from re-rendering on every single keystroke.
   const handleTranslate = useCallback(() => {
     // 'auto' → 让引擎自己推断；chrome-ai 目前需要显式 source，暂用启发式：中→英，其他→中
     const src = source === 'auto' ? (target === 'zh' ? 'en' : 'zh') : source;
-    void translate(text, { source: src, target });
-  }, [source, target, text, translate]);
+    void translate(textRef.current, { source: src, target });
+  }, [source, target, translate]);
 
   // 交换语言：auto 时不能交换（无源语言）
   const handleSwap = useCallback(() => {
