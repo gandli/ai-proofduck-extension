@@ -286,6 +286,7 @@ export function OpenAiCompatSection() {
           type="button"
           onClick={handleTest}
           disabled={!canTest || testState.status === 'testing'}
+          title={!canTest ? '请填写完整配置' : testState.status === 'testing' ? '测试中...' : '测试连接'}
           className="px-3 py-1.5 rounded-md text-sm font-medium border border-slate-300 disabled:opacity-50 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1"
         >
           {testState.status === 'testing' && <span aria-hidden className="pd-btn-dot" />}
