@@ -49,6 +49,7 @@ function buildContents(input: EngineRunInput) {
 
 export function createGeminiEngine(): Engine {
   let model = DEFAULT_MODEL;
+  let apiKey = '';
   let configLoaded = false;
 
   const getConfig = async (): Promise<GeminiConfig> => {
@@ -58,11 +59,12 @@ export function createGeminiEngine(): Engine {
         if (stored.geminiConfig) {
           const cfg = stored.geminiConfig as GeminiConfig;
           model = cfg.model || DEFAULT_MODEL;
+          apiKey = cfg.apiKey || '';
         }
       } catch { /* chrome.storage not available in content script */ }
       configLoaded = true;
     }
-    return { apiKey: 'runtime-loaded', model };
+    return { apiKey, model };
   };
 
   const engine: Engine = {
