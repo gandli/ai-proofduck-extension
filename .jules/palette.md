@@ -29,3 +29,6 @@
 **Learning:** In configuration forms (like Gemini or OpenAI-Compat APIs), users might click "Save" when required fields (like API Key or Base URL) are missing, resulting in saving invalid states to storage.
 **Action:** Always disable the Save/Submit button when required fields are missing using `disabled` attribute and visual feedback (`disabled:opacity-50`) to prevent saving invalid configurations and improve the intuitiveness of the form.
  (🎨 Palette: Disable Save buttons when required fields are empty)
+## 2025-10-23 - Add tooltip explaining disabled button state for Save actions
+**Learning:** While disabling a Save button when required fields are missing prevents invalid states (as learned previously), it can still leave users wondering *why* the button is inactive. Providing a clear explanation via a dynamic tooltip improves clarity and reduces confusion without cluttering the UI.
+**Action:** Always provide a `title` or tooltip explaining the condition when disabling an interactive element, especially for critical actions like Save/Submit when form validation fails.
