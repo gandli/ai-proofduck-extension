@@ -7,3 +7,6 @@
 ## 2024-05-18 - SidePanelApp handleTranslate Memoization
 **Learning:** Found that `handleTranslate` in `SidePanelApp` was recreating its reference on every keystroke because it had `text` in its `useCallback` dependency array. Even though child components like `ResultPanel` were memoized, the changing `handleTranslate` prop broke their memoization, causing unnecessary re-renders of the entire result panel during typing. However, mutating a ref during render (e.g., `textRef.current = text` in the component body) causes a `react-hooks/refs` lint error (Cannot update ref during render).
 **Action:** Implemented the "latest ref" pattern properly by using `useRef` to hold the latest `text` value and updating `textRef.current = text` inside a `useEffect`. This decouples `handleTranslate` from the rapid typing state safely, allowing child components to successfully skip unnecessary re-renders.
+## 2024-08-20 - Avoid redundant storage reads
+**Learning:** Found that `isAvailable` in `src/engines/gemini.ts` made redundant `chrome.storage.local.get` calls on every check. While `getConfig` is already implemented with caching, it wasn't being used in `isAvailable`.
+**Action:** Always use existing memoized getter functions for configuration when repeatedly checking service availability instead of direct storage reads.
