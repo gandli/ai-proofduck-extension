@@ -61,7 +61,11 @@ export function createGeminiEngine(): Engine {
           model = cfg.model || DEFAULT_MODEL;
           apiKey = cfg.apiKey || '';
         }
-      } catch { /* chrome.storage not available in content script */ }
+      } catch {
+        // 🛡️ Sentinel: Fallback to 'runtime-loaded' placeholder in content scripts
+        // to ensure DNR background injection works securely.
+        apiKey = 'runtime-loaded';
+      }
       configLoaded = true;
     }
     return { apiKey, model };
