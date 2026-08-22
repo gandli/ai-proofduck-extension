@@ -44,7 +44,7 @@ export function FreeTranslateSection() {
     <section className="space-y-2">
       <header>
         <h2 className="text-base font-semibold">免费翻译兜底</h2>
-        <p className="text-xs text-slate-500">
+        <p id="free-translate-desc" className="text-xs text-slate-500">
           当 Chrome AI / WebLLM / OpenAI 兼容 API 都不可用时，走 Google 公开翻译端点。
           <br />
           ⚠️ 会把翻译文本发送到 <strong>Google 服务器</strong>；如果你在意隐私可以关闭。
@@ -56,6 +56,7 @@ export function FreeTranslateSection() {
         role="switch"
         aria-checked={enabled}
         aria-label="启用免费翻译兜底"
+        aria-describedby="free-translate-desc"
         onClick={handleToggle}
         className={[
           'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
