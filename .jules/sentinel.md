@@ -16,3 +16,7 @@
 **Vulnerability:** Gemini API key leakage via error messages could bypass regex redaction if a custom/short key does not match predefined SECRET_PATTERNS.
 **Learning:** For defense-in-depth, relying solely on generic regex patterns (like AIza or sk-) is insufficient when integrations may allow custom keys. An exact string literal fallback replacement must be implemented on the specific endpoint's error handler before the error is thrown.
 **Prevention:** Implement a standard literal replacement fallback (like openai-compat does) for all integrations where the actual configured key is accessible in scope during error handling. Note: Ensure not to retrieve keys directly in content scripts (like Gemini's runtime-loaded pattern) when applying this fallback if doing so breaks existing background interceptors.
+## 2026-07-07 - Gemini API Key Caching Closure Bug
+**Vulnerability:** The Gemini engine failed to fallback to the 'runtime-loaded' placeholder in content scripts, risking DNR injection failure and causing empty keys.
+**Learning:** In browser extension development, when retrieving API keys from local storage in module-level caching closures, ensure that content scripts fallback to a hardcoded placeholder like 'runtime-loaded' rather than leaving the key empty, so that declarativeNetRequest (DNR) rules can safely intercept and inject the real key without exposing it to the content script's memory.
+**Prevention:** Always test credential caching layers and carefully review how missing storage APIs are handled in content script contexts.
