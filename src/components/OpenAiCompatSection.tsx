@@ -237,6 +237,7 @@ export function OpenAiCompatSection() {
             onChange={(e) => setApiKey(e.target.value)}
             placeholder="sk-..."
             autoComplete="off"
+            aria-describedby="oaic-apikey-desc"
             className="flex-1 rounded-md border border-slate-300 p-2 text-sm font-mono focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
           />
           <button
@@ -253,7 +254,7 @@ export function OpenAiCompatSection() {
             )}
           </button>
         </div>
-        <p className="text-xs text-slate-500">
+        <p id="oaic-apikey-desc" className="text-xs text-slate-500">
           存储在 chrome.storage.local（本机加密，不会同步到其他设备）。
         </p>
       </div>
@@ -279,6 +280,7 @@ export function OpenAiCompatSection() {
           type="button"
           onClick={handleSave}
           disabled={!baseUrl.trim() || !apiKey.trim()}
+          title={(!baseUrl.trim() || !apiKey.trim()) ? '请填写完整配置' : undefined}
           className="pd-btn pd-btn-primary px-3 py-1.5 rounded-md text-sm font-medium disabled:opacity-50"
         >
           保存
