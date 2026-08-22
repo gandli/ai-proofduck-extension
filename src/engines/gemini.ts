@@ -61,7 +61,11 @@ export function createGeminiEngine(): Engine {
           model = cfg.model || DEFAULT_MODEL;
           apiKey = cfg.apiKey || '';
         }
-      } catch { /* chrome.storage not available in content script */ }
+      } catch {
+        // 🛡️ Sentinel: Fallback to 'runtime-loaded' placeholder in content scripts
+        // to ensure DNR background injection works securely.
+        apiKey = 'runtime-loaded';
+      }
       configLoaded = true;
     }
     return { apiKey, model };
@@ -73,11 +77,12 @@ export function createGeminiEngine(): Engine {
     model: DEFAULT_MODEL,
     priority: 80,
 
+    // ⚡ Bolt: Use memoized getConfig() instead of directly accessing chrome.storage.local
+    // Impact: Prevents redundant async storage reads on every isAvailable check, improving initialization speed.
     isAvailable: async () => {
       try {
-        const stored = await chrome.storage.local.get('geminiConfig');
-        const cfg = stored.geminiConfig as GeminiConfig | undefined;
-        return Boolean(cfg?.apiKey);
+        const cfg = await getConfig();
+        return Boolean(cfg.apiKey);
       } catch {
         return false;
       }

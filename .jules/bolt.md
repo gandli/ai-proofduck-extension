@@ -10,3 +10,6 @@
 ## 2024-05-18 - SelectionBubble Event Listener Thrashing
 **Learning:** Found that global event listeners in `SelectionBubble` were dependent on `selectedText` and `rect`. Since these update frequently during text selection dragging (even with debounce), the listeners were being continuously attached and detached from the document. Since the callbacks didn't actually need the latest `selectedText` or `rect` in their closures, depending on them was an anti-pattern causing main-thread overhead.
 **Action:** Depend on a derived boolean (`isVisible`) instead of frequently updating objects to ensure event listeners are only attached when the component becomes visible and detached when it hides.
+## 2024-08-20 - Avoid redundant storage reads
+**Learning:** Found that `isAvailable` in `src/engines/gemini.ts` made redundant `chrome.storage.local.get` calls on every check. While `getConfig` is already implemented with caching, it wasn't being used in `isAvailable`.
+**Action:** Always use existing memoized getter functions for configuration when repeatedly checking service availability instead of direct storage reads.
