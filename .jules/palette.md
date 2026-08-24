@@ -29,3 +29,7 @@
 **Learning:** In configuration forms (like Gemini or OpenAI-Compat APIs), users might click "Save" when required fields (like API Key or Base URL) are missing, resulting in saving invalid states to storage.
 **Action:** Always disable the Save/Submit button when required fields are missing using `disabled` attribute and visual feedback (`disabled:opacity-50`) to prevent saving invalid configurations and improve the intuitiveness of the form.
  (🎨 Palette: Disable Save buttons when required fields are empty)
+
+## 2025-08-20 - Add explicit required indicators to configuration forms
+**Learning:** While disabling the 'Save' button is a good preventive measure for incomplete forms, users still need explicit upfront visual cues and semantic indicators (like asterisks and `aria-required`) to understand *which* fields are required before they attempt to submit.
+**Action:** Always add visual indicators (`*`) and `required`/`aria-required` attributes to required form inputs to improve clarity and screen reader accessibility.

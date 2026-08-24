@@ -210,7 +210,7 @@ export function OpenAiCompatSection() {
       {/* baseUrl */}
       <div className="space-y-1">
         <label htmlFor="oaic-baseurl" className="block text-sm font-medium">
-          API Base URL
+          API Base URL <span className="text-rose-500" aria-hidden="true">*</span>
         </label>
         <input
           id="oaic-baseurl"
@@ -218,6 +218,8 @@ export function OpenAiCompatSection() {
           value={baseUrl}
           onChange={(e) => setBaseUrl(e.target.value)}
           placeholder="https://api.deepseek.com"
+          required
+          aria-required="true"
           className="w-full rounded-md border border-slate-300 p-2 text-sm font-mono focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
         />
         {/* Round 5 (#465): host 权限状态 */}
@@ -227,7 +229,7 @@ export function OpenAiCompatSection() {
       {/* apiKey */}
       <div className="space-y-1">
         <label htmlFor="oaic-apikey" className="block text-sm font-medium">
-          API Key
+          API Key <span className="text-rose-500" aria-hidden="true">*</span>
         </label>
         <div className="flex gap-2">
           <input
@@ -237,6 +239,8 @@ export function OpenAiCompatSection() {
             onChange={(e) => setApiKey(e.target.value)}
             placeholder="sk-..."
             autoComplete="off"
+            required
+            aria-required="true"
             aria-describedby="oaic-apikey-desc"
             className="flex-1 rounded-md border border-slate-300 p-2 text-sm font-mono focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
           />
