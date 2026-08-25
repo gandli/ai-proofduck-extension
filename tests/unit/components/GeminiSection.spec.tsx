@@ -40,7 +40,7 @@ describe('GeminiSection', () => {
     render(<GeminiSection />);
     await screen.findByText('Gemini API');
 
-    const input = screen.getByLabelText('API Key');
+    const input = (screen.getAllByLabelText(/API Key/i)[0] as HTMLElement);
     await user.type(input, 'AIzaSyTest');
 
     const saveBtn = screen.getByRole('button', { name: /保存/ });
@@ -58,7 +58,7 @@ describe('GeminiSection', () => {
     render(<GeminiSection />);
     await screen.findByText('Gemini API');
 
-    await user.type(screen.getByLabelText('API Key'), 'test-key');
+    await user.type((screen.getAllByLabelText(/API Key/i)[0] as HTMLElement), 'test-key');
     await user.click(screen.getByRole('button', { name: /保存/ }));
 
     await waitFor(() => {
