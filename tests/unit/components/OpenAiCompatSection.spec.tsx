@@ -83,11 +83,11 @@ describe('OpenAiCompatSection', () => {
 
     // 等 useEffect 从 storage 拉完
     await waitFor(() => {
-      expect(screen.getByLabelText('API Base URL')).toHaveValue('https://api.deepseek.com');
+      expect(screen.getByLabelText(/^API Base URL/i)).toHaveValue('https://api.deepseek.com');
     });
-    expect(screen.getByLabelText('模型 ID')).toHaveValue('deepseek-chat');
+    expect(screen.getByLabelText(/^模型 ID/)).toHaveValue('deepseek-chat');
     // API Key 也回填了，但是 password type
-    const keyInput = screen.getByLabelText("API Key") as HTMLInputElement;
+    const keyInput = screen.getByLabelText(/^API Key/i) as HTMLInputElement;
     expect(keyInput.value).toBe('sk-abc');
     expect(keyInput.type).toBe('password');
   });
@@ -95,11 +95,11 @@ describe('OpenAiCompatSection', () => {
   it('修改后点"保存" → 调用 set 且显示"已保存"', async () => {
     const user = userEvent.setup();
     render(<OpenAiCompatSection />);
-    await waitFor(() => expect(screen.getByLabelText('API Base URL')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByLabelText(/^API Base URL/i)).toBeInTheDocument());
 
-    await user.type(screen.getByLabelText('API Base URL'), 'https://api.openai.com');
-    await user.type(screen.getByLabelText("API Key"), 'sk-test');
-    await user.type(screen.getByLabelText('模型 ID'), 'gpt-4o-mini');
+    await user.type(screen.getByLabelText(/^API Base URL/i), 'https://api.openai.com');
+    await user.type(screen.getByLabelText(/^API Key/i), 'sk-test');
+    await user.type(screen.getByLabelText(/^模型 ID/), 'gpt-4o-mini');
     await user.click(screen.getByRole('button', { name: '保存' }));
 
     await waitFor(() => {
@@ -116,9 +116,9 @@ describe('OpenAiCompatSection', () => {
     const user = userEvent.setup();
     configMock.__mockState.value = { baseUrl: '', apiKey: 'sk-secret', model: '' };
     render(<OpenAiCompatSection />);
-    await waitFor(() => expect(screen.getByLabelText("API Key")).toHaveValue('sk-secret'));
+    await waitFor(() => expect(screen.getByLabelText(/^API Key/i)).toHaveValue('sk-secret'));
 
-    const keyInput = screen.getByLabelText("API Key") as HTMLInputElement;
+    const keyInput = screen.getByLabelText(/^API Key/i) as HTMLInputElement;
     expect(keyInput.type).toBe('password');
 
     await user.click(screen.getByRole('button', { name: /显示 API Key/i }));
@@ -131,16 +131,16 @@ describe('OpenAiCompatSection', () => {
   it('快捷预设按钮 → 一键填 baseUrl + model', async () => {
     const user = userEvent.setup();
     render(<OpenAiCompatSection />);
-    await waitFor(() => expect(screen.getByLabelText('API Base URL')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByLabelText(/^API Base URL/i)).toBeInTheDocument());
 
     await user.click(screen.getByRole('button', { name: 'DeepSeek' }));
-    expect(screen.getByLabelText('API Base URL')).toHaveValue('https://api.deepseek.com');
-    expect(screen.getByLabelText('模型 ID')).toHaveValue('deepseek-chat');
+    expect(screen.getByLabelText(/^API Base URL/i)).toHaveValue('https://api.deepseek.com');
+    expect(screen.getByLabelText(/^模型 ID/)).toHaveValue('deepseek-chat');
   });
 
   it('三项缺一时"测试连接"按钮禁用', async () => {
     render(<OpenAiCompatSection />);
-    await waitFor(() => expect(screen.getByLabelText('API Base URL')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByLabelText(/^API Base URL/i)).toBeInTheDocument());
 
     const testBtn = screen.getByRole('button', { name: '测试连接' });
     expect(testBtn).toBeDisabled();
@@ -161,7 +161,7 @@ describe('OpenAiCompatSection', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     render(<OpenAiCompatSection />);
-    await waitFor(() => expect(screen.getByLabelText('API Base URL')).toHaveValue('https://api.deepseek.com'));
+    await waitFor(() => expect(screen.getByLabelText(/^API Base URL/i)).toHaveValue('https://api.deepseek.com'));
 
     await user.click(screen.getByRole('button', { name: '测试连接' }));
 
@@ -190,7 +190,7 @@ describe('OpenAiCompatSection', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     render(<OpenAiCompatSection />);
-    await waitFor(() => expect(screen.getByLabelText('API Base URL')).toHaveValue('https://x'));
+    await waitFor(() => expect(screen.getByLabelText(/^API Base URL/i)).toHaveValue('https://x'));
 
     await user.click(screen.getByRole('button', { name: '测试连接' }));
     await waitFor(() => {
@@ -218,7 +218,7 @@ describe('OpenAiCompatSection', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     render(<OpenAiCompatSection />);
-    await waitFor(() => expect(screen.getByLabelText('API Base URL')).toHaveValue('https://x'));
+    await waitFor(() => expect(screen.getByLabelText(/^API Base URL/i)).toHaveValue('https://x'));
 
     await user.click(screen.getByRole('button', { name: '测试连接' }));
     // 等状态变化：先看到 "HTTP 401" 出现
@@ -255,7 +255,7 @@ describe('OpenAiCompatSection', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     render(<OpenAiCompatSection />);
-    await waitFor(() => expect(screen.getByLabelText('API Base URL')).toHaveValue('https://x'));
+    await waitFor(() => expect(screen.getByLabelText(/^API Base URL/i)).toHaveValue('https://x'));
 
     const t0 = performance.now();
     await user.click(screen.getByRole('button', { name: '测试连接' }));
@@ -291,7 +291,7 @@ describe('OpenAiCompatSection', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     render(<OpenAiCompatSection />);
-    await waitFor(() => expect(screen.getByLabelText('API Base URL')).toHaveValue('https://api.deepseek.com'));
+    await waitFor(() => expect(screen.getByLabelText(/^API Base URL/i)).toHaveValue('https://api.deepseek.com'));
 
     await user.click(screen.getByRole('button', { name: '测试连接' }));
     await waitFor(() => {
@@ -311,7 +311,7 @@ describe('OpenAiCompatSection', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     render(<OpenAiCompatSection />);
-    await waitFor(() => expect(screen.getByLabelText('API Base URL')).toHaveValue('https://x'));
+    await waitFor(() => expect(screen.getByLabelText(/^API Base URL/i)).toHaveValue('https://x'));
 
     await user.click(screen.getByRole('button', { name: '测试连接' }));
     await waitFor(() => {
@@ -324,7 +324,7 @@ describe('OpenAiCompatSection', () => {
     it('baseUrl 空 → 不显示授权 UI', async () => {
       configMock.__mockState.value = { baseUrl: '', apiKey: '', model: '' };
       render(<OpenAiCompatSection />);
-      await waitFor(() => expect(screen.getByLabelText('API Base URL')).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByLabelText(/^API Base URL/i)).toBeInTheDocument());
       expect(screen.queryByRole('button', { name: /授权|授予|permission/i })).not.toBeInTheDocument();
     });
 
