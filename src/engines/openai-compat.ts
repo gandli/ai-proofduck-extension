@@ -105,20 +105,16 @@ function joinUrl(baseUrl: string, path: string): string {
 
 export function createOpenAiCompatEngine(): Engine {
   // ⚡ Bolt: Cache config and watch for changes to avoid redundant storage reads on every isAvailable check
-  let currentConfigSync: Awaited<ReturnType<typeof openaiCompatConfig.get>> | undefined = undefined;
-  let configLoaded = false;
+  // ponytail: undefined-check as cache key — get() 永不返回 undefined（默认空配置）
+  let configCache: Awaited<ReturnType<typeof openaiCompatConfig.get>> | undefined = undefined;
 
   const getConfig = async () => {
-    if (!configLoaded) {
-      currentConfigSync = await openaiCompatConfig.get();
-      configLoaded = true;
-    }
-    return currentConfigSync!;
+    configCache ??= await openaiCompatConfig.get();
+    return configCache;
   };
 
   openaiCompatConfig.watch((c) => {
-    currentConfigSync = c;
-    configLoaded = true;
+    configCache = c;
   });
 
   async function requireConfig() {
@@ -141,7 +137,7 @@ export function createOpenAiCompatEngine(): Engine {
     priority: 70,
     // v0.5.3 P1-3: model 通过 getter 动态反映当前 config
     get model(): string | undefined {
-      return currentConfigSync?.model;
+      return configCache?.model;
     },
 
     async isAvailable(): Promise<boolean> {
