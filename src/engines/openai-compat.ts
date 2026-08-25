@@ -104,8 +104,25 @@ function joinUrl(baseUrl: string, path: string): string {
 }
 
 export function createOpenAiCompatEngine(): Engine {
+  // ⚡ Bolt: Cache config and watch for changes to avoid redundant storage reads on every isAvailable check
+  let currentConfigSync: Awaited<ReturnType<typeof openaiCompatConfig.get>> | undefined = undefined;
+  let configLoaded = false;
+
+  const getConfig = async () => {
+    if (!configLoaded) {
+      currentConfigSync = await openaiCompatConfig.get();
+      configLoaded = true;
+    }
+    return currentConfigSync!;
+  };
+
+  openaiCompatConfig.watch((c) => {
+    currentConfigSync = c;
+    configLoaded = true;
+  });
+
   async function requireConfig() {
-    const cfg = await openaiCompatConfig.get();
+    const cfg = await getConfig();
     if (!cfg.baseUrl || !cfg.apiKey || !cfg.model) {
       throw new Error('openai-compat 未配置：请在设置页填写 baseUrl / apiKey / model');
     }
@@ -118,27 +135,17 @@ export function createOpenAiCompatEngine(): Engine {
     return cfg;
   }
 
-  // v0.5.3 P1-3: 用 storage watch 维护 model 的同步快照
-  // 供 engine.model getter 立刻返回，makeCacheKey 才能感知模型切换
-  let currentModelSync: string | undefined = undefined;
-  void openaiCompatConfig.get().then((c) => {
-    currentModelSync = c.model || undefined;
-  });
-  openaiCompatConfig.watch((c) => {
-    currentModelSync = c.model || undefined;
-  });
-
   const engine = {
     id: 'openai-compat' as const,
     name: 'OpenAI 兼容 · 云端 / 自建（BYOK）',
     priority: 70,
     // v0.5.3 P1-3: model 通过 getter 动态反映当前 config
     get model(): string | undefined {
-      return currentModelSync;
+      return currentConfigSync?.model;
     },
 
     async isAvailable(): Promise<boolean> {
-      const { baseUrl, apiKey, model } = await openaiCompatConfig.get();
+      const { baseUrl, apiKey, model } = await getConfig();
       if (!baseUrl || !apiKey || !model) return false;
       // Round 3 (#465): 三项齐才检查 host 权限 —— 避免用户没配就弹权限
       let pattern: string;
