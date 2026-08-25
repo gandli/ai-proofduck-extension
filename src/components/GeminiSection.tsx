@@ -51,14 +51,11 @@ export function GeminiSection() {
       </header>
 
       <div className="space-y-1">
-        <label htmlFor="gem-apikey" className="block text-sm font-medium">
-          API Key <span className="text-rose-500" aria-hidden="true">*</span>
-        </label>
+        <label htmlFor="gem-apikey" className="block text-sm font-medium">API Key</label>
         <div className="flex gap-2">
           <input
             id="gem-apikey"
             type={showKey ? 'text' : 'password'}
-            required
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
             placeholder="从 aistudio.google.com 获取"

@@ -210,12 +210,11 @@ export function OpenAiCompatSection() {
       {/* baseUrl */}
       <div className="space-y-1">
         <label htmlFor="oaic-baseurl" className="block text-sm font-medium">
-          API Base URL <span className="text-rose-500" aria-hidden="true">*</span>
+          API Base URL
         </label>
         <input
           id="oaic-baseurl"
           type="url"
-          required
           value={baseUrl}
           onChange={(e) => setBaseUrl(e.target.value)}
           placeholder="https://api.deepseek.com"
@@ -228,13 +227,12 @@ export function OpenAiCompatSection() {
       {/* apiKey */}
       <div className="space-y-1">
         <label htmlFor="oaic-apikey" className="block text-sm font-medium">
-          API Key <span className="text-rose-500" aria-hidden="true">*</span>
+          API Key
         </label>
         <div className="flex gap-2">
           <input
             id="oaic-apikey"
             type={showKey ? 'text' : 'password'}
-            required
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
             placeholder="sk-..."
@@ -264,12 +262,11 @@ export function OpenAiCompatSection() {
       {/* model */}
       <div className="space-y-1">
         <label htmlFor="oaic-model" className="block text-sm font-medium">
-          模型 ID <span className="text-rose-500" aria-hidden="true">*</span>
+          模型 ID
         </label>
         <input
           id="oaic-model"
           type="text"
-          required
           value={model}
           onChange={(e) => setModel(e.target.value)}
           placeholder="deepseek-chat / gpt-4o-mini / qwen-turbo ..."
