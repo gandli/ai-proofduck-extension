@@ -38,7 +38,12 @@ export function GeminiSection() {
   }, [apiKey, model]);
 
   if (!loaded) {
-    return <div className="space-y-3 animate-pulse" aria-busy="true"><div className="h-4 bg-slate-200 rounded w-1/3" /><div className="h-9 bg-slate-100 rounded" /></div>;
+    return (
+      <div className="space-y-3 animate-pulse" role="status" aria-label="加载 Gemini API 配置" aria-busy="true">
+        <div className="h-4 bg-slate-200 rounded w-1/3" />
+        <div className="h-9 bg-slate-100 rounded" />
+      </div>
+    );
   }
 
   return (
@@ -64,6 +69,7 @@ export function GeminiSection() {
             autoComplete="off"
             required
             aria-required="true"
+            aria-describedby="gem-apikey-desc"
             className="flex-1 rounded-md border border-slate-300 p-2 text-sm font-mono focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
           />
           <button
@@ -80,6 +86,9 @@ export function GeminiSection() {
             )}
           </button>
         </div>
+        <p id="gem-apikey-desc" className="text-xs text-slate-500">
+          存储在 chrome.storage.local（本机加密，不会同步到其他设备）。
+        </p>
       </div>
 
       <div className="flex items-center gap-3 pt-2">
