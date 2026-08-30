@@ -52,6 +52,7 @@ function systemPromptFor(input: EngineRunInput): string {
 export function createWebLlmEngine(options: CreateWebLlmEngineOptions = {}): Engine {
   const modelId = options.modelId ?? DEFAULT_MODEL;
   let enginePromise: Promise<MLCEngine> | null = null;
+  let isAvailablePromise: Promise<boolean> | null = null;
 
   /**
    * 惰性拿 MLCEngine 实例。失败时清缓存，支持重试。
@@ -85,16 +86,22 @@ export function createWebLlmEngine(options: CreateWebLlmEngineOptions = {}): Eng
     name: 'WebLLM · Qwen2.5-1.5B（本地推理）',
     priority: 90,
 
+    // ⚡ Bolt: Cache expensive gpu.requestAdapter() call result
+    // Impact: Prevents querying the hardware/drivers (which takes 10-100ms) on every single translation bubble popup.
     async isAvailable(): Promise<boolean> {
-      const gpu = (globalThis as { navigator?: { gpu?: { requestAdapter: () => Promise<unknown> } } }).navigator?.gpu;
-      if (!gpu?.requestAdapter) return false;
-      try {
-        const adapter = await gpu.requestAdapter();
-        return adapter !== null && adapter !== undefined;
-      } catch {
-        // requestAdapter 抛异常（如硬件驱动崩溃）也算不可用
-        return false;
+      if (isAvailablePromise === null) {
+        isAvailablePromise = (async () => {
+          const gpu = (globalThis as { navigator?: { gpu?: { requestAdapter: () => Promise<unknown> } } }).navigator?.gpu;
+          if (!gpu?.requestAdapter) return false;
+          try {
+            const adapter = await gpu.requestAdapter();
+            return adapter !== null && adapter !== undefined;
+          } catch {
+            return false;
+          }
+        })();
       }
+      return isAvailablePromise;
     },
 
     supports(_mode: EngineMode): boolean {
