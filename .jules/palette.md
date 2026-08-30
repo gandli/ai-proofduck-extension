@@ -33,3 +33,6 @@
 ## 2025-08-20 - Add explicit required indicators to configuration forms
 **Learning:** While disabling the 'Save' button is a good preventive measure for incomplete forms, users still need explicit upfront visual cues and semantic indicators (like asterisks and `aria-required`) to understand *which* fields are required before they attempt to submit.
 **Action:** Always add visual indicators (`*`) and `required`/`aria-required` attributes to required form inputs to improve clarity and screen reader accessibility.
+## 2025-10-24 - Add explicit helper text to sensitive API key inputs
+**Learning:** For sensitive configuration inputs like API keys, users may hesitate or feel anxious if they don't know where their data is being sent or stored. Providing explicit helper text (e.g., "Stored locally, encrypted") improves user trust. To ensure this information reaches visually impaired users, it must be programmatically linked to the input field using `aria-describedby`.
+**Action:** Always provide explicit helper text for sensitive inputs (like API keys) explaining storage and privacy guarantees, and link this text to the input using the `aria-describedby` attribute for screen reader accessibility.

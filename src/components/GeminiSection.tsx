@@ -64,6 +64,7 @@ export function GeminiSection() {
             autoComplete="off"
             required
             aria-required="true"
+            aria-describedby="gem-apikey-desc"
             className="flex-1 rounded-md border border-slate-300 p-2 text-sm font-mono focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
           />
           <button
@@ -80,6 +81,9 @@ export function GeminiSection() {
             )}
           </button>
         </div>
+        <p id="gem-apikey-desc" className="text-xs text-slate-500">
+          存储在 chrome.storage.local（本机加密，不会同步到其他设备）。
+        </p>
       </div>
 
       <div className="flex items-center gap-3 pt-2">
