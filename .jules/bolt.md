@@ -13,3 +13,6 @@
 ## 2024-08-20 - Avoid redundant storage reads
 **Learning:** Found that `isAvailable` in `src/engines/gemini.ts` made redundant `chrome.storage.local.get` calls on every check. While `getConfig` is already implemented with caching, it wasn't being used in `isAvailable`.
 **Action:** Always use existing memoized getter functions for configuration when repeatedly checking service availability instead of direct storage reads.
+## 2024-08-31 - WebLLM availability check caching
+**Learning:** Found that `webllm.ts` calls `gpu.requestAdapter()` every time `isAvailable()` is invoked. Since `EngineManager.pickBest` calls `isAvailable()` for each engine every time text is selected (and the selection bubble is opened), this repeatedly queries the GPU hardware. This is an expensive asynchronous operation that can block or delay UI rendering.
+**Action:** Cache the result of `gpu.requestAdapter()` as a Promise in the initialization closure of `createWebLlmEngine` to avoid redundant hardware queries on every text selection.
