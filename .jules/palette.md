@@ -33,3 +33,7 @@
 ## 2025-08-20 - Add explicit required indicators to configuration forms
 **Learning:** While disabling the 'Save' button is a good preventive measure for incomplete forms, users still need explicit upfront visual cues and semantic indicators (like asterisks and `aria-required`) to understand *which* fields are required before they attempt to submit.
 **Action:** Always add visual indicators (`*`) and `required`/`aria-required` attributes to required form inputs to improve clarity and screen reader accessibility.
+
+## 2026-08-31 - Add explicit helper text for sensitive inputs
+**Learning:** The Gemini API configuration lacked explicit helper text explaining the storage and privacy guarantees for the sensitive API Key, unlike the `OpenAiCompatSection`. Adding this text and linking it via `aria-describedby` provides immediate context to screen reader users and reassures all users about privacy.
+**Action:** Always provide explicit helper text for sensitive inputs (like API keys) explaining storage and privacy guarantees (e.g., 'Stored locally, encrypted'), and link this text to the input using the `aria-describedby` attribute for screen reader accessibility.
