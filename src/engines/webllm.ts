@@ -52,6 +52,7 @@ function systemPromptFor(input: EngineRunInput): string {
 export function createWebLlmEngine(options: CreateWebLlmEngineOptions = {}): Engine {
   const modelId = options.modelId ?? DEFAULT_MODEL;
   let enginePromise: Promise<MLCEngine> | null = null;
+  let availabilityPromise: Promise<boolean> | null = null;
 
   /**
    * 惰性拿 MLCEngine 实例。失败时清缓存，支持重试。
@@ -85,16 +86,22 @@ export function createWebLlmEngine(options: CreateWebLlmEngineOptions = {}): Eng
     name: 'WebLLM · Qwen2.5-1.5B（本地推理）',
     priority: 90,
 
+    // ⚡ Bolt: Cache expensive hardware queries (requestAdapter) as a Promise in the closure.
+    // Impact: Prevents blocking the main thread with redundant GPU hardware checks on every text selection.
     async isAvailable(): Promise<boolean> {
+      if (availabilityPromise !== null) return availabilityPromise;
+
       const gpu = (globalThis as { navigator?: { gpu?: { requestAdapter: () => Promise<unknown> } } }).navigator?.gpu;
-      if (!gpu?.requestAdapter) return false;
-      try {
-        const adapter = await gpu.requestAdapter();
-        return adapter !== null && adapter !== undefined;
-      } catch {
-        // requestAdapter 抛异常（如硬件驱动崩溃）也算不可用
+      if (!gpu?.requestAdapter) {
+        availabilityPromise = Promise.resolve(false);
         return false;
       }
+
+      availabilityPromise = gpu.requestAdapter().then(
+        (adapter) => adapter !== null && adapter !== undefined,
+        () => false
+      );
+      return availabilityPromise;
     },
 
     supports(_mode: EngineMode): boolean {
