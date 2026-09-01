@@ -16,3 +16,6 @@
 ## 2024-08-31 - WebLLM availability check caching
 **Learning:** Found that `webllm.ts` calls `gpu.requestAdapter()` every time `isAvailable()` is invoked. Since `EngineManager.pickBest` calls `isAvailable()` for each engine every time text is selected (and the selection bubble is opened), this repeatedly queries the GPU hardware. This is an expensive asynchronous operation that can block or delay UI rendering.
 **Action:** Cache the result of `gpu.requestAdapter()` as a Promise in the initialization closure of `createWebLlmEngine` to avoid redundant hardware queries on every text selection.
+## 2024-09-02 - free-translate availability check caching
+**Learning:** Found that `free-translate.ts` calls `enabledItem.get()` every time `isAvailable()` is invoked. Since `EngineManager.pickBest` calls `isAvailable()` for each engine every time text is selected (and the selection bubble is opened), this repeatedly makes slow async queries to `chrome.storage.sync`.
+**Action:** Cache the enabled state using a variable and a `watch` listener in the initialization closure of `createFreeTranslateEngine` to avoid redundant storage reads on every text selection.

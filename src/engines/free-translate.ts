@@ -59,6 +59,24 @@ function parseGoogleResponse(json: unknown): string {
 }
 
 export function createFreeTranslateEngine(): Engine {
+  // ⚡ Bolt: Cache enabled state and watch for changes to avoid redundant storage reads on every isAvailable check
+  // Impact: Prevents slow async chrome.storage.sync queries on every text selection/engine resolution.
+  let currentEnabled: boolean | undefined = undefined;
+  let configLoaded = false;
+
+  const getEnabled = async () => {
+    if (!configLoaded) {
+      currentEnabled = await enabledItem.get();
+      configLoaded = true;
+    }
+    return currentEnabled!;
+  };
+
+  enabledItem.watch((val) => {
+    currentEnabled = val;
+    configLoaded = true;
+  });
+
   return {
     id: 'free-translate',
     name: '免费翻译（Google 公开端点）',
@@ -71,7 +89,7 @@ export function createFreeTranslateEngine(): Engine {
     async isAvailable(): Promise<boolean> {
       // 只要用户没关就认为可用（真正联网失败会在 run 时抛出，由 EngineManager 处理）
       // 不做主动 ping，避免每次 UI 挂载都发一次流量
-      return enabledItem.get();
+      return getEnabled();
     },
 
     async run(input): Promise<string> {
