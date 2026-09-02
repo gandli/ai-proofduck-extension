@@ -20,3 +20,8 @@
 **Vulnerability:** The Gemini engine failed to fallback to the 'runtime-loaded' placeholder in content scripts, risking DNR injection failure and causing empty keys.
 **Learning:** In browser extension development, when retrieving API keys from local storage in module-level caching closures, ensure that content scripts fallback to a hardcoded placeholder like 'runtime-loaded' rather than leaving the key empty, so that declarativeNetRequest (DNR) rules can safely intercept and inject the real key without exposing it to the content script's memory.
 **Prevention:** Always test credential caching layers and carefully review how missing storage APIs are handled in content script contexts.
+
+## 2026-07-07 - Prevent URL Injection in API Engines
+**Vulnerability:** The `model` parameter (which might be user-configured depending on the engine, or derived from one) was interpolated directly into the external API URL in `src/engines/gemini.ts` without URL encoding.
+**Learning:** Even if a parameter like `model` seems safe (e.g., standard strings like "gemini-1.5-pro"), if it ever becomes user-configurable or is derived from user input, failing to encode it could allow a malicious user to perform URL injection or path traversal (e.g., breaking out of the path with `../` or injecting query parameters with `?`).
+**Prevention:** Standardize the use of `encodeURIComponent()` for all dynamic segments inserted into URL paths when making external API requests, especially if the data originates from configuration or user input.
