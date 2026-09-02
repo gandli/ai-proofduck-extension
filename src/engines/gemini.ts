@@ -94,7 +94,7 @@ export function createGeminiEngine(): Engine {
       const cfg = await getConfig();
       const abort = createFetchAbortHandle(input.signal, 60_000);
       try {
-        const url = `${BASE}/${model}:generateContent`;
+        const url = `${BASE}/${encodeURIComponent(model)}:generateContent`; // 🛡️ Sentinel: URL injection prevention
         const resp = await fetch(url, {
           method: 'POST',
           signal: abort.signal,
