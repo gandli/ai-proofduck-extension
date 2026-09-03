@@ -87,7 +87,7 @@ export function GeminiSection() {
       </div>
 
       <div className="flex items-center gap-3 pt-2">
-        <button type="button" onClick={handleSave} disabled={!apiKey.trim()} title={!apiKey.trim() ? '请填写完整配置' : undefined} className="pd-btn pd-btn-primary px-3 py-1.5 rounded-md text-sm font-medium disabled:opacity-50">
+        <button type="button" onClick={handleSave} disabled={!apiKey.trim()} title={!apiKey.trim() ? '请填写完整配置' : undefined} className="pd-btn pd-btn-primary px-3 py-1.5 rounded-md text-sm font-medium disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1">
           保存
         </button>
         <div role="status" aria-live="polite">
