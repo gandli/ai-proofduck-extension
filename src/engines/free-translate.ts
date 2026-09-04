@@ -59,6 +59,18 @@ function parseGoogleResponse(json: unknown): string {
 }
 
 export function createFreeTranslateEngine(): Engine {
+  let enabledPromise: Promise<boolean> | null = null;
+  enabledItem.watch(() => {
+    enabledPromise = null;
+  });
+
+  const getEnabled = (): Promise<boolean> => {
+    if (!enabledPromise) {
+      enabledPromise = enabledItem.get();
+    }
+    return enabledPromise;
+  };
+
   return {
     id: 'free-translate',
     name: '免费翻译（Google 公开端点）',
@@ -71,7 +83,9 @@ export function createFreeTranslateEngine(): Engine {
     async isAvailable(): Promise<boolean> {
       // 只要用户没关就认为可用（真正联网失败会在 run 时抛出，由 EngineManager 处理）
       // 不做主动 ping，避免每次 UI 挂载都发一次流量
-      return enabledItem.get();
+      // ⚡ Bolt: Cache storage read as a Promise to prevent redundant async reads and race conditions
+      // Impact: Avoids multiple storage lookups when availability checks fire concurrently across the extension.
+      return getEnabled();
     },
 
     async run(input): Promise<string> {
