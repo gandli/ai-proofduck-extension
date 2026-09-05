@@ -60,7 +60,7 @@ export function FreeTranslateSection() {
         onClick={handleToggle}
         className={[
           'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
-          'focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1',
           enabled ? 'bg-brand-500' : 'bg-ink-300',
         ].join(' ')}
       >

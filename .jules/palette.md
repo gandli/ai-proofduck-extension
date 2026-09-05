@@ -37,3 +37,6 @@
 ## 2026-08-31 - Add explicit helper text for sensitive inputs
 **Learning:** The Gemini API configuration lacked explicit helper text explaining the storage and privacy guarantees for the sensitive API Key, unlike the `OpenAiCompatSection`. Adding this text and linking it via `aria-describedby` provides immediate context to screen reader users and reassures all users about privacy.
 **Action:** Always provide explicit helper text for sensitive inputs (like API keys) explaining storage and privacy guarantees (e.g., 'Stored locally, encrypted'), and link this text to the input using the `aria-describedby` attribute for screen reader accessibility.
+## 2025-09-05 - Add focus visible styles to interactive components
+**Learning:** Icon-only and custom interactive elements, such as the toggle switch in `FreeTranslateSection` and the icon buttons in `SuccessBubble`, often lack explicit visual focus indicators, making keyboard navigation difficult for accessibility.
+**Action:** Always ensure interactive elements (especially icon-only or custom buttons) have explicit visible focus indicators using the project's established Tailwind utility classes (e.g., `focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1`).
