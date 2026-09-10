@@ -37,7 +37,7 @@ export function FreeTranslateSection() {
   };
 
   if (!loaded) {
-    return <div className="h-10 bg-slate-100 rounded animate-pulse" role="status" aria-busy="true" />;
+    return <div className="h-10 bg-slate-100 rounded animate-pulse" role="status" aria-busy="true" aria-label="加载免费翻译配置" />;
   }
 
   return (
