@@ -16,3 +16,6 @@
 ## 2024-08-31 - WebLLM availability check caching
 **Learning:** Found that `webllm.ts` calls `gpu.requestAdapter()` every time `isAvailable()` is invoked. Since `EngineManager.pickBest` calls `isAvailable()` for each engine every time text is selected (and the selection bubble is opened), this repeatedly queries the GPU hardware. This is an expensive asynchronous operation that can block or delay UI rendering.
 **Action:** Cache the result of `gpu.requestAdapter()` as a Promise in the initialization closure of `createWebLlmEngine` to avoid redundant hardware queries on every text selection.
+## 2024-09-10 - Asynchronous Storage Read Caching
+**Learning:** Found that asynchronous storage reads (like `chrome.storage.local.get` or `storageItem.get()`) can be invoked concurrently before the first read resolves, causing redundant IPC calls (e.g., when `EngineManager.pickBest` calls `isAvailable` on multiple engines).
+**Action:** Cache the Promise itself instead of awaiting and caching the resolved value to prevent redundant IPC calls during concurrent access. Ensure cached values in module-level closures (like `getConfig`) use outer-scope variables so they aren't lost on subsequent hits.

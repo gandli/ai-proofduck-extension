@@ -51,9 +51,14 @@ export function createGeminiEngine(): Engine {
   let model = DEFAULT_MODEL;
   let apiKey = '';
   let configLoaded = false;
+  // ⚡ Bolt: Cache the Promise itself to prevent redundant storage reads during concurrent isAvailable checks
+  let configPromise: Promise<GeminiConfig> | null = null;
 
-  const getConfig = async (): Promise<GeminiConfig> => {
-    if (!configLoaded) {
+  const getConfig = (): Promise<GeminiConfig> => {
+    if (configLoaded) return Promise.resolve({ apiKey, model });
+    if (configPromise) return configPromise;
+
+    configPromise = (async () => {
       try {
         const stored = await chrome.storage.local.get('geminiConfig');
         if (stored.geminiConfig) {
@@ -67,8 +72,10 @@ export function createGeminiEngine(): Engine {
         apiKey = 'runtime-loaded';
       }
       configLoaded = true;
-    }
-    return { apiKey, model };
+      configPromise = null;
+      return { apiKey, model };
+    })();
+    return configPromise;
   };
 
   const engine: Engine = {

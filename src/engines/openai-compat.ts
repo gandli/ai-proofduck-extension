@@ -107,13 +107,20 @@ export function createOpenAiCompatEngine(): Engine {
   // ⚡ Bolt: Cache config and watch for changes to avoid redundant storage reads on every isAvailable check
   let currentConfigSync: Awaited<ReturnType<typeof openaiCompatConfig.get>> | undefined = undefined;
   let configLoaded = false;
+  // ⚡ Bolt: Cache the Promise itself to prevent redundant storage reads during concurrent isAvailable checks
+  let configPromise: Promise<Awaited<ReturnType<typeof openaiCompatConfig.get>>> | null = null;
 
-  const getConfig = async () => {
-    if (!configLoaded) {
-      currentConfigSync = await openaiCompatConfig.get();
+  const getConfig = (): Promise<Awaited<ReturnType<typeof openaiCompatConfig.get>>> => {
+    if (configLoaded) return Promise.resolve(currentConfigSync!);
+    if (configPromise) return configPromise;
+
+    configPromise = openaiCompatConfig.get().then((cfg) => {
+      currentConfigSync = cfg;
       configLoaded = true;
-    }
-    return currentConfigSync!;
+      configPromise = null;
+      return cfg;
+    });
+    return configPromise;
   };
 
   openaiCompatConfig.watch((c) => {
