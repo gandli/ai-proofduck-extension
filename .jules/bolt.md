@@ -16,3 +16,6 @@
 ## 2024-08-31 - WebLLM availability check caching
 **Learning:** Found that `webllm.ts` calls `gpu.requestAdapter()` every time `isAvailable()` is invoked. Since `EngineManager.pickBest` calls `isAvailable()` for each engine every time text is selected (and the selection bubble is opened), this repeatedly queries the GPU hardware. This is an expensive asynchronous operation that can block or delay UI rendering.
 **Action:** Cache the result of `gpu.requestAdapter()` as a Promise in the initialization closure of `createWebLlmEngine` to avoid redundant hardware queries on every text selection.
+## 2024-10-25 - Inflight promise deduplication for storage reads
+**Learning:** Found that \`defineStorage.get()\` independently queries \`chrome.storage\` on every invocation. When multiple components or hooks concurrently request the same configuration (e.g. engine availability checks), it causes redundant IPC calls and overhead.
+**Action:** Implement inflight promise deduplication by caching the promise itself during the asynchronous read and clearing it in a \`.finally()\` block, so concurrent requests share the same promise while subsequent requests fetch fresh data.

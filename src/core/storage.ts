@@ -42,12 +42,23 @@ export function defineStorage<T>(
   options: StorageOptions,
 ): StorageItem<T> {
   const area = options.area;
+  let inflightGet: Promise<T> | null = null;
 
   return {
-    async get() {
-      const result = await chrome.storage[area].get(key);
-      const value = result[key];
-      return value === undefined ? defaultValue : (value as T);
+    get() {
+      if (inflightGet) return inflightGet;
+
+      inflightGet = (async () => {
+        try {
+          const result = await chrome.storage[area].get(key);
+          const value = result[key];
+          return value === undefined ? defaultValue : (value as T);
+        } finally {
+          inflightGet = null;
+        }
+      })();
+
+      return inflightGet;
     },
 
     async set(value: T) {
