@@ -42,12 +42,24 @@ export function defineStorage<T>(
   options: StorageOptions,
 ): StorageItem<T> {
   const area = options.area;
+  let getPromise: Promise<T> | null = null;
 
   return {
-    async get() {
-      const result = await chrome.storage[area].get(key);
-      const value = result[key];
-      return value === undefined ? defaultValue : (value as T);
+    get() {
+      // ⚡ Bolt: Cache the inflight promise to deduplicate concurrent storage reads
+      // Impact: Prevents redundant async IPC calls to chrome.storage during concurrent access
+      if (getPromise) return getPromise;
+
+      getPromise = (async () => {
+        try {
+          const result = await chrome.storage[area].get(key);
+          const value = result[key];
+          return value === undefined ? defaultValue : (value as T);
+        } finally {
+          getPromise = null;
+        }
+      })();
+      return getPromise;
     },
 
     async set(value: T) {

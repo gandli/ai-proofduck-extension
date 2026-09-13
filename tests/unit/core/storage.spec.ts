@@ -23,6 +23,32 @@ describe('storage', () => {
     expect(await theme.get()).toBe('system');
   });
 
+  it('并发 get() 时只触发一次底层 API 调用（缓存 inflight promise）', async () => {
+    // 覆盖 chrome.storage.local.get，手动控制 resolve 节奏
+    let resolveGet: (val: any) => void = () => {};
+    const getPromise = new Promise<any>((r) => {
+      resolveGet = r;
+    });
+    const spy = vi.spyOn(fakeBrowser.storage.local, 'get').mockReturnValue(getPromise as any);
+
+    const testItem = defineStorage<string>('test', 'default', { area: 'local' });
+
+    // 并发调用 3 次 get
+    const p1 = testItem.get();
+    const p2 = testItem.get();
+    const p3 = testItem.get();
+
+    // 只应调用 1 次底层 get
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    // 释放 promise
+    resolveGet({ test: 'cached-value' });
+
+    const results = await Promise.all([p1, p2, p3]);
+    expect(results).toEqual(['cached-value', 'cached-value', 'cached-value']);
+    spy.mockRestore();
+  });
+
   it('set 之后 get 返回新值', async () => {
     const theme = defineStorage<'light' | 'dark'>('theme', 'light', { area: 'sync' });
     await theme.set('dark');
