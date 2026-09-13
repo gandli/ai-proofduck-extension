@@ -37,3 +37,7 @@
 ## 2026-08-31 - Add explicit helper text for sensitive inputs
 **Learning:** The Gemini API configuration lacked explicit helper text explaining the storage and privacy guarantees for the sensitive API Key, unlike the `OpenAiCompatSection`. Adding this text and linking it via `aria-describedby` provides immediate context to screen reader users and reassures all users about privacy.
 **Action:** Always provide explicit helper text for sensitive inputs (like API keys) explaining storage and privacy guarantees (e.g., 'Stored locally, encrypted'), and link this text to the input using the `aria-describedby` attribute for screen reader accessibility.
+
+## 2025-10-25 - Ensure explicit visible focus indicators for custom inline-styled buttons
+**Learning:** Highly customized, inline-styled buttons (like those in `SuccessBubble`) often miss global focus styles because their `background: 'transparent'` and `border: 'none'` declarations hide default browser focus rings, making them invisible to keyboard users.
+**Action:** Always ensure interactive elements (especially icon-only or custom buttons, even if heavily inline-styled) have explicit visible focus indicators using the project's established Tailwind utility classes (e.g., `focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1`) via the `className` attribute. For dark backgrounds, use an appropriate offset color like `focus-visible:ring-offset-ink-900`.
