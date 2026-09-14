@@ -90,4 +90,36 @@ describe('storage', () => {
 
     expect(cb).toHaveBeenCalledWith('system', 'light');
   });
+
+  it('deduplicates concurrent get requests to chrome.storage', async () => {
+    const theme = defineStorage<'light'>('theme', 'light', { area: 'sync' });
+    let getCallCount = 0;
+
+    // override fakeBrowser temporarily to spy on how many times it was called
+    const originalGet = fakeBrowser.storage.sync.get;
+    fakeBrowser.storage.sync.get = vi.fn().mockImplementation(async (...args: any[]) => {
+      getCallCount++;
+      return (originalGet as any).call(fakeBrowser.storage.sync, ...args);
+    });
+
+    const p1 = theme.get();
+    const p2 = theme.get();
+    const p3 = theme.get();
+
+    const [r1, r2, r3] = await Promise.all([p1, p2, p3]);
+
+    expect(r1).toBe('light');
+    expect(r2).toBe('light');
+    expect(r3).toBe('light');
+
+    expect(getCallCount).toBe(1);
+
+    // after it resolves, a new request should trigger get again
+    const r4 = await theme.get();
+    expect(r4).toBe('light');
+    expect(getCallCount).toBe(2);
+
+    // restore original
+    fakeBrowser.storage.sync.get = originalGet;
+  });
 });
