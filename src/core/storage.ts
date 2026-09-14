@@ -42,12 +42,20 @@ export function defineStorage<T>(
   options: StorageOptions,
 ): StorageItem<T> {
   const area = options.area;
+  let inflightGet: Promise<T> | null = null;
 
   return {
-    async get() {
-      const result = await chrome.storage[area].get(key);
-      const value = result[key];
-      return value === undefined ? defaultValue : (value as T);
+    get() {
+      if (inflightGet) return inflightGet;
+      // ⚡ Bolt: Deduplicate inflight storage reads to prevent redundant IPC calls during concurrent access.
+      // Impact: Reduces IPC overhead when multiple UI components concurrently read the same setting on mount.
+      inflightGet = chrome.storage[area].get(key).then((result) => {
+        const value = result[key];
+        return value === undefined ? defaultValue : (value as T);
+      }).finally(() => {
+        inflightGet = null;
+      });
+      return inflightGet;
     },
 
     async set(value: T) {
